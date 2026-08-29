@@ -1,3 +1,6 @@
-datasets/
-kernels/
-opponents/
+# Runtime / Kaggle working artifacts only — tracked dirs are intentional
+datasets/published-champion/
+datasets/experiments/
+__pycache__/
+*.pyc
+.DS_Store
