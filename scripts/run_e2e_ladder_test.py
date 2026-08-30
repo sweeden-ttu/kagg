@@ -1,4 +1,4 @@
-#!/usr/bin/env env python
+#!/usr/bin/env python
 """Run notebook §1a→§1c→§2 pipeline to produce ladder_eval.json (E2E smoke)."""
 
 from __future__ import annotations
@@ -37,47 +37,58 @@ sys.path.insert(0, str(CODE_SRC))
 os.chdir(KAGGLE_WORKING)
 
 from episode_catalog import (  # noqa: E402
-    DEFAULT_END_DATE,
-    DEFAULT_START_DATE,
     configure_local_datasets_root,
     ensure_kaggle_index_dataset,
-    kaggle_daily_dataset_dir,
     merge_episode_metadata,
     save_metadata,
 )
 from eval_policy import count_reference_opponent_files, resolve_opponents_dir  # noqa: E402
-from kaggriculture_self_play_training import train_self_play  # noqa: E402
-from path_b_bootstrap import (  # noqa: E402
-    bootstrap_metadata_start_date,
-    merge_bootstrap_state_from_code_dataset,
-    plan_next_bootstrap_days_from_state,
+from kaggriculture_adapter import (  # noqa: E402
+    CYCLES_PER_EPISODE,
+    EPISODE_STEPS,
+    TURNS_PER_CYCLE,
 )
+from kaggriculture_self_play_training import train_self_play  # noqa: E402
+from notebook_paths import fresh_run_requested  # noqa: E402
+from path_b_bootstrap import save_bootstrap_state  # noqa: E402
 
 TRAINING_MODE = os.environ["KAGGLE_TRAINING_MODE"]
-_mode = {
-    "bootstrap_mode": "daily_incremental",
-    "bootstrap_days_per_run": 1,
-    "bootstrap_episodes": None,
-    "bootstrap_top_per_day": None,
-    "bootstrap_passes": 1,
-    "bootstrap_transitions": None,
-    "buffer_capacity": 50_000,
-    "bc_epochs_per_pass": 1,
-    "bc_steps_per_epoch": 50,
-    "total_episodes": 2,
-    "learning_start_episodes": 1,
-    "n_eval_episodes": 1,
-    "ladder_eval_episodes": 1,
-    "min_self_play_episodes": 0,
-    "max_episode_steps": 50,  # smoke: keep episodes short locally
+
+# Dry-run phase counts (each phase exercised more than once except the last,
+# which is the agent/ladder output): 2, 3, 4, 6, 4, 3, 2, 1
+_DRY_RUN_PHASES = {
+    "bootstrap_days_per_run": 2,   # 1 — bootstrap days
+    "bootstrap_passes": 3,         # 2 — corpus/pass loops
+    "bc_epochs_per_pass": 4,       # 3 — BC epochs per pass/day
+    "bc_steps_per_epoch": 6,       # 4 — BC optimizer steps
+    "total_episodes": 4,           # 5 — self-play episodes
+    "learning_start_episodes": 3,  # 6 — warmup before learning
+    "n_eval_episodes": 2,          # 7 — win-rate eval vs baseline
+    "ladder_eval_episodes": 1,     # 8 — agent/ladder output (once)
 }
 
+# Cap expert JSONs per day so smoke BC stays seconds-not-hours.
+_SMOKE_TOP_PER_DAY = 3
+
+_mode = {
+    "bootstrap_mode": "daily_incremental",
+    "bootstrap_episodes": None,
+    "bootstrap_top_per_day": _SMOKE_TOP_PER_DAY,
+    "bootstrap_transitions": None,
+    "buffer_capacity": 50_000,
+    "min_self_play_episodes": 0,
+    # Kinematic season: one cycle is enough for smoke; full season is EPISODE_STEPS.
+    "turns_per_cycle": TURNS_PER_CYCLE,
+    "max_episode_steps": TURNS_PER_CYCLE,  # 72 = one 3×4×6 refresh cycle
+    **_DRY_RUN_PHASES,
+}
+
+assert list(_DRY_RUN_PHASES.values()) == [2, 3, 4, 6, 4, 3, 2, 1], _DRY_RUN_PHASES
+assert _mode["learning_start_episodes"] < _mode["total_episodes"]
+assert TURNS_PER_CYCLE == 3 * 4 * 6
+assert EPISODE_STEPS == TURNS_PER_CYCLE * CYCLES_PER_EPISODE
+
 EXPERIMENT_DIR.mkdir(parents=True, exist_ok=True)
-_bootstrap_state = merge_bootstrap_state_from_code_dataset(CODE_SRC, EXPERIMENT_DIR)
-_done = list(_bootstrap_state.get("bootstrapped_dates", []))
-_next_days = plan_next_bootstrap_days_from_state(
-    _done, n_days=1, start_date=DEFAULT_START_DATE, end_date=DEFAULT_END_DATE
-)[:1]
 
 opp = resolve_opponents_dir(code_src=str(CODE_SRC))
 if opp is None or not opp.is_dir():
@@ -94,30 +105,46 @@ if not (index_dir / "manifest.csv").exists():
 else:
     log(f"  index already present: {index_dir}")
 
-# E2E smoke must not block on multi-GB Kaggle CLI downloads. Only bootstrap a
-# day that already has extracted episode JSONs under datasets/kaggle/.
-bootstrap_days = 0
-if _next_days:
-    day = _next_days[0]
-    day_dir = kaggle_daily_dataset_dir(day)
-    has_json = day_dir.is_dir() and any(day_dir.glob("*.json"))
-    if has_json:
-        bootstrap_days = 1
-        log(f"Next bootstrap day {day} is local ({day_dir}); will bootstrap 1 day")
-    else:
-        log(
-            f"SKIP bootstrap for {day}: no local *.json in {day_dir}. "
-            f"(Kaggle CLI download can take 30+ min and produces no output while running.) "
-            f"Proceeding to self-play + ladder with existing buffer/checkpoint."
-        )
-else:
-    log("No remaining bootstrap days in corpus window; proceeding to self-play + ladder")
 
+def _local_days_with_json(root: Path) -> list[str]:
+    """Chronological dates that already have extracted episode JSONs locally."""
+    days: list[str] = []
+    for day_dir in sorted(root.glob("kaggriculture-episodes-????-??-??")):
+        if day_dir.is_dir() and any(day_dir.glob("*.json")):
+            days.append(day_dir.name.replace("kaggriculture-episodes-", "", 1))
+    return days
+
+
+_wanted_days = int(_mode["bootstrap_days_per_run"])
+local_available = _local_days_with_json(LOCAL_DATASETS)
+log(f"Local episode days with *.json: {local_available or '(none)'}")
+
+# Smoke must not inherit "already bootstrapped" from the code-dataset watermark,
+# otherwise phases 1–4 are no-ops (next calendar days lack local JSON).
+if fresh_run_requested():
+    save_bootstrap_state(
+        EXPERIMENT_DIR,
+        {"bootstrapped_dates": [], "runs": [], "total_transitions": 0},
+    )
+    log("KAGGLE_FRESH_RUN=1: reset experiment bootstrap_state for smoke re-bootstrap")
+
+local_bootstrap_days = local_available[:_wanted_days]
+if len(local_bootstrap_days) < _wanted_days:
+    raise SystemExit(
+        f"E2E smoke needs {_wanted_days} local bootstrap day(s) with *.json under "
+        f"{LOCAL_DATASETS}; found {len(local_available)}: {local_available}"
+    )
+
+bootstrap_days = len(local_bootstrap_days)
+log(f"Will bootstrap {bootstrap_days}/{_wanted_days} local day(s): {local_bootstrap_days}")
+
+# Metadata window = only the smoke days so daily_incremental picks them first.
 METADATA_DIR.mkdir(parents=True, exist_ok=True)
-_metadata_start = bootstrap_metadata_start_date(_done, default_start=DEFAULT_START_DATE)
-log(f"Merging metadata {_metadata_start} → {DEFAULT_END_DATE} ...")
+_metadata_start = min(local_bootstrap_days)
+_metadata_end = max(local_bootstrap_days)
+log(f"Merging metadata {_metadata_start} → {_metadata_end} (smoke local days only) ...")
 metadata = merge_episode_metadata(
-    data_dir=METADATA_DIR, start_date=_metadata_start, end_date=DEFAULT_END_DATE
+    data_dir=METADATA_DIR, start_date=_metadata_start, end_date=_metadata_end
 )
 save_metadata(metadata, METADATA_PATH)
 log(f"Metadata saved: {METADATA_PATH} ({len(metadata.get('episodes', []))} episodes indexed)")
@@ -149,6 +176,7 @@ config = {
     "ladder_win_rate_target": 0.5,
     "min_self_play_episodes": 0,
     "opponents_dir": str(opp),
+    "turns_per_cycle": _mode["turns_per_cycle"],
     "max_episode_steps": _mode["max_episode_steps"],
     "device_name": "auto",
     "seed": 42,
@@ -159,7 +187,12 @@ config = {
 
 log("=== E2E TRAINING_CONFIG ===")
 log(json.dumps(config, indent=2))
-log(f"Planned bootstrap day(s): {_next_days if bootstrap_days else '(skipped)'}")
+log(
+    "Dry-run phases (2,3,4,6,4,3,2,1): "
+    + ", ".join(f"{k}={v}" for k, v in _DRY_RUN_PHASES.items())
+)
+log(f"Planned bootstrap day(s): {local_bootstrap_days}")
+log(f"Smoke bootstrap_top_per_day={_SMOKE_TOP_PER_DAY}")
 
 log("Starting train_self_play ...")
 train_self_play(**config)

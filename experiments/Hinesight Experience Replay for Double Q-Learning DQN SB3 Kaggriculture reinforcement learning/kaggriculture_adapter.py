@@ -16,6 +16,17 @@ import torch
 
 CROPS: List[str] = ["WHEAT", "CARROT", "TOMATO", "STRAWBERRY", "MELON"]
 
+# Kinematic feedback season (learned env): end-of-cycle refresh = 3×4×6 steps.
+# Episode length stays 720 = 10 cycles × 72 steps (not “30 calendar days”).
+KINEMATIC_PHASE_A: int = 3
+KINEMATIC_PHASE_B: int = 4
+KINEMATIC_PHASE_C: int = 6
+TURNS_PER_CYCLE: int = KINEMATIC_PHASE_A * KINEMATIC_PHASE_B * KINEMATIC_PHASE_C  # 72
+CYCLES_PER_EPISODE: int = 4
+EPISODE_STEPS: int = TURNS_PER_CYCLE * CYCLES_PER_EPISODE  # 720
+# Competition / reference-ladder / historical episode tapes (Kaggle default).
+COMPETITION_TURNS_PER_DAY: int = 3
+
 FARMER_ACTIONS: Dict[str, int] = {
     "PASS": 0,
     "DIG": 1,
@@ -136,13 +147,21 @@ def encode_tiles(raw_tiles: Any) -> np.ndarray:
     return grid
 
 
-def observation_step_index(obs: Dict[str, Any]) -> int:
-    """Simulation step index for tape-based opponents (0–719 for a 720-step season)."""
+def observation_step_index(
+    obs: Dict[str, Any],
+    turns_per_cycle: int = COMPETITION_TURNS_PER_DAY,
+) -> int:
+    """Simulation step index (0–719 for a 720-step season).
+
+    Defaults to competition ``turnsPerDay=24`` so historical episode tapes and
+    reference-ladder agents stay aligned. Pass ``TURNS_PER_CYCLE`` (72) for the
+    kinematic self-play profile.
+    """
     if "step" in obs and obs["step"] is not None:
         return int(obs["step"])
     day = int(obs.get("day", 1) or 1)
     hour = int(obs.get("hour", 0) or 0)
-    return max(0, (day - 1) * 24 + hour)
+    return max(0, (day - 1) * int(turns_per_cycle) + hour)
 
 
 def parse_observation(agent_result: Dict[str, Any], player_id: Optional[int] = None) -> Dict[str, Any]:
@@ -271,8 +290,8 @@ def encode_path_b_observation(
                         tiles_grid[8, y, x] = min(1.0, float(progress))
 
     numeric: List[float] = []
-    numeric.append(float(observation.get("day", 0)) / 30.0)
-    numeric.append(float(observation.get("hour", 0)) / 24.0)
+    numeric.append(float(observation.get("day", 0)) / float(CYCLES_PER_EPISODE))
+    numeric.append(float(observation.get("hour", 0)) / float(TURNS_PER_CYCLE))
     my_money = float(my_farm.get("money", 0.0))
     opp_money = float(opp_farm.get("money", 0.0))
     numeric.extend([

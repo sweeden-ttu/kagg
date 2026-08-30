@@ -121,8 +121,13 @@ def evaluate_ladder(
     max_steps: int = 720,
     base_seed: int = 42,
     win_rate_target: float = 0.5,
+    turns_per_day: int = 24,
 ) -> Dict[str, Any]:
-    """Head-to-head eval vs every reference ladder opponent."""
+    """Head-to-head eval vs every reference ladder opponent.
+
+    Defaults ``turns_per_day=24`` (competition parity) because reference agents
+    hard-code a 24-turn day. Kinematic self-play (72) is a different profile.
+    """
     opponents = discover_reference_opponents(opponents_dir or resolve_opponents_dir(code_src=code_src))
     results: Dict[str, Any] = {}
     beats_all = True
@@ -135,6 +140,7 @@ def evaluate_ladder(
             n_episodes=n_episodes,
             max_steps=max_steps,
             base_seed=base_seed,
+            turns_per_day=turns_per_day,
         )
         summary = {k: v for k, v in stats.items() if k != "episodes"}
         if stats["episodes"]:
@@ -167,12 +173,16 @@ def evaluate_ladder(
     }
 
 
-def _make_kaggle_env(max_steps: int = 720, seed: int = 42):
+def _make_kaggle_env(max_steps: int = 720, seed: int = 42, turns_per_day: int = 24):
     import kaggle_environments
 
     return kaggle_environments.make(
         "kaggriculture",
-        configuration={"episodeSteps": max_steps, "seed": seed},
+        configuration={
+            "episodeSteps": max_steps,
+            "turnsPerDay": int(turns_per_day),
+            "seed": seed,
+        },
         debug=False,
     )
 
@@ -231,6 +241,7 @@ def evaluate_win_rate(
     n_episodes: int = 20,
     max_steps: int = 720,
     base_seed: int = 42,
+    turns_per_day: int = 24,
 ) -> Dict[str, Any]:
     """Evaluate challenger vs baseline using rubric win/loss/tie rule."""
     wins = losses = ties = 0
@@ -238,7 +249,11 @@ def evaluate_win_rate(
 
     for ep in range(n_episodes):
         try:
-            env = _make_kaggle_env(max_steps=max_steps, seed=base_seed + ep)
+            env = _make_kaggle_env(
+                max_steps=max_steps,
+                seed=base_seed + ep,
+                turns_per_day=turns_per_day,
+            )
             result = run_head_to_head_episode(
                 env, challenger_policy, baseline_policy, max_steps=max_steps
             )
@@ -263,6 +278,7 @@ def evaluate_win_rate(
         "ties": ties,
         "n_episodes": len(episode_details),
         "max_steps": max_steps,
+        "turns_per_day": turns_per_day,
         "episodes": episode_details,
     }
 

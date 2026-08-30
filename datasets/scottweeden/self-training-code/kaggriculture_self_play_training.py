@@ -83,12 +83,22 @@ def _normalize_env_states(result):
 class KaggleCompetitiveEnv:
     """Two-player wrapper around official kaggle-environments."""
 
-    def __init__(self, max_steps: int = 720, seed: int = 42):
+    def __init__(
+        self,
+        max_steps: int = 720,
+        seed: int = 42,
+        turns_per_cycle: int = 72,
+    ):
         import kaggle_environments
         self.max_steps = max_steps
+        self.turns_per_cycle = int(turns_per_cycle)
         self.env = kaggle_environments.make(
             "kaggriculture",
-            configuration={"episodeSteps": max_steps, "seed": seed},
+            configuration={
+                "episodeSteps": max_steps,
+                "turnsPerDay": self.turns_per_cycle,
+                "seed": seed,
+            },
             debug=False,
         )
         self._obs: List[Dict[str, Any]] = [{}, {}]
@@ -125,14 +135,23 @@ class KaggleCompetitiveEnv:
         return (self._obs[0], self._obs[1]), rewards, done, {}
 
 
-def create_competitive_env(use_kaggle: bool = True, max_steps: int = 720, seed: int = 42):
+def create_competitive_env(
+    use_kaggle: bool = True,
+    max_steps: int = 720,
+    seed: int = 42,
+    turns_per_cycle: int = 72,
+):
     if not use_kaggle:
         raise RuntimeError(
             "Offline training requires the official Kaggle simulator (use_kaggle_env=True). "
             "Install kaggle-environments and attach the kaggriculture environment."
         )
     try:
-        return KaggleCompetitiveEnv(max_steps=max_steps, seed=seed)
+        return KaggleCompetitiveEnv(
+            max_steps=max_steps,
+            seed=seed,
+            turns_per_cycle=turns_per_cycle,
+        )
     except ImportError as exc:
         raise ImportError(
             "kaggle-environments is required for self-play training. "
@@ -690,6 +709,7 @@ def train_self_play(total_episodes: int = 15,
                     device_name: str = "auto",
                     use_kaggle_env: bool = False,
                     max_episode_steps: int = 720,
+                    turns_per_cycle: int = 72,
                     n_eval_episodes: int = 5,
                     resume: Optional[str] = None,
                     bootstrap_episodes: Optional[int] = 0,
@@ -744,6 +764,11 @@ def train_self_play(total_episodes: int = 15,
         "batch_size": batch_size,
         "checkpoint_interval": checkpoint_interval,
         "use_kaggle_env": use_kaggle_env,
+        "kinematic_phase_a": 3,
+        "kinematic_phase_b": 4,
+        "kinematic_phase_c": 6,
+        "turns_per_cycle": turns_per_cycle,
+        "cycles_per_episode": max(1, max_episode_steps // max(1, turns_per_cycle)),
         "max_episode_steps": max_episode_steps,
         "n_eval_episodes": n_eval_episodes,
         "bootstrap_episodes": bootstrap_episodes,
@@ -845,7 +870,7 @@ def train_self_play(total_episodes: int = 15,
             start_episode, episode_metrics, saved_config = load_training_state(
                 resume_file, device, online_net, target_net, optimizer, buffer, coordinator
             )
-            for key in ("seed", "use_kaggle_env", "max_episode_steps", "learning_start_episodes"):
+            for key in ("seed", "use_kaggle_env", "max_episode_steps", "turns_per_cycle", "learning_start_episodes"):
                 if key in saved_config:
                     saved_val = saved_config[key]
                     cli_val = config[key]
@@ -919,6 +944,7 @@ def train_self_play(total_episodes: int = 15,
                     bc_steps_per_epoch=bc_steps_per_epoch,
                     max_market_orders=online_net.max_market_orders,
                     random_seed=seed,
+                    top_per_day=bootstrap_top_per_day,
                     verbose=verbose,
                 )
                 bootstrap_count = int(stream_stats.get("total_transitions_loaded", 0))
@@ -926,6 +952,36 @@ def train_self_play(total_episodes: int = 15,
                 if stream_stats.get("new_days"):
                     config["bootstrap_days_this_run"] = stream_stats["new_days"]
                     config["bootstrapped_dates"] = stream_stats.get("bootstrapped_dates", [])
+                # daily_incremental historically ignored bootstrap_passes; when >1,
+                # run explicit corpus buffer BC passes so the knob is exercised.
+                if bootstrap_passes > 1 and len(buffer) > 0 and bc_epochs_per_pass > 0:
+                    logger.info(
+                        "daily_incremental: %d corpus BC pass(es) on buffer (%d transitions)",
+                        bootstrap_passes,
+                        len(buffer),
+                    )
+                    corpus_pass_losses: List[float] = []
+                    for pass_idx in range(1, bootstrap_passes + 1):
+                        pass_losses = run_bc_pretrain(
+                            learner,
+                            buffer,
+                            device,
+                            epochs=bc_epochs_per_pass,
+                            batch_size=bc_batch_size,
+                            max_steps_per_epoch=bc_steps_per_epoch,
+                            verbose=verbose,
+                        )
+                        corpus_pass_losses.extend(pass_losses)
+                        logger.info(
+                            "Bootstrap corpus pass %d/%d | epochs=%d | final_loss=%s",
+                            pass_idx,
+                            bootstrap_passes,
+                            len(pass_losses),
+                            f"{pass_losses[-1]:.5f}" if pass_losses else "n/a",
+                        )
+                    bc_loss_history.extend(corpus_pass_losses)
+                    stream_stats["corpus_pass_losses"] = corpus_pass_losses
+                    stream_stats["bootstrap_passes"] = bootstrap_passes
         elif bootstrap_passes > 1:
             episode_files = resolve_bootstrap_episode_files(
                 data_dir=data_dir,
@@ -1088,13 +1144,15 @@ def train_self_play(total_episodes: int = 15,
         use_kaggle=use_kaggle_env,
         max_steps=max_episode_steps if use_kaggle_env else min(50, max_episode_steps),
         seed=seed + start_episode,
+        turns_per_cycle=turns_per_cycle,
     )
     if verbose:
         env_name = type(env).__name__
         logger.debug(
-            "Self-play env: %s max_steps=%d use_kaggle=%s",
+            "Self-play env: %s max_steps=%d turns_per_cycle=%d use_kaggle=%s",
             env_name,
             max_episode_steps if use_kaggle_env else min(50, max_episode_steps),
+            turns_per_cycle,
             use_kaggle_env,
         )
 
@@ -1351,7 +1409,10 @@ def train_self_play(total_episodes: int = 15,
         try:
             eval_stats = evaluate_win_rate(
                 _path_b_policy, random_baseline_policy,
-                n_episodes=n_eval_episodes, max_steps=max_episode_steps, base_seed=seed + 1000,
+                n_episodes=n_eval_episodes,
+                max_steps=max_episode_steps,
+                base_seed=seed + 1000,
+                turns_per_day=turns_per_cycle,
             )
             save_eval_report(eval_stats, dirs["metrics"] / "win_rate_eval.json")
             progress.record_eval("win_rate", eval_stats)
@@ -1524,6 +1585,16 @@ def main() -> None:
     )
     parser.add_argument("--use-kaggle-env", action="store_true")
     parser.add_argument("--max-episode-steps", type=int, default=720)
+    parser.add_argument(
+        "--turns-per-cycle",
+        type=int,
+        default=72,
+        help=(
+            "Kinematic end-of-cycle refresh period (engine turnsPerDay). "
+            "Default 72 = 3×4×6; season is max_episode_steps / turns_per_cycle cycles "
+            "(10×72=720). Competition ladder parity uses 24."
+        ),
+    )
     parser.add_argument("--n-eval-episodes", type=int, default=5)
     parser.add_argument(
         "--bootstrap-episodes",
@@ -1682,6 +1753,7 @@ def main() -> None:
         device_name=args.device,
         use_kaggle_env=args.use_kaggle_env,
         max_episode_steps=args.max_episode_steps,
+        turns_per_cycle=args.turns_per_cycle,
         n_eval_episodes=args.n_eval_episodes,
         resume=args.resume,
         bootstrap_episodes=args.bootstrap_episodes,

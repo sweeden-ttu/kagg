@@ -933,9 +933,15 @@ def incremental_daily_bootstrap_bc(
     max_market_orders: int = 10,
     random_seed: int = 42,
     buffer_seed_per_day: Optional[int] = None,
+    top_per_day: Optional[int] = None,
+    force_days: Optional[List[str]] = None,
     verbose: bool = False,
 ) -> Dict[str, Any]:
-    """Pick next ``days_per_run`` chronological days; BC on **all** episodes each day."""
+    """Pick next ``days_per_run`` chronological days; BC on episodes each day.
+
+    When ``top_per_day`` is set, only that many top-scoring episode files are used
+    (smoke / dry-run). ``force_days`` overrides chronological picking when provided.
+    """
     meta_path = Path(metadata_path)
     if not meta_path.exists():
         raise FileNotFoundError(f"metadata_path not found: {metadata_path}")
@@ -945,11 +951,14 @@ def incremental_daily_bootstrap_bc(
 
     state = load_bootstrap_state(experiment_root)
     bootstrapped = list(state.get("bootstrapped_dates", []))
-    new_days = pick_next_bootstrap_days(
-        metadata,
-        n_days=days_per_run,
-        exclude_dates=bootstrapped,
-    )
+    if force_days:
+        new_days = list(force_days)[: max(0, days_per_run)]
+    else:
+        new_days = pick_next_bootstrap_days(
+            metadata,
+            n_days=days_per_run,
+            exclude_dates=bootstrapped,
+        )
 
     if not new_days:
         logger.info(
@@ -987,14 +996,32 @@ def incremental_daily_bootstrap_bc(
             logger.warning("Skip bootstrap day %s: already bootstrapped", day)
             continue
 
-        day_files = resolve_episode_paths_for_dates(
-            metadata, [day], local_episodes_dir=episodes_dir
-        )
+        if top_per_day is not None and top_per_day > 0:
+            day_meta = {
+                "episodes": [
+                    ep for ep in metadata.get("episodes", []) if str(ep.get("date")) == day
+                ]
+            }
+            day_files = resolve_episode_paths_from_metadata(
+                day_meta,
+                top_per_day=top_per_day,
+                max_episodes=top_per_day,
+                local_episodes_dir=episodes_dir,
+            )
+        else:
+            day_files = resolve_episode_paths_for_dates(
+                metadata, [day], local_episodes_dir=episodes_dir
+            )
         if not day_files:
             logger.warning("No episode files resolved for date %s", day)
             continue
 
-        logger.info("Bootstrap day %s: %d episodes (all transitions, streaming BC)", day, len(day_files))
+        logger.info(
+            "Bootstrap day %s: %d episodes (streaming BC%s)",
+            day,
+            len(day_files),
+            f", top_per_day={top_per_day}" if top_per_day else ", all transitions",
+        )
 
         day_losses, day_transitions = run_bc_pretrain_over_episode_files(
             learner,

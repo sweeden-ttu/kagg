@@ -42,6 +42,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from kaggriculture_adapter import CYCLES_PER_EPISODE, TURNS_PER_CYCLE
+
 
 # ─────────────────────────────────────────────────────────────
 # 1. Feature Extractor
@@ -129,8 +131,8 @@ class KaggricultureFeatureExtractor(nn.Module):
 
         # ── MLP Branch ──
         parts: List[torch.Tensor] = []
-        parts.append(observations["day"].float() / 29.0)
-        parts.append(observations["hour"].float() / 24.0)
+        parts.append(observations["day"].float() / float(max(CYCLES_PER_EPISODE - 1, 1)))
+        parts.append(observations["hour"].float() / float(TURNS_PER_CYCLE))
         parts.append(observations["player_id"].float())
         parts.append(observations["farms_p0_money"].float() / 10_000.0)
         parts.append(observations["farms_p1_money"].float() / 10_000.0)

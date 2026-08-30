@@ -5,7 +5,19 @@
 
 This is a reinforcement learning and immitation replay deep learning repository focused on a DQN SB3 Gymnasium dual action state and policy heuristics agent gameplay and training.
 
-Current experiment: 
+Current experiment: Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning
+
+### Kinematic season (learned env)
+
+Self-play no longer treats 720 as “30 calendar days.” End-of-cycle refresh is a **kinematic feedback** period:
+
+| Factor | Value |
+|--------|------:|
+| `kinematic_phase_a` × `b` × `c` | 3 × 4 × 6 = **72** (`turnsPerDay`) |
+| `cycles_per_episode` | **10** |
+| `max_episode_steps` | **720** (= 10 × 72) |
+
+Competition / reference-ladder eval still defaults to Kaggle parity (`turnsPerDay=24`). Spec: [`docs/superpowers/specs/2026-08-30-kinematic-3x4x6-refresh-design.md`](docs/superpowers/specs/2026-08-30-kinematic-3x4x6-refresh-design.md).
 
 ---
 
