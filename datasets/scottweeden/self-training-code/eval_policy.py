@@ -1,6 +1,8 @@
-"""Rubric-aligned policy evaluation: win rate vs frozen baseline.
+"""Rubric-aligned policy evaluation vs the reference ladder (``opponents/``).
 
 Compares final bank coins per Rubric.md (win / loss / tie; margin irrelevant).
+``win_rate_eval.json`` is a thin aggregate of ``ladder_eval.json`` (league summary);
+per-opponent rows stay only in the ladder report.
 """
 
 from __future__ import annotations
@@ -170,6 +172,38 @@ def evaluate_ladder(
         "win_rate_target": win_rate_target,
         "beats_all_opponents": beats_all,
         "results": results,
+    }
+
+
+def win_rate_eval_from_ladder(ladder_report: Dict[str, Any]) -> Dict[str, Any]:
+    """Thin league summary for ``win_rate_eval.json`` (details live in ladder_eval)."""
+    wins = int(ladder_report.get("wins_total", 0))
+    losses = int(ladder_report.get("losses_total", 0))
+    ties = int(ladder_report.get("ties_total", 0))
+    n_episodes = int(ladder_report.get("n_episodes_total", 0))
+    denom = max(wins + losses + ties, 1)
+    per_opp = [
+        float(row.get("win_rate", 0))
+        for row in (ladder_report.get("results") or {}).values()
+    ]
+    mean_opponent_win_rate = sum(per_opp) / len(per_opp) if per_opp else 0.0
+    return {
+        "opponent": "league",
+        "source": "ladder_eval.json",
+        "opponents_dir": ladder_report.get("opponents_dir"),
+        "n_opponents": ladder_report.get("n_opponents"),
+        "n_episodes_per_opponent": ladder_report.get("n_episodes_per_opponent"),
+        "win_rate": wins / denom,
+        "loss_rate": losses / denom,
+        "tie_rate": ties / denom,
+        "mean_opponent_win_rate": mean_opponent_win_rate,
+        "wins": wins,
+        "losses": losses,
+        "ties": ties,
+        "n_episodes": n_episodes,
+        "opponents_cleared": ladder_report.get("opponents_cleared"),
+        "beats_all_opponents": ladder_report.get("beats_all_opponents"),
+        "win_rate_target": ladder_report.get("win_rate_target"),
     }
 
 

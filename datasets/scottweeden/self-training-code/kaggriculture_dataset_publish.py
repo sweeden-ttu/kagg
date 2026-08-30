@@ -166,7 +166,15 @@ def training_version_message(experiment_dir: Path) -> str:
             wr = json.load(fh)
         win_rate = wr.get("win_rate")
         if win_rate is not None:
-            parts.append(f"win vs random {win_rate:.0%}")
+            if wr.get("opponent") == "league" or wr.get("source") == "ladder_eval.json":
+                cleared = wr.get("opponents_cleared")
+                n_opp = wr.get("n_opponents")
+                if cleared is not None and n_opp is not None:
+                    parts.append(f"league win {win_rate:.0%} ({cleared}/{n_opp} cleared)")
+                else:
+                    parts.append(f"league win {win_rate:.0%}")
+            else:
+                parts.append(f"league win {win_rate:.0%}")
 
     plots_dir = experiment_dir / "plots"
     if plots_dir.is_dir() and any(plots_dir.glob("*.png")):

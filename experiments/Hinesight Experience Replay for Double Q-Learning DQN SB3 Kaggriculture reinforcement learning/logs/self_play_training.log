@@ -539,3 +539,18 @@
 2026-08-30 05:04:27,117 [INFO] kaggriculture_self_play_training: Episode 16/16 | Epsilon: 0.050 | Buffer Size: 23008 | Raw Reward: -29.57 | Shaped Reward: -2230.07 | Avg Loss: 44.76227
 2026-08-30 05:04:28,601 [INFO] kaggriculture_self_play_training: Final model saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/models/model.pth
 2026-08-30 05:05:52,556 [INFO] kaggriculture_self_play_training: Win-rate eval vs random baseline: 1.00 (10/10)
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training: Ladder eval (10 opponents, 10 ep each, target 50%): beats_all=False → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/metrics/ladder_eval.json
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training:   [FAIL] vs fallow_finn      win=0% (0/10) money 669 vs 3000
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training:   [FAIL] vs wheat_walter     win=0% (0/10) money 752 vs 6526
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training:   [FAIL] vs rotation_rosa    win=0% (0/10) money 691 vs 12164
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training:   [FAIL] vs homestead_hana   win=0% (0/10) money 120 vs 15381
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training:   [FAIL] vs melon_mateo      win=0% (0/10) money 9 vs 24105
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training:   [FAIL] vs rancher_rita     win=0% (0/10) money 167 vs 44201
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training:   [FAIL] vs broker_bea       win=0% (0/10) money 3 vs 44097
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training:   [FAIL] vs ledger_lena      win=0% (0/10) money 3 vs 43552
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training:   [FAIL] vs slotter_silas    win=0% (0/10) money 3 vs 42949
+2026-08-30 05:21:36,264 [INFO] kaggriculture_self_play_training:   [FAIL] vs closer_cleo      win=0% (0/10) money 4 vs 17429
+2026-08-30 05:21:36,267 [INFO] kaggriculture_self_play_training: Agent export saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/agent.py
+2026-08-30 05:21:36,267 [INFO] kaggriculture_self_play_training: Episode metrics saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/metrics/episode_metrics.json
+2026-08-30 05:21:36,268 [INFO] kaggriculture_self_play_training: Cumulative training progress saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/metrics/training_progress.json
+2026-08-30 05:21:36,268 [INFO] kaggriculture_self_play_training: --- SELF-PLAY TRAINING LOOP COMPLETED ---

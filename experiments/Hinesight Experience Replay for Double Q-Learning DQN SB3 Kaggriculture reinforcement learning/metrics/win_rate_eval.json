@@ -1,11 +1,18 @@
 {
-  "win_rate": 1.0,
-  "loss_rate": 0.0,
+  "opponent": "league",
+  "source": "ladder_eval.json",
+  "opponents_dir": "/Users/sweeden/kagg/opponents",
+  "n_opponents": 10,
+  "n_episodes_per_opponent": 10,
+  "win_rate": 0.0,
+  "loss_rate": 1.0,
   "tie_rate": 0.0,
-  "wins": 10,
-  "losses": 0,
+  "mean_opponent_win_rate": 0.0,
+  "wins": 0,
+  "losses": 100,
   "ties": 0,
-  "n_episodes": 10,
-  "max_steps": 720,
-  "turns_per_day": 72
+  "n_episodes": 100,
+  "opponents_cleared": 0,
+  "beats_all_opponents": false,
+  "win_rate_target": 0.5
 }

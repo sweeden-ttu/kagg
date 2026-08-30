@@ -63,7 +63,7 @@ _DRY_RUN_PHASES = {
     "bc_steps_per_epoch": 6,       # 4 — BC optimizer steps
     "total_episodes": 4,           # 5 — self-play episodes
     "learning_start_episodes": 3,  # 6 — warmup before learning
-    "n_eval_episodes": 2,          # 7 — win-rate eval vs baseline
+    "n_eval_episodes": 2,          # 7 — league ep/opponent if ladder_eval_episodes=0 (never random)
     "ladder_eval_episodes": 1,     # 8 — agent/ladder output (once)
 }
 

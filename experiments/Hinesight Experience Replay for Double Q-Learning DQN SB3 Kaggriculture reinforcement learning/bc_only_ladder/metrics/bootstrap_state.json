@@ -1,0 +1,59 @@
+{
+  "bootstrapped_dates": [
+    "2026-08-15"
+  ],
+  "runs": [
+    {
+      "new_days": [
+        "2026-08-15"
+      ],
+      "day_stats": [
+        {
+          "date": "2026-08-15",
+          "episodes": 26,
+          "transitions": 40264,
+          "buffer_seeded": 37388,
+          "bc_epoch_losses": [
+            1.1249693475166958,
+            0.7642242531975111
+          ],
+          "bc_final_loss": 0.7642242531975111,
+          "corpus_stats": {
+            "episode_count": 697,
+            "avg_score_mean": 3026.5300721305593,
+            "min_score_mean": 2998.797230956958,
+            "sum_score_mean": 6053.060144261119,
+            "score_margin_mean": 27.732841173601166,
+            "size_bytes_total": 21462110197,
+            "size_bytes_mean": 30792123.668579627
+          }
+        }
+      ],
+      "transitions_this_run": 40264,
+      "bc_final_loss": 0.7642242531975111
+    }
+  ],
+  "total_transitions": 40264,
+  "day_records": {
+    "2026-08-15": {
+      "date": "2026-08-15",
+      "episodes": 26,
+      "transitions": 40264,
+      "buffer_seeded": 37388,
+      "bc_epoch_losses": [
+        1.1249693475166958,
+        0.7642242531975111
+      ],
+      "bc_final_loss": 0.7642242531975111,
+      "corpus_stats": {
+        "episode_count": 697,
+        "avg_score_mean": 3026.5300721305593,
+        "min_score_mean": 2998.797230956958,
+        "sum_score_mean": 6053.060144261119,
+        "score_margin_mean": 27.732841173601166,
+        "size_bytes_total": 21462110197,
+        "size_bytes_mean": 30792123.668579627
+      }
+    }
+  }
+}

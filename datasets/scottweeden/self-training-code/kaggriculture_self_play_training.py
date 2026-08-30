@@ -39,10 +39,9 @@ try:
     )
     from eval_policy import (
         evaluate_ladder,
-        evaluate_win_rate,
-        random_baseline_policy,
         resolve_opponents_dir,
         save_eval_report,
+        win_rate_eval_from_ladder,
     )
     from path_b_bootstrap import (
         bootstrap_path_b_replay_buffer,
@@ -1147,10 +1146,17 @@ def train_self_play(total_episodes: int = 15,
     with open(dirs["root"] / "config.json", "w", encoding="utf-8") as fh:
         json.dump({**config, "last_completed_episode": start_episode}, fh, indent=2)
 
-    # Exploration parameter decay
-    eps_start = 1.0
+    # Exploration parameter decay. After BC, keep ε low so random
+    # self-play does not wipe the cloned policy before DQN can refine it.
+    eps_start = 0.25 if bc_loss_history else 1.0
     eps_end = 0.05
     eps_decay_steps = max(1, total_episodes - learning_start_episodes)
+    if bc_loss_history:
+        logger.info(
+            "BC completed (%d epoch losses); self-play eps_start=%.2f (was 1.0 without BC)",
+            len(bc_loss_history),
+            eps_start,
+        )
 
     # Initialize competitive self-play environment (Kaggle sim or offline mock).
     env = create_competitive_env(
@@ -1426,31 +1432,18 @@ def train_self_play(total_episodes: int = 15,
             market_indices = [int(market_seq[t].item()) for t in range(online_net.max_market_orders)]
         return decode_path_b_action(verb_idx, crop_idx, hands_indices, market_indices, obs)
 
-    if n_eval_episodes > 0:
-        try:
-            eval_stats = evaluate_win_rate(
-                _path_b_policy, random_baseline_policy,
-                n_episodes=n_eval_episodes,
-                max_steps=max_episode_steps,
-                base_seed=seed + 1000,
-                turns_per_day=turns_per_cycle,
-            )
-            save_eval_report(eval_stats, dirs["metrics"] / "win_rate_eval.json")
-            progress.record_eval("win_rate", eval_stats)
-            save_progress(dirs["root"], progress.state)
-            logger.info(
-                "Win-rate eval vs random baseline: %.2f (%d/%d)",
-                eval_stats["win_rate"], eval_stats["wins"], eval_stats["n_episodes"],
-            )
-        except Exception as exc:
-            logger.warning("Win-rate eval skipped: %s", exc)
-
-    if ladder_eval_episodes > 0:
+    # Post-training eval is league-only (``opponents/``). ``win_rate_eval.json`` is a
+    # thin aggregate of ``ladder_eval.json`` — never SB3-vs-env / random baseline.
+    episodes_per_opponent = (
+        ladder_eval_episodes if ladder_eval_episodes > 0 else n_eval_episodes
+    )
+    if episodes_per_opponent > 0:
         opp_root = resolve_opponents_dir(opponents_dir, code_src=code_src)
         if opp_root is None:
             logger.warning(
-                "ladder_eval_episodes=%d but opponents/ directory not found (opponents_dir=%r)",
-                ladder_eval_episodes,
+                "League eval requested (%d ep/opponent) but opponents/ not found "
+                "(opponents_dir=%r); skipping (no random baseline fallback)",
+                episodes_per_opponent,
                 opponents_dir,
             )
         else:
@@ -1459,7 +1452,7 @@ def train_self_play(total_episodes: int = 15,
                     _path_b_policy,
                     opponents_dir=str(opp_root),
                     code_src=code_src,
-                    n_episodes=ladder_eval_episodes,
+                    n_episodes=episodes_per_opponent,
                     max_steps=EPISODE_STEPS,
                     base_seed=seed + 2000,
                     win_rate_target=ladder_win_rate_target,
@@ -1469,11 +1462,25 @@ def train_self_play(total_episodes: int = 15,
                 with open(ladder_path, "w", encoding="utf-8") as fh:
                     json.dump(ladder_report, fh, indent=2)
                 progress.record_eval("ladder", ladder_report)
+
+                wr_summary = win_rate_eval_from_ladder(ladder_report)
+                save_eval_report(wr_summary, dirs["metrics"] / "win_rate_eval.json")
+                progress.record_eval("win_rate", wr_summary)
                 save_progress(dirs["root"], progress.state)
+
+                logger.info(
+                    "League win-rate summary: %.2f (%d/%d ep), cleared=%s/%s, beats_all=%s",
+                    wr_summary["win_rate"],
+                    wr_summary["wins"],
+                    wr_summary["n_episodes"],
+                    wr_summary.get("opponents_cleared"),
+                    wr_summary.get("n_opponents"),
+                    wr_summary.get("beats_all_opponents"),
+                )
                 logger.info(
                     "Ladder eval (%d opponents, %d ep each, target %.0f%%): beats_all=%s → %s",
                     len(ladder_report.get("results", {})),
-                    ladder_eval_episodes,
+                    episodes_per_opponent,
                     ladder_win_rate_target * 100,
                     ladder_report.get("beats_all_opponents"),
                     ladder_path,
@@ -1492,7 +1499,7 @@ def train_self_play(total_episodes: int = 15,
                         row.get("avg_p1_money", 0),
                     )
             except Exception as exc:
-                logger.warning("Ladder eval skipped: %s", exc)
+                logger.warning("Ladder / league win-rate eval skipped: %s", exc)
 
     agent_path = dirs["root"] / "agent.py"
     _export_path_b_agent(agent_path, dirs["root"], code_src=code_src)
@@ -1617,7 +1624,15 @@ def main() -> None:
             "(10×72=720). Competition ladder parity uses 24."
         ),
     )
-    parser.add_argument("--n-eval-episodes", type=int, default=5)
+    parser.add_argument(
+        "--n-eval-episodes",
+        type=int,
+        default=5,
+        help=(
+            "Episodes per league opponent when --ladder-eval-episodes is 0. "
+            "Never runs a random baseline; requires opponents/."
+        ),
+    )
     parser.add_argument(
         "--bootstrap-episodes",
         type=int,

@@ -737,7 +737,7 @@ class MetricsVisualizer:
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
     ) -> Optional[plt.Figure]:
-        """Plot rubric-aligned win-rate evaluation vs baseline."""
+        """Plot rubric-aligned win-rate evaluation (league aggregate)."""
         if not HAS_MATPLOTLIB:
             return None
         if exp_names is None:
@@ -767,7 +767,7 @@ class MetricsVisualizer:
         ax.set_xticklabels(labels, rotation=15, ha="right")
         ax.set_ylim(0, 1)
         ax.set_ylabel("Rate")
-        ax.set_title("Win Rate Eval vs Baseline (Rubric)")
+        ax.set_title("Win Rate Eval vs League (Rubric)")
         _legend_if_labeled(ax)
         ax.grid(True, axis="y", alpha=0.3)
 
@@ -876,7 +876,8 @@ class MetricsVisualizer:
                     f"  Win rate eval: win={win_rate_eval.get('win_rate', 0):.1%}, "
                     f"tie={win_rate_eval.get('tie_rate', 0):.1%}, "
                     f"loss={win_rate_eval.get('loss_rate', 0):.1%} "
-                    f"(n={win_rate_eval.get('n_episodes', '?')})"
+                    f"(n={win_rate_eval.get('n_episodes', '?')}"
+                    f"{', league' if win_rate_eval.get('opponent') == 'league' else ''})"
                 )
 
         print("\n" + "=" * 70)

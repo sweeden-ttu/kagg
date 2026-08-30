@@ -1,0 +1,83 @@
+Successfully imported Kaggriculture Path B components.
+2026-08-30 05:26:50,290 [INFO] kaggriculture_self_play_training: Experiment directory: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/bc_only_ladder
+2026-08-30 05:26:50,295 [DEBUG] kaggriculture_self_play_training: Verbose debug logging enabled
+2026-08-30 05:26:50,295 [DEBUG] kaggriculture_self_play_training: Training config: {
+  "experiment_dir": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/bc_only_ladder",
+  "seed": 42,
+  "device": "auto",
+  "total_episodes": 0,
+  "learning_start_episodes": 0,
+  "batch_size": 32,
+  "checkpoint_interval": 5,
+  "use_kaggle_env": true,
+  "kinematic_phase_a": 3,
+  "kinematic_phase_b": 4,
+  "kinematic_phase_c": 6,
+  "turns_per_cycle": 72,
+  "cycles_per_episode": 10,
+  "max_episode_steps": 720,
+  "n_eval_episodes": 5,
+  "bootstrap_episodes": null,
+  "bootstrap_transitions": 50000,
+  "data_dir": "/Users/sweeden/kagg/working/kaggle_episodes",
+  "download_bootstrap": false,
+  "bc_epochs": 20,
+  "bc_batch_size": 64,
+  "bc_steps_per_epoch": 300,
+  "buffer_capacity": 50000,
+  "metadata_path": "/Users/sweeden/kagg/working/kaggle_episodes/metadata.json",
+  "bootstrap_top_per_day": 40,
+  "bootstrap_passes": 1,
+  "bc_epochs_per_pass": 2,
+  "verbose": true,
+  "code_src": "/Users/sweeden/kagg/datasets/scottweeden/self-training-code",
+  "bootstrap_mode": "daily_incremental",
+  "bootstrap_days_per_run": 1,
+  "publish_code_dataset": false,
+  "opponents_dir": "/Users/sweeden/kagg/opponents",
+  "ladder_eval_episodes": 6,
+  "ladder_win_rate_target": 0.5,
+  "min_self_play_episodes": 0,
+  "timestamp": "2026-08-30T05:26:50.290170",
+  "resumed_from": null
+}
+2026-08-30 05:26:50,313 [INFO] kaggriculture_self_play_training: Self-play pipeline running on device: mps
+2026-08-30 05:26:50,411 [DEBUG] kaggriculture_self_play_training: Model init: HierarchicalDQNBranching params=1716765 (1.72M) buffer_capacity=50000
+[Self-Play] Saved agent checkpoint to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/bc_only_ladder/checkpoints/checkpoint_ep_0.pt
+[Self-Play] Opponent pool size: 1
+2026-08-30 05:26:51,192 [DEBUG] kaggriculture_self_play_training: Bootstrap phase: mode=daily_incremental episodes=None passes=1 transitions=50000 metadata=/Users/sweeden/kagg/working/kaggle_episodes/metadata.json
+2026-08-30 05:26:51,194 [INFO] path_b_bootstrap: Incremental daily bootstrap: adding 1 day(s) ['2026-08-15'] (0/2 dates already done)
+2026-08-30 05:26:51,197 [INFO] path_b_bootstrap: Bootstrap day 2026-08-15: 26 episodes (streaming BC, top_per_day=40)
+2026-08-30 05:26:51,197 [INFO] path_b_bootstrap: Streaming BC over 26 episode files (epochs=2, batch=64, steps/epoch=300)
+2026-08-30 05:26:52,383 [DEBUG] path_b_bootstrap: BC stream epoch 1/2 step 1 | loss=2.43644 | file=93255405.json
+2026-08-30 05:26:52,417 [DEBUG] path_b_bootstrap: BC stream epoch 1/2 step 2 | loss=2.41058 | file=93255405.json
+2026-08-30 05:26:52,447 [DEBUG] path_b_bootstrap: BC stream epoch 1/2 step 3 | loss=2.38730 | file=93255405.json
+2026-08-30 05:26:56,486 [DEBUG] path_b_bootstrap: BC stream epoch 1/2 step 100 | loss=1.01396 | file=93230335.json
+2026-08-30 05:27:00,682 [DEBUG] path_b_bootstrap: BC stream epoch 1/2 step 200 | loss=1.13265 | file=93294734.json
+2026-08-30 05:27:05,234 [DEBUG] path_b_bootstrap: BC stream epoch 1/2 step 300 | loss=0.71978 | file=93273309.json
+2026-08-30 05:27:05,234 [INFO] path_b_bootstrap: BC stream epoch 1/2 | steps=300 | avg loss: 1.12497
+2026-08-30 05:27:05,532 [DEBUG] path_b_bootstrap: BC stream epoch 2/2 step 1 | loss=0.75059 | file=93157132.json
+2026-08-30 05:27:05,562 [DEBUG] path_b_bootstrap: BC stream epoch 2/2 step 2 | loss=0.56389 | file=93157132.json
+2026-08-30 05:27:05,592 [DEBUG] path_b_bootstrap: BC stream epoch 2/2 step 3 | loss=0.59467 | file=93157132.json
+2026-08-30 05:27:09,565 [DEBUG] path_b_bootstrap: BC stream epoch 2/2 step 100 | loss=0.71804 | file=93148715.json
+2026-08-30 05:27:13,622 [DEBUG] path_b_bootstrap: BC stream epoch 2/2 step 200 | loss=0.92464 | file=93339612.json
+2026-08-30 05:27:17,990 [DEBUG] path_b_bootstrap: BC stream epoch 2/2 step 300 | loss=0.68139 | file=93364654.json
+2026-08-30 05:27:17,990 [INFO] path_b_bootstrap: BC stream epoch 2/2 | steps=300 | avg loss: 0.76422
+2026-08-30 05:27:26,078 [INFO] path_b_bootstrap: Bootstrap state saved: 1 days bootstrapped → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/bc_only_ladder/metrics/bootstrap_state.json
+2026-08-30 05:27:26,079 [INFO] path_b_bootstrap: Marked day bootstrapped: 2026-08-15 (1 days total)
+2026-08-30 05:27:26,079 [INFO] path_b_bootstrap: Bootstrap state saved: 1 days bootstrapped → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/bc_only_ladder/metrics/bootstrap_state.json
+2026-08-30 05:27:26,080 [INFO] kaggriculture_self_play_training: Replay buffer size after bootstrap: 25000
+2026-08-30 05:27:26,084 [INFO] path_b_bootstrap: Starting BC pretrain: 20 epochs, batch_size=64, buffer=25000, steps/epoch=300
+2026-08-30 05:27:26,268 [DEBUG] path_b_bootstrap: BC epoch 1/20 step 1/300 | loss=0.83372 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:26,302 [DEBUG] path_b_bootstrap: BC epoch 1/20 step 2/300 | loss=0.78091 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:26,345 [DEBUG] path_b_bootstrap: BC epoch 1/20 step 3/300 | loss=0.85952 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:27,951 [DEBUG] path_b_bootstrap: BC epoch 1/20 step 51/300 | loss=0.67047 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:29,563 [DEBUG] path_b_bootstrap: BC epoch 1/20 step 101/300 | loss=0.66199 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:31,186 [DEBUG] path_b_bootstrap: BC epoch 1/20 step 151/300 | loss=0.64636 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:32,761 [DEBUG] path_b_bootstrap: BC epoch 1/20 step 201/300 | loss=0.65583 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:34,320 [DEBUG] path_b_bootstrap: BC epoch 1/20 step 251/300 | loss=0.58816 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:35,781 [DEBUG] path_b_bootstrap: BC epoch 1/20 step 300/300 | loss=0.62889 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:35,782 [INFO] path_b_bootstrap: BC epoch 1/20 | avg loss: 0.67351
+2026-08-30 05:27:35,812 [DEBUG] path_b_bootstrap: BC epoch 2/20 step 1/300 | loss=0.61156 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:35,842 [DEBUG] path_b_bootstrap: BC epoch 2/20 step 2/300 | loss=0.62815 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:27:35,873 [DEBUG] path_b_bootstrap: BC epoch 2/20 step 3/300 | loss=0.61252 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
