@@ -22,6 +22,8 @@ from kaggriculture_adapter import (
     farm_tour_move_index,
     get_action_masks,
     land_buy_wanted,
+    season_phase,
+    sell_orders_wanted,
     target_plant_count,
 )
 
@@ -390,7 +392,12 @@ def prefer_farm_invest_actions(
         )
     else:
         plant_cap = int(target_plants)
-    want_more_plants = plant_count < plant_cap
+    phase = season_phase(observation) if observation is not None else {
+        "investing": True,
+        "planting": True,
+        "liquidating": False,
+    }
+    want_more_plants = bool(phase["planting"]) and plant_count < plant_cap
 
     grow_legal = any(
         idx < f_mask.shape[-1] and bool(f_mask[..., idx]) for idx in _GROW_VERBS
@@ -477,9 +484,11 @@ def prefer_farm_invest_actions(
         want_land = bool(
             land_legal and observation is not None and land_buy_wanted(observation)
         )
-        # Liquidate shed before expanding: Hana-style chunked sells (up to 3).
+        # Liquidate shed before expanding: chunked sells (scale / late dump).
         sell_slots = 0
-        if shed_count > 0:
+        if observation is not None:
+            sell_slots = int(sell_orders_wanted(observation))
+        elif shed_count > 0:
             sell_slots = 1
             if shed_count >= 30:
                 sell_slots = 2
@@ -497,6 +506,9 @@ def prefer_farm_invest_actions(
         want_seeds = want_more_plants and seed_count < max(
             1, plant_cap - plant_count, int(seed_surplus_threshold)
         )
+        # Late liquidate: never restock seed; prefer sell slots.
+        if phase.get("liquidating"):
+            want_seeds = False
         sell = MARKET_ACTIONS["SELL"]
         for t in range(n_orders):
             is_hire_slot = hire_todo > 0 and hire_start <= t < hire_start + hire_todo

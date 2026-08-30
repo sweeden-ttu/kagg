@@ -3,10 +3,10 @@
   "n_episodes_per_opponent": 10,
   "n_opponents": 10,
   "n_episodes_total": 100,
-  "wins_total": 30,
-  "losses_total": 70,
+  "wins_total": 47,
+  "losses_total": 53,
   "ties_total": 0,
-  "opponents_cleared": 3,
+  "opponents_cleared": 5,
   "win_rate_target": 0.5,
   "beats_all_opponents": false,
   "results": {
@@ -20,7 +20,7 @@
       "n_episodes": 10,
       "max_steps": 720,
       "turns_per_day": 24,
-      "avg_p0_money": 12424.9,
+      "avg_p0_money": 12354.4,
       "avg_p1_money": 3000.0,
       "cleared": true
     },
@@ -34,8 +34,8 @@
       "n_episodes": 10,
       "max_steps": 720,
       "turns_per_day": 24,
-      "avg_p0_money": 10610.6,
-      "avg_p1_money": 5497.1,
+      "avg_p0_money": 11065.1,
+      "avg_p1_money": 5721.4,
       "cleared": true
     },
     "rotation_rosa": {
@@ -48,37 +48,37 @@
       "n_episodes": 10,
       "max_steps": 720,
       "turns_per_day": 24,
-      "avg_p0_money": 9949.6,
-      "avg_p1_money": 9664.8,
+      "avg_p0_money": 9959.2,
+      "avg_p1_money": 9608.6,
       "cleared": true
     },
     "homestead_hana": {
-      "win_rate": 0.0,
-      "loss_rate": 1.0,
+      "win_rate": 0.9,
+      "loss_rate": 0.1,
       "tie_rate": 0.0,
-      "wins": 0,
-      "losses": 10,
+      "wins": 9,
+      "losses": 1,
       "ties": 0,
       "n_episodes": 10,
       "max_steps": 720,
       "turns_per_day": 24,
-      "avg_p0_money": 10039.4,
-      "avg_p1_money": 12266.7,
-      "cleared": false
+      "avg_p0_money": 14349.6,
+      "avg_p1_money": 10958.3,
+      "cleared": true
     },
     "melon_mateo": {
-      "win_rate": 0.0,
-      "loss_rate": 1.0,
+      "win_rate": 0.7,
+      "loss_rate": 0.3,
       "tie_rate": 0.0,
-      "wins": 0,
-      "losses": 10,
+      "wins": 7,
+      "losses": 3,
       "ties": 0,
       "n_episodes": 10,
       "max_steps": 720,
       "turns_per_day": 24,
-      "avg_p0_money": 10384.9,
-      "avg_p1_money": 16391.9,
-      "cleared": false
+      "avg_p0_money": 17025.1,
+      "avg_p1_money": 17513.7,
+      "cleared": true
     },
     "rancher_rita": {
       "win_rate": 0.2,
@@ -90,8 +90,8 @@
       "n_episodes": 10,
       "max_steps": 720,
       "turns_per_day": 24,
-      "avg_p0_money": 11057.8,
-      "avg_p1_money": 29781.2,
+      "avg_p0_money": 14107.4,
+      "avg_p1_money": 32354.9,
       "cleared": false
     },
     "broker_bea": {
@@ -104,8 +104,8 @@
       "n_episodes": 10,
       "max_steps": 720,
       "turns_per_day": 24,
-      "avg_p0_money": 14997.4,
-      "avg_p1_money": 47214.7,
+      "avg_p0_money": 19693.5,
+      "avg_p1_money": 44497.3,
       "cleared": false
     },
     "ledger_lena": {
@@ -118,8 +118,8 @@
       "n_episodes": 10,
       "max_steps": 720,
       "turns_per_day": 24,
-      "avg_p0_money": 15043.5,
-      "avg_p1_money": 46427.9,
+      "avg_p0_money": 19605.5,
+      "avg_p1_money": 43738.2,
       "cleared": false
     },
     "slotter_silas": {
@@ -132,22 +132,22 @@
       "n_episodes": 10,
       "max_steps": 720,
       "turns_per_day": 24,
-      "avg_p0_money": 15048.4,
-      "avg_p1_money": 45671.6,
+      "avg_p0_money": 19731.1,
+      "avg_p1_money": 43118.2,
       "cleared": false
     },
     "closer_cleo": {
-      "win_rate": 0.0,
-      "loss_rate": 1.0,
+      "win_rate": 0.1,
+      "loss_rate": 0.9,
       "tie_rate": 0.0,
-      "wins": 0,
-      "losses": 10,
+      "wins": 1,
+      "losses": 9,
       "ties": 0,
       "n_episodes": 10,
       "max_steps": 720,
       "turns_per_day": 24,
-      "avg_p0_money": 14129.3,
-      "avg_p1_money": 31497.6,
+      "avg_p0_money": 17992.5,
+      "avg_p1_money": 27290.3,
       "cleared": false
     }
   }

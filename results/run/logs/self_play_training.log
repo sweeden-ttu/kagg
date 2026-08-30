@@ -1,0 +1,891 @@
+2026-08-30 10:05:31,834 [INFO] kaggriculture_self_play_training: Experiment directory: /kaggle/working/run
+2026-08-30 10:05:31,835 [DEBUG] kaggriculture_self_play_training: Verbose debug logging enabled
+2026-08-30 10:05:31,836 [DEBUG] kaggriculture_self_play_training: Training config: {
+  "experiment_dir": "/kaggle/working/run",
+  "seed": 42,
+  "device": "auto",
+  "total_episodes": 25,
+  "learning_start_episodes": 5,
+  "batch_size": 32,
+  "checkpoint_interval": 10,
+  "use_kaggle_env": true,
+  "max_episode_steps": 720,
+  "n_eval_episodes": 10,
+  "bootstrap_episodes": null,
+  "bootstrap_transitions": null,
+  "data_dir": "/kaggle/working/kaggle_episodes",
+  "download_bootstrap": false,
+  "bc_epochs": 0,
+  "bc_batch_size": 64,
+  "bc_steps_per_epoch": null,
+  "buffer_capacity": 200000,
+  "metadata_path": "/kaggle/working/kaggle_episodes/metadata.json",
+  "bootstrap_top_per_day": null,
+  "bootstrap_passes": 1,
+  "bc_epochs_per_pass": 1,
+  "verbose": true,
+  "code_src": "/kaggle/input/datasets/scottweeden/kaggriculture-self-training-code",
+  "bootstrap_mode": "daily_incremental",
+  "bootstrap_days_per_run": 5,
+  "publish_code_dataset": true,
+  "timestamp": "2026-08-30T10:05:31.833886",
+  "resumed_from": "/kaggle/working/run/checkpoints/training_state_latest.pt"
+}
+2026-08-30 10:05:31,838 [INFO] kaggriculture_self_play_training: Self-play pipeline running on device: cuda
+2026-08-30 10:05:32,180 [DEBUG] kaggriculture_self_play_training: Model init: HierarchicalDQNBranching params=1716765 (1.72M) buffer_capacity=200000
+2026-08-30 10:05:49,634 [INFO] kaggriculture_self_play_training: Resumed full training state from /kaggle/working/run/checkpoints/training_state_latest.pt (completed episode 25, buffer=200000, pool=0)
+2026-08-30 10:05:49,639 [DEBUG] kaggriculture_self_play_training: Bootstrap phase: mode=daily_incremental episodes=None passes=1 transitions=None metadata=/kaggle/working/kaggle_episodes/metadata.json
+2026-08-30 10:05:49,737 [INFO] path_b_bootstrap: Incremental daily bootstrap: adding 5 day(s) ['2026-08-15', '2026-08-16', '2026-08-17', '2026-08-18', '2026-08-19'] (16/29 dates already done)
+2026-08-30 10:05:52,649 [INFO] path_b_bootstrap: Bootstrap day 2026-08-15: 697 episodes (all transitions, streaming BC)
+2026-08-30 10:05:52,650 [INFO] path_b_bootstrap: Streaming BC over 697 episode files (epochs=1, batch=64, steps/epoch=all)
+2026-08-30 10:05:54,333 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1 | loss=0.01047 | file=93187524.json
+2026-08-30 10:05:54,367 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2 | loss=0.01317 | file=93187524.json
+2026-08-30 10:05:54,398 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3 | loss=0.06796 | file=93187524.json
+2026-08-30 10:06:00,882 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 100 | loss=0.15730 | file=93333190.json
+2026-08-30 10:06:07,564 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 200 | loss=0.45665 | file=93385087.json
+2026-08-30 10:06:14,905 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 300 | loss=0.02401 | file=93179369.json
+2026-08-30 10:06:21,380 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 400 | loss=0.64253 | file=93435805.json
+2026-08-30 10:06:28,825 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 500 | loss=0.02406 | file=93216034.json
+2026-08-30 10:06:35,345 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 600 | loss=0.09859 | file=93265243.json
+2026-08-30 10:06:42,599 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 700 | loss=0.05827 | file=93368974.json
+2026-08-30 10:06:49,164 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 800 | loss=0.10613 | file=93247313.json
+2026-08-30 10:06:56,762 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 900 | loss=0.00825 | file=93167916.json
+2026-08-30 10:07:03,384 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1000 | loss=0.17230 | file=93199099.json
+2026-08-30 10:07:09,901 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1100 | loss=0.02181 | file=93163379.json
+2026-08-30 10:07:17,364 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1200 | loss=0.02686 | file=93141391.json
+2026-08-30 10:07:24,018 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1300 | loss=0.08397 | file=93270542.json
+2026-08-30 10:07:31,449 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1400 | loss=0.03541 | file=93233819.json
+2026-08-30 10:07:37,835 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1500 | loss=0.42451 | file=93377165.json
+2026-08-30 10:07:45,689 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1600 | loss=0.05815 | file=93429566.json
+2026-08-30 10:07:52,149 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1700 | loss=0.41450 | file=93408299.json
+2026-08-30 10:07:59,401 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1800 | loss=0.09342 | file=93203626.json
+2026-08-30 10:08:06,126 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1900 | loss=0.03591 | file=93435802.json
+2026-08-30 10:08:13,526 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2000 | loss=0.10332 | file=93365382.json
+2026-08-30 10:08:20,055 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2100 | loss=0.20863 | file=93360901.json
+2026-08-30 10:08:26,404 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2200 | loss=0.36550 | file=93249113.json
+2026-08-30 10:08:34,211 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2300 | loss=0.05832 | file=93387735.json
+2026-08-30 10:08:40,568 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2400 | loss=0.42991 | file=93149709.json
+2026-08-30 10:08:48,445 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2500 | loss=0.10747 | file=93377017.json
+2026-08-30 10:08:54,939 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2600 | loss=0.04294 | file=93192862.json
+2026-08-30 10:09:02,318 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2700 | loss=0.02022 | file=93315154.json
+2026-08-30 10:09:08,955 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2800 | loss=0.02998 | file=93141394.json
+2026-08-30 10:09:16,781 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2900 | loss=0.00774 | file=93300995.json
+2026-08-30 10:09:23,252 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3000 | loss=0.02344 | file=93371676.json
+2026-08-30 10:09:29,875 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3100 | loss=0.06084 | file=93393994.json
+2026-08-30 10:09:37,323 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3200 | loss=0.00791 | file=93223174.json
+2026-08-30 10:09:43,888 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3300 | loss=0.11268 | file=93311715.json
+2026-08-30 10:09:51,505 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3400 | loss=0.00575 | file=93223172.json
+2026-08-30 10:09:58,102 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3500 | loss=0.05145 | file=93449886.json
+2026-08-30 10:10:05,712 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3600 | loss=0.03339 | file=93195632.json
+2026-08-30 10:10:12,257 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3700 | loss=0.19385 | file=93410880.json
+2026-08-30 10:10:19,749 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3800 | loss=0.00805 | file=93175809.json
+2026-08-30 10:10:26,550 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3900 | loss=0.30144 | file=93364654.json
+2026-08-30 10:10:34,036 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4000 | loss=0.08412 | file=93191035.json
+2026-08-30 10:10:40,452 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4100 | loss=0.04209 | file=93145941.json
+2026-08-30 10:10:47,088 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4200 | loss=0.28189 | file=93327766.json
+2026-08-30 10:10:54,447 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4300 | loss=0.02354 | file=93307287.json
+2026-08-30 10:11:00,970 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4400 | loss=0.12086 | file=93240191.json
+2026-08-30 10:11:08,424 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4500 | loss=0.17293 | file=93454366.json
+2026-08-30 10:11:14,915 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4600 | loss=0.05056 | file=93413514.json
+2026-08-30 10:11:22,134 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4700 | loss=0.01894 | file=93240190.json
+2026-08-30 10:11:28,593 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4800 | loss=0.06408 | file=93375256.json
+2026-08-30 10:11:36,223 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4900 | loss=0.00470 | file=93241971.json
+2026-08-30 10:11:42,629 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5000 | loss=0.03970 | file=93177719.json
+2026-08-30 10:11:49,189 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5100 | loss=0.03202 | file=93152445.json
+2026-08-30 10:11:56,905 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5200 | loss=0.05886 | file=93286739.json
+2026-08-30 10:12:03,596 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5300 | loss=0.11038 | file=93193735.json
+2026-08-30 10:12:11,000 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5400 | loss=0.05295 | file=93378917.json
+2026-08-30 10:12:17,454 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5500 | loss=0.06661 | file=93387827.json
+2026-08-30 10:12:24,641 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5600 | loss=0.08500 | file=93250845.json
+2026-08-30 10:12:31,171 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5700 | loss=0.02818 | file=93167915.json
+2026-08-30 10:12:38,570 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5800 | loss=0.01816 | file=93362691.json
+2026-08-30 10:12:45,190 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5900 | loss=0.41569 | file=93309917.json
+2026-08-30 10:12:52,439 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6000 | loss=0.12036 | file=93367326.json
+2026-08-30 10:12:58,884 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6100 | loss=0.02055 | file=93369832.json
+2026-08-30 10:13:05,288 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6200 | loss=0.03603 | file=93377065.json
+2026-08-30 10:13:12,614 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6300 | loss=0.00835 | file=93186570.json
+2026-08-30 10:13:19,169 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6400 | loss=0.26953 | file=93429562.json
+2026-08-30 10:13:26,559 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6500 | loss=0.01968 | file=93183137.json
+2026-08-30 10:13:33,043 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6600 | loss=0.26771 | file=93321450.json
+2026-08-30 10:13:40,444 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6700 | loss=0.03382 | file=93373458.json
+2026-08-30 10:13:46,905 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6800 | loss=0.08811 | file=93256988.json
+2026-08-30 10:13:54,554 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6900 | loss=0.00773 | file=93207164.json
+2026-08-30 10:14:01,043 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7000 | loss=0.47727 | file=93415441.json
+2026-08-30 10:14:07,584 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7100 | loss=0.30401 | file=93424272.json
+2026-08-30 10:14:14,857 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7200 | loss=0.03794 | file=93417181.json
+2026-08-30 10:14:21,326 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7300 | loss=0.12769 | file=93385112.json
+2026-08-30 10:14:28,829 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7400 | loss=0.41337 | file=93260632.json
+2026-08-30 10:14:35,215 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7500 | loss=0.09101 | file=93429563.json
+2026-08-30 10:14:42,565 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7600 | loss=0.01543 | file=93372520.json
+2026-08-30 10:14:49,014 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7700 | loss=0.33627 | file=93255410.json
+2026-08-30 10:14:56,333 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7800 | loss=0.00494 | file=93366275.json
+2026-08-30 10:15:03,090 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7900 | loss=0.03621 | file=93177786.json
+2026-08-30 10:15:10,466 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8000 | loss=0.00594 | file=93269642.json
+2026-08-30 10:15:16,887 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8100 | loss=0.04781 | file=93190148.json
+2026-08-30 10:15:23,267 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8200 | loss=0.38253 | file=93238403.json
+2026-08-30 10:15:30,725 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8300 | loss=0.02234 | file=93186543.json
+2026-08-30 10:15:37,289 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8400 | loss=0.03466 | file=93250869.json
+2026-08-30 10:15:44,734 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8500 | loss=0.34519 | file=93316221.json
+2026-08-30 10:15:51,178 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8600 | loss=0.40037 | file=93238404.json
+2026-08-30 10:15:58,590 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8700 | loss=0.03373 | file=93246387.json
+2026-08-30 10:16:05,006 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8800 | loss=0.06635 | file=93446370.json
+2026-08-30 10:16:12,747 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8900 | loss=0.01242 | file=93455373.json
+2026-08-30 10:16:19,368 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9000 | loss=0.05313 | file=93262439.json
+2026-08-30 10:16:26,865 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9100 | loss=0.03447 | file=93361787.json
+2026-08-30 10:16:33,385 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9200 | loss=0.01553 | file=93385977.json
+2026-08-30 10:16:39,725 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9300 | loss=0.37550 | file=93285796.json
+2026-08-30 10:16:47,094 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9400 | loss=0.09777 | file=93194769.json
+2026-08-30 10:16:53,619 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9500 | loss=0.04678 | file=93402966.json
+2026-08-30 10:17:00,893 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9600 | loss=0.01860 | file=93314410.json
+2026-08-30 10:17:07,474 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9700 | loss=0.03615 | file=93441986.json
+2026-08-30 10:17:14,849 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9800 | loss=0.01008 | file=93272328.json
+2026-08-30 10:17:21,512 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9900 | loss=0.05104 | file=93366284.json
+2026-08-30 10:17:28,796 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10000 | loss=0.00493 | file=93457063.json
+2026-08-30 10:17:35,323 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10100 | loss=0.01392 | file=93217869.json
+2026-08-30 10:17:41,837 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10200 | loss=0.43742 | file=93212580.json
+2026-08-30 10:17:49,228 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10300 | loss=0.01106 | file=93187463.json
+2026-08-30 10:17:55,756 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10400 | loss=0.22883 | file=93316972.json
+2026-08-30 10:18:03,115 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10500 | loss=0.04688 | file=93454357.json
+2026-08-30 10:18:09,600 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10600 | loss=0.42288 | file=93294733.json
+2026-08-30 10:18:16,973 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10700 | loss=0.01590 | file=93323251.json
+2026-08-30 10:18:23,406 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10800 | loss=0.04164 | file=93203587.json
+2026-08-30 10:18:30,929 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10900 | loss=0.01160 | file=93233838.json
+2026-08-30 10:18:37,469 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11000 | loss=0.02174 | file=93377948.json
+2026-08-30 10:18:44,830 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11100 | loss=0.05908 | file=93454355.json
+2026-08-30 10:18:51,250 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11200 | loss=0.03245 | file=93197332.json
+2026-08-30 10:18:57,682 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11300 | loss=0.02935 | file=93301876.json
+2026-08-30 10:19:04,985 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11400 | loss=0.03916 | file=93187425.json
+2026-08-30 10:19:11,522 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11500 | loss=0.09974 | file=93273263.json
+2026-08-30 10:19:18,971 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11600 | loss=0.03340 | file=93173198.json
+2026-08-30 10:19:25,446 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11700 | loss=0.02494 | file=93267926.json
+2026-08-30 10:19:32,713 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11800 | loss=0.01599 | file=93283193.json
+2026-08-30 10:19:39,348 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11900 | loss=0.02811 | file=93437523.json
+2026-08-30 10:19:46,662 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12000 | loss=0.00642 | file=93273309.json
+2026-08-30 10:19:53,220 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12100 | loss=0.01733 | file=93242771.json
+2026-08-30 10:19:59,619 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12200 | loss=0.27590 | file=93440198.json
+2026-08-30 10:20:07,054 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12300 | loss=0.11241 | file=93327883.json
+2026-08-30 10:20:13,487 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12400 | loss=0.10742 | file=93431301.json
+2026-08-30 10:20:20,910 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12500 | loss=0.04020 | file=93152447.json
+2026-08-30 10:20:27,279 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12600 | loss=0.03455 | file=93158912.json
+2026-08-30 10:20:34,550 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12700 | loss=0.02312 | file=93402067.json
+2026-08-30 10:20:40,968 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12800 | loss=0.01371 | file=93233817.json
+2026-08-30 10:20:48,524 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12900 | loss=0.04419 | file=93352109.json
+2026-08-30 10:20:54,981 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13000 | loss=0.15387 | file=93399363.json
+2026-08-30 10:21:02,283 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13100 | loss=0.05208 | file=93361091.json
+2026-08-30 10:21:08,650 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13200 | loss=0.04414 | file=93247306.json
+2026-08-30 10:21:15,111 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13300 | loss=0.07337 | file=93292955.json
+2026-08-30 10:21:22,371 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13400 | loss=0.03009 | file=93388750.json
+2026-08-30 10:21:28,859 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13500 | loss=0.08353 | file=93196422.json
+2026-08-30 10:21:36,179 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13600 | loss=0.00759 | file=93221406.json
+2026-08-30 10:21:42,540 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13700 | loss=0.08234 | file=93237512.json
+2026-08-30 10:21:49,848 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13800 | loss=0.02068 | file=93395842.json
+2026-08-30 10:21:56,542 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13900 | loss=0.02888 | file=93166116.json
+2026-08-30 10:22:03,873 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14000 | loss=0.00479 | file=93386845.json
+2026-08-30 10:22:10,269 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14100 | loss=0.02798 | file=93386875.json
+2026-08-30 10:22:16,796 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14200 | loss=0.02082 | file=93216134.json
+2026-08-30 10:22:24,155 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14300 | loss=0.03080 | file=93417177.json
+2026-08-30 10:22:30,609 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14400 | loss=0.04927 | file=93182067.json
+2026-08-30 10:22:37,924 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14500 | loss=0.03741 | file=93256106.json
+2026-08-30 10:22:44,302 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14600 | loss=0.39962 | file=93284117.json
+2026-08-30 10:22:51,639 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14700 | loss=0.00778 | file=93454364.json
+2026-08-30 10:22:58,164 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14800 | loss=0.02394 | file=93258936.json
+2026-08-30 10:23:05,954 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14900 | loss=0.01156 | file=93457926.json
+2026-08-30 10:23:12,394 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15000 | loss=0.06301 | file=93348467.json
+2026-08-30 10:23:20,015 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15100 | loss=0.05659 | file=93352116.json
+2026-08-30 10:23:26,461 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15200 | loss=0.06067 | file=93184704.json
+2026-08-30 10:23:32,961 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15300 | loss=0.04734 | file=93443694.json
+2026-08-30 10:23:40,466 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15400 | loss=0.00492 | file=93376150.json
+2026-08-30 10:23:46,957 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15500 | loss=0.02546 | file=93191954.json
+2026-08-30 10:23:54,740 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15600 | loss=0.44647 | file=93435806.json
+2026-08-30 10:23:58,261 [INFO] path_b_bootstrap: BC stream epoch 1/1 | steps=15660 | avg loss: 0.10334
+2026-08-30 10:24:19,516 [INFO] path_b_bootstrap: Bootstrap state saved: 17 days bootstrapped → /kaggle/working/run/metrics/bootstrap_state.json
+2026-08-30 10:24:19,517 [INFO] path_b_bootstrap: Marked day bootstrapped: 2026-08-15 (17 days total)
+2026-08-30 10:24:22,186 [INFO] path_b_bootstrap: Bootstrap day 2026-08-16: 699 episodes (all transitions, streaming BC)
+2026-08-30 10:24:22,187 [INFO] path_b_bootstrap: Streaming BC over 699 episode files (epochs=1, batch=64, steps/epoch=all)
+2026-08-30 10:24:23,050 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1 | loss=0.01368 | file=93710572.json
+2026-08-30 10:24:23,080 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2 | loss=0.00603 | file=93710572.json
+2026-08-30 10:24:23,111 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3 | loss=0.07204 | file=93710572.json
+2026-08-30 10:24:29,507 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 100 | loss=0.04620 | file=93665725.json
+2026-08-30 10:24:36,048 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 200 | loss=0.21609 | file=93664804.json
+2026-08-30 10:24:43,360 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 300 | loss=0.04360 | file=93497436.json
+2026-08-30 10:24:49,832 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 400 | loss=0.52104 | file=93532889.json
+2026-08-30 10:24:57,264 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 500 | loss=0.06160 | file=93751677.json
+2026-08-30 10:25:03,684 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 600 | loss=0.37041 | file=93524843.json
+2026-08-30 10:25:10,966 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 700 | loss=0.00571 | file=93702439.json
+2026-08-30 10:25:17,583 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 800 | loss=0.33668 | file=93523190.json
+2026-08-30 10:25:24,835 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 900 | loss=0.00811 | file=93497438.json
+2026-08-30 10:25:31,200 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1000 | loss=0.23717 | file=93719514.json
+2026-08-30 10:25:37,655 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1100 | loss=0.13475 | file=93661018.json
+2026-08-30 10:25:44,874 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1200 | loss=0.02404 | file=93728489.json
+2026-08-30 10:25:51,231 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1300 | loss=0.06064 | file=93550036.json
+2026-08-30 10:25:58,583 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1400 | loss=0.11431 | file=93488444.json
+2026-08-30 10:26:05,234 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1500 | loss=0.05234 | file=93507167.json
+2026-08-30 10:26:12,521 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1600 | loss=0.00962 | file=93523189.json
+2026-08-30 10:26:18,986 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1700 | loss=0.14328 | file=93720305.json
+2026-08-30 10:26:26,526 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1800 | loss=0.02680 | file=93690764.json
+2026-08-30 10:26:32,985 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1900 | loss=0.14546 | file=93525879.json
+2026-08-30 10:26:40,283 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2000 | loss=0.14069 | file=93559774.json
+2026-08-30 10:26:46,705 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2100 | loss=0.05037 | file=93765012.json
+2026-08-30 10:26:53,071 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2200 | loss=0.33062 | file=93756989.json
+2026-08-30 10:27:00,490 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2300 | loss=0.04880 | file=93664795.json
+2026-08-30 10:27:06,843 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2400 | loss=0.13446 | file=93492981.json
+2026-08-30 10:27:14,385 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2500 | loss=0.01462 | file=93502804.json
+2026-08-30 10:27:20,716 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2600 | loss=0.03058 | file=93711396.json
+2026-08-30 10:27:27,942 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2700 | loss=0.01097 | file=93672859.json
+2026-08-30 10:27:34,460 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2800 | loss=0.10355 | file=93689894.json
+2026-08-30 10:27:41,687 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2900 | loss=0.00246 | file=93659201.json
+2026-08-30 10:27:48,076 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3000 | loss=0.01845 | file=93468066.json
+2026-08-30 10:27:54,539 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3100 | loss=0.46083 | file=93711398.json
+2026-08-30 10:28:01,833 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3200 | loss=0.09754 | file=93572408.json
+2026-08-30 10:28:08,106 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3300 | loss=0.17263 | file=93726595.json
+2026-08-30 10:28:15,500 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3400 | loss=0.23012 | file=93492941.json
+2026-08-30 10:28:22,152 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3500 | loss=0.13327 | file=93524019.json
+2026-08-30 10:28:29,362 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3600 | loss=0.01590 | file=93537426.json
+2026-08-30 10:28:35,958 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3700 | loss=0.31443 | file=93653980.json
+2026-08-30 10:28:43,389 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3800 | loss=0.03475 | file=93541810.json
+2026-08-30 10:28:49,944 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3900 | loss=0.42168 | file=93773122.json
+2026-08-30 10:28:57,184 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4000 | loss=0.20355 | file=93756971.json
+2026-08-30 10:29:03,620 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4100 | loss=0.03619 | file=93471608.json
+2026-08-30 10:29:10,008 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4200 | loss=0.04972 | file=93681025.json
+2026-08-30 10:29:17,380 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4300 | loss=0.11071 | file=93512531.json
+2026-08-30 10:29:23,740 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4400 | loss=0.17968 | file=93548228.json
+2026-08-30 10:29:31,244 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4500 | loss=0.02358 | file=93475912.json
+2026-08-30 10:29:37,751 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4600 | loss=0.05823 | file=93568774.json
+2026-08-30 10:29:45,485 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4700 | loss=0.01500 | file=93640461.json
+2026-08-30 10:29:52,050 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4800 | loss=0.37299 | file=93533772.json
+2026-08-30 10:29:59,752 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4900 | loss=0.02179 | file=93659313.json
+2026-08-30 10:30:06,317 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5000 | loss=0.05144 | file=93716695.json
+2026-08-30 10:30:12,680 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5100 | loss=0.06006 | file=93514271.json
+2026-08-30 10:30:20,015 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5200 | loss=0.20435 | file=93516853.json
+2026-08-30 10:30:26,349 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5300 | loss=0.46242 | file=93514993.json
+2026-08-30 10:30:33,653 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5400 | loss=0.01763 | file=93527721.json
+2026-08-30 10:30:40,362 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5500 | loss=0.07413 | file=93761418.json
+2026-08-30 10:30:47,775 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5600 | loss=0.02013 | file=93548045.json
+2026-08-30 10:30:54,296 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5700 | loss=0.04345 | file=93719537.json
+2026-08-30 10:31:01,452 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5800 | loss=0.00892 | file=93577606.json
+2026-08-30 10:31:07,841 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5900 | loss=0.05408 | file=93507951.json
+2026-08-30 10:31:15,235 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6000 | loss=0.07270 | file=93756972.json
+2026-08-30 10:31:21,634 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6100 | loss=0.18227 | file=93717567.json
+2026-08-30 10:31:27,996 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6200 | loss=0.34175 | file=93706036.json
+2026-08-30 10:31:35,377 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6300 | loss=0.06310 | file=93499921.json
+2026-08-30 10:31:41,906 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6400 | loss=0.13918 | file=93658433.json
+2026-08-30 10:31:49,507 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6500 | loss=0.07174 | file=93705135.json
+2026-08-30 10:31:56,019 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6600 | loss=0.05839 | file=93678352.json
+2026-08-30 10:32:03,273 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6700 | loss=0.00793 | file=93564338.json
+2026-08-30 10:32:09,591 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6800 | loss=0.05256 | file=93513290.json
+2026-08-30 10:32:16,850 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6900 | loss=0.01862 | file=93734648.json
+2026-08-30 10:32:23,178 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7000 | loss=0.16836 | file=93467149.json
+2026-08-30 10:32:29,659 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7100 | loss=0.29024 | file=93525794.json
+2026-08-30 10:32:36,939 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7200 | loss=0.01329 | file=93462667.json
+2026-08-30 10:32:43,418 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7300 | loss=0.06278 | file=93529485.json
+2026-08-30 10:32:50,780 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7400 | loss=0.04874 | file=93487534.json
+2026-08-30 10:32:57,498 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7500 | loss=0.37431 | file=93677424.json
+2026-08-30 10:33:04,789 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7600 | loss=0.00988 | file=93777578.json
+2026-08-30 10:33:11,220 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7700 | loss=0.01812 | file=93476012.json
+2026-08-30 10:33:18,533 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7800 | loss=0.13477 | file=93521238.json
+2026-08-30 10:33:24,824 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7900 | loss=0.08025 | file=93612599.json
+2026-08-30 10:33:32,108 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8000 | loss=0.00264 | file=93519529.json
+2026-08-30 10:33:38,481 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8100 | loss=0.06087 | file=93524009.json
+2026-08-30 10:33:44,947 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8200 | loss=0.52605 | file=93704243.json
+2026-08-30 10:33:52,105 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8300 | loss=0.03106 | file=93773115.json
+2026-08-30 10:33:58,557 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8400 | loss=0.27713 | file=93514182.json
+2026-08-30 10:34:06,161 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8500 | loss=0.02049 | file=93551711.json
+2026-08-30 10:34:12,586 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8600 | loss=0.51728 | file=93738161.json
+2026-08-30 10:34:19,834 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8700 | loss=0.02307 | file=93744411.json
+2026-08-30 10:34:26,264 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8800 | loss=0.27316 | file=93483981.json
+2026-08-30 10:34:33,584 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8900 | loss=0.01072 | file=93512317.json
+2026-08-30 10:34:40,024 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9000 | loss=0.16177 | file=93727429.json
+2026-08-30 10:34:47,371 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9100 | loss=0.14526 | file=93692600.json
+2026-08-30 10:34:53,830 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9200 | loss=0.03977 | file=93528607.json
+2026-08-30 10:35:00,347 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9300 | loss=0.06218 | file=93514192.json
+2026-08-30 10:35:07,735 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9400 | loss=0.05662 | file=93538238.json
+2026-08-30 10:35:14,432 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9500 | loss=0.14368 | file=93729354.json
+2026-08-30 10:35:21,701 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9600 | loss=0.04741 | file=93644001.json
+2026-08-30 10:35:28,114 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9700 | loss=0.38674 | file=93530192.json
+2026-08-30 10:35:35,520 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9800 | loss=0.00830 | file=93496536.json
+2026-08-30 10:35:42,003 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9900 | loss=0.16905 | file=93731107.json
+2026-08-30 10:35:49,303 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10000 | loss=0.00340 | file=93658310.json
+2026-08-30 10:35:55,822 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10100 | loss=0.23699 | file=93534658.json
+2026-08-30 10:36:02,418 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10200 | loss=0.04166 | file=93744536.json
+2026-08-30 10:36:09,823 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10300 | loss=0.02648 | file=93715029.json
+2026-08-30 10:36:16,353 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10400 | loss=0.28275 | file=93724883.json
+2026-08-30 10:36:24,077 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10500 | loss=0.02097 | file=93484054.json
+2026-08-30 10:36:30,526 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10600 | loss=0.02531 | file=93546469.json
+2026-08-30 10:36:37,870 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10700 | loss=0.01678 | file=93539123.json
+2026-08-30 10:36:44,283 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10800 | loss=0.07846 | file=93462665.json
+2026-08-30 10:36:51,779 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10900 | loss=0.00673 | file=93714183.json
+2026-08-30 10:36:58,344 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11000 | loss=0.05451 | file=93631462.json
+2026-08-30 10:37:05,741 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11100 | loss=0.01645 | file=93512529.json
+2026-08-30 10:37:12,165 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11200 | loss=0.02844 | file=93626964.json
+2026-08-30 10:37:18,560 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11300 | loss=0.18601 | file=93503484.json
+2026-08-30 10:37:25,902 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11400 | loss=0.12016 | file=93489365.json
+2026-08-30 10:37:32,630 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11500 | loss=0.24229 | file=93465261.json
+2026-08-30 10:37:39,949 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11600 | loss=0.34578 | file=93689896.json
+2026-08-30 10:37:46,410 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11700 | loss=0.06213 | file=93537525.json
+2026-08-30 10:37:53,775 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11800 | loss=0.00647 | file=93583892.json
+2026-08-30 10:38:00,186 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11900 | loss=0.05991 | file=93596637.json
+2026-08-30 10:38:07,634 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12000 | loss=0.00293 | file=93693600.json
+2026-08-30 10:38:14,163 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12100 | loss=0.02094 | file=93715926.json
+2026-08-30 10:38:20,629 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12200 | loss=0.30502 | file=93475159.json
+2026-08-30 10:38:27,875 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12300 | loss=0.05421 | file=93751661.json
+2026-08-30 10:38:34,230 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12400 | loss=0.08226 | file=93767772.json
+2026-08-30 10:38:41,779 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12500 | loss=0.03032 | file=93572433.json
+2026-08-30 10:38:48,271 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12600 | loss=0.08484 | file=93535652.json
+2026-08-30 10:38:55,646 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12700 | loss=0.02635 | file=93743523.json
+2026-08-30 10:39:02,120 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12800 | loss=0.04465 | file=93531184.json
+2026-08-30 10:39:09,448 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12900 | loss=0.22549 | file=93735487.json
+2026-08-30 10:39:15,917 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13000 | loss=0.13341 | file=93731904.json
+2026-08-30 10:39:23,182 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13100 | loss=0.04666 | file=93729353.json
+2026-08-30 10:39:29,610 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13200 | loss=0.10014 | file=93554353.json
+2026-08-30 10:39:36,090 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13300 | loss=0.11696 | file=93776818.json
+2026-08-30 10:39:43,499 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13400 | loss=0.02382 | file=93523943.json
+2026-08-30 10:39:50,153 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13500 | loss=0.10883 | file=93748897.json
+2026-08-30 10:39:57,485 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13600 | loss=0.02032 | file=93734627.json
+2026-08-30 10:40:03,985 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13700 | loss=0.43939 | file=93606440.json
+2026-08-30 10:40:11,352 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13800 | loss=0.05455 | file=93525727.json
+2026-08-30 10:40:17,718 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13900 | loss=0.05234 | file=93723893.json
+2026-08-30 10:40:24,944 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14000 | loss=0.00185 | file=93653979.json
+2026-08-30 10:40:31,311 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14100 | loss=0.09623 | file=93700738.json
+2026-08-30 10:40:37,792 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14200 | loss=0.34577 | file=93546314.json
+2026-08-30 10:40:45,070 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14300 | loss=0.03204 | file=93492939.json
+2026-08-30 10:40:51,509 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14400 | loss=0.07606 | file=93492990.json
+2026-08-30 10:40:59,052 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14500 | loss=0.08573 | file=93700736.json
+2026-08-30 10:41:05,601 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14600 | loss=0.06288 | file=93651968.json
+2026-08-30 10:41:13,052 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14700 | loss=0.00545 | file=93620640.json
+2026-08-30 10:41:19,622 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14800 | loss=0.05905 | file=93549115.json
+2026-08-30 10:41:26,943 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14900 | loss=0.00287 | file=93562539.json
+2026-08-30 10:41:33,500 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15000 | loss=0.05269 | file=93620764.json
+2026-08-30 10:41:40,785 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15100 | loss=0.00220 | file=93540914.json
+2026-08-30 10:41:47,317 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15200 | loss=0.02005 | file=93517709.json
+2026-08-30 10:41:53,709 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15300 | loss=0.09103 | file=93505279.json
+2026-08-30 10:42:00,963 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15400 | loss=0.05558 | file=93736408.json
+2026-08-30 10:42:07,646 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15500 | loss=0.06756 | file=93721201.json
+2026-08-30 10:42:15,054 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15600 | loss=0.07944 | file=93516869.json
+2026-08-30 10:42:21,430 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15700 | loss=0.43801 | file=93536446.json
+2026-08-30 10:42:21,575 [INFO] path_b_bootstrap: BC stream epoch 1/1 | steps=15705 | avg loss: 0.11088
+2026-08-30 10:42:42,048 [INFO] path_b_bootstrap: Bootstrap state saved: 18 days bootstrapped → /kaggle/working/run/metrics/bootstrap_state.json
+2026-08-30 10:42:42,050 [INFO] path_b_bootstrap: Marked day bootstrapped: 2026-08-16 (18 days total)
+2026-08-30 10:42:44,966 [INFO] path_b_bootstrap: Bootstrap day 2026-08-17: 699 episodes (all transitions, streaming BC)
+2026-08-30 10:42:44,967 [INFO] path_b_bootstrap: Streaming BC over 699 episode files (epochs=1, batch=64, steps/epoch=all)
+2026-08-30 10:42:45,806 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1 | loss=0.00589 | file=93898668.json
+2026-08-30 10:42:45,840 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2 | loss=0.00193 | file=93898668.json
+2026-08-30 10:42:45,868 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3 | loss=0.21615 | file=93898668.json
+2026-08-30 10:42:52,373 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 100 | loss=0.03349 | file=94037671.json
+2026-08-30 10:42:58,784 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 200 | loss=1.20478 | file=94060491.json
+2026-08-30 10:43:06,130 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 300 | loss=0.02204 | file=93978698.json
+2026-08-30 10:43:12,502 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 400 | loss=0.09039 | file=93947914.json
+2026-08-30 10:43:19,891 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 500 | loss=0.02462 | file=93820918.json
+2026-08-30 10:43:26,331 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 600 | loss=0.13141 | file=93972619.json
+2026-08-30 10:43:33,638 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 700 | loss=0.14790 | file=93886356.json
+2026-08-30 10:43:39,955 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 800 | loss=0.09043 | file=93882733.json
+2026-08-30 10:43:47,202 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 900 | loss=0.00367 | file=93948816.json
+2026-08-30 10:43:53,633 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1000 | loss=0.09032 | file=93792069.json
+2026-08-30 10:44:00,310 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1100 | loss=0.02824 | file=93818094.json
+2026-08-30 10:44:07,668 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1200 | loss=0.06331 | file=93820393.json
+2026-08-30 10:44:14,069 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1300 | loss=0.06220 | file=93965469.json
+2026-08-30 10:44:21,377 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1400 | loss=0.02601 | file=93823817.json
+2026-08-30 10:44:27,849 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1500 | loss=0.04642 | file=93806455.json
+2026-08-30 10:44:35,261 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1600 | loss=0.06339 | file=93829983.json
+2026-08-30 10:44:41,626 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1700 | loss=0.05700 | file=93866856.json
+2026-08-30 10:44:48,934 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1800 | loss=0.01484 | file=94017443.json
+2026-08-30 10:44:55,393 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1900 | loss=0.02113 | file=93950595.json
+2026-08-30 10:45:02,758 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2000 | loss=0.06360 | file=93786251.json
+2026-08-30 10:45:09,529 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2100 | loss=0.02276 | file=93798408.json
+2026-08-30 10:45:16,018 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2200 | loss=0.35186 | file=93961023.json
+2026-08-30 10:45:23,362 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2300 | loss=0.03519 | file=93790597.json
+2026-08-30 10:45:29,838 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2400 | loss=0.11134 | file=93793191.json
+2026-08-30 10:45:37,317 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2500 | loss=0.03744 | file=93978609.json
+2026-08-30 10:45:43,684 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2600 | loss=0.02275 | file=94051639.json
+2026-08-30 10:45:50,956 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2700 | loss=0.02028 | file=93947929.json
+2026-08-30 10:45:57,477 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2800 | loss=0.05159 | file=93872082.json
+2026-08-30 10:46:04,825 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2900 | loss=0.00710 | file=93862449.json
+2026-08-30 10:46:11,277 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3000 | loss=0.38879 | file=93912659.json
+2026-08-30 10:46:17,995 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3100 | loss=0.13183 | file=93962800.json
+2026-08-30 10:46:25,288 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3200 | loss=0.02706 | file=93822916.json
+2026-08-30 10:46:31,747 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3300 | loss=0.38711 | file=94058659.json
+2026-08-30 10:46:39,039 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3400 | loss=0.06823 | file=93959360.json
+2026-08-30 10:46:45,589 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3500 | loss=0.07851 | file=93798402.json
+2026-08-30 10:46:53,003 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3600 | loss=0.01084 | file=93878286.json
+2026-08-30 10:46:59,487 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3700 | loss=0.04710 | file=94043689.json
+2026-08-30 10:47:06,881 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3800 | loss=0.00542 | file=93827243.json
+2026-08-30 10:47:13,362 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3900 | loss=0.63014 | file=93942619.json
+2026-08-30 10:47:20,860 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4000 | loss=0.06813 | file=93800872.json
+2026-08-30 10:47:27,665 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4100 | loss=0.05447 | file=93788378.json
+2026-08-30 10:47:34,175 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4200 | loss=0.03018 | file=94008552.json
+2026-08-30 10:47:41,521 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4300 | loss=0.02698 | file=93859904.json
+2026-08-30 10:47:47,967 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4400 | loss=0.13275 | file=93906626.json
+2026-08-30 10:47:55,362 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4500 | loss=0.01071 | file=93860653.json
+2026-08-30 10:48:01,818 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4600 | loss=0.08146 | file=93925962.json
+2026-08-30 10:48:09,253 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4700 | loss=0.00390 | file=93979591.json
+2026-08-30 10:48:15,786 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4800 | loss=0.26911 | file=94011251.json
+2026-08-30 10:48:23,090 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4900 | loss=0.00799 | file=93875603.json
+2026-08-30 10:48:29,459 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5000 | loss=0.24470 | file=93884625.json
+2026-08-30 10:48:36,125 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5100 | loss=0.78321 | file=94022709.json
+2026-08-30 10:48:43,577 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5200 | loss=0.19508 | file=94056962.json
+2026-08-30 10:48:50,074 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5300 | loss=0.36940 | file=93835182.json
+2026-08-30 10:48:57,447 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5400 | loss=0.04481 | file=93936519.json
+2026-08-30 10:49:03,904 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5500 | loss=0.34296 | file=93871280.json
+2026-08-30 10:49:11,220 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5600 | loss=0.00994 | file=94042957.json
+2026-08-30 10:49:17,727 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5700 | loss=0.41895 | file=94005161.json
+2026-08-30 10:49:25,127 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5800 | loss=0.00314 | file=93793666.json
+2026-08-30 10:49:31,651 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5900 | loss=0.06490 | file=93932056.json
+2026-08-30 10:49:38,868 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6000 | loss=0.04416 | file=93859899.json
+2026-08-30 10:49:45,533 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6100 | loss=0.09282 | file=94060490.json
+2026-08-30 10:49:51,784 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6200 | loss=0.04522 | file=94014811.json
+2026-08-30 10:49:59,131 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6300 | loss=0.05586 | file=93812851.json
+2026-08-30 10:50:05,666 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6400 | loss=0.08222 | file=93994596.json
+2026-08-30 10:50:13,098 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6500 | loss=0.02288 | file=94051618.json
+2026-08-30 10:50:19,580 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6600 | loss=0.63076 | file=93947041.json
+2026-08-30 10:50:26,853 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6700 | loss=0.00479 | file=93966336.json
+2026-08-30 10:50:33,335 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6800 | loss=0.06185 | file=93933896.json
+2026-08-30 10:50:40,631 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6900 | loss=0.00585 | file=93783008.json
+2026-08-30 10:50:47,155 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7000 | loss=0.12652 | file=93949702.json
+2026-08-30 10:50:53,804 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7100 | loss=0.28665 | file=93841386.json
+2026-08-30 10:51:01,015 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7200 | loss=0.05170 | file=93803059.json
+2026-08-30 10:51:07,496 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7300 | loss=0.11316 | file=93953952.json
+2026-08-30 10:51:14,826 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7400 | loss=0.03663 | file=93896084.json
+2026-08-30 10:51:21,253 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7500 | loss=0.38969 | file=93910892.json
+2026-08-30 10:51:28,612 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7600 | loss=0.00768 | file=94013846.json
+2026-08-30 10:51:35,077 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7700 | loss=0.06610 | file=93863291.json
+2026-08-30 10:51:42,435 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7800 | loss=0.01026 | file=93961141.json
+2026-08-30 10:51:48,995 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7900 | loss=0.04332 | file=93826363.json
+2026-08-30 10:51:56,390 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8000 | loss=0.00442 | file=93988450.json
+2026-08-30 10:52:03,140 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8100 | loss=0.04596 | file=93819064.json
+2026-08-30 10:52:09,643 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8200 | loss=0.07199 | file=93820015.json
+2026-08-30 10:52:16,959 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8300 | loss=0.01669 | file=93833424.json
+2026-08-30 10:52:23,355 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8400 | loss=0.37788 | file=93801335.json
+2026-08-30 10:52:30,759 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8500 | loss=0.01213 | file=93889848.json
+2026-08-30 10:52:37,252 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8600 | loss=0.14508 | file=93793177.json
+2026-08-30 10:52:44,578 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8700 | loss=0.03074 | file=93967314.json
+2026-08-30 10:52:51,039 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8800 | loss=0.35810 | file=93989298.json
+2026-08-30 10:52:58,329 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8900 | loss=0.00583 | file=93809061.json
+2026-08-30 10:53:04,870 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9000 | loss=0.13635 | file=94056964.json
+2026-08-30 10:53:12,397 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9100 | loss=0.07586 | file=93798810.json
+2026-08-30 10:53:18,911 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9200 | loss=0.05322 | file=93809930.json
+2026-08-30 10:53:25,380 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9300 | loss=0.20508 | file=94038524.json
+2026-08-30 10:53:32,825 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9400 | loss=0.04281 | file=94041983.json
+2026-08-30 10:53:39,407 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9500 | loss=0.41506 | file=94001632.json
+2026-08-30 10:53:46,793 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9600 | loss=0.08482 | file=93789157.json
+2026-08-30 10:53:53,121 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9700 | loss=0.02681 | file=93888965.json
+2026-08-30 10:54:00,378 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9800 | loss=0.01680 | file=93818089.json
+2026-08-30 10:54:06,906 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9900 | loss=0.10593 | file=93829006.json
+2026-08-30 10:54:14,218 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10000 | loss=0.00513 | file=93804524.json
+2026-08-30 10:54:20,931 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10100 | loss=0.03442 | file=93944389.json
+2026-08-30 10:54:27,463 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10200 | loss=0.04208 | file=93987590.json
+2026-08-30 10:54:34,837 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10300 | loss=0.05550 | file=93850913.json
+2026-08-30 10:54:41,386 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10400 | loss=0.36396 | file=93928453.json
+2026-08-30 10:54:48,722 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10500 | loss=0.03271 | file=93942715.json
+2026-08-30 10:54:55,130 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10600 | loss=0.13768 | file=93787899.json
+2026-08-30 10:55:02,352 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10700 | loss=0.03298 | file=93907494.json
+2026-08-30 10:55:08,899 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10800 | loss=0.13172 | file=94004256.json
+2026-08-30 10:55:16,238 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10900 | loss=0.00612 | file=93849200.json
+2026-08-30 10:55:22,665 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11000 | loss=0.03299 | file=94028009.json
+2026-08-30 10:55:30,284 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11100 | loss=0.29004 | file=93791211.json
+2026-08-30 10:55:36,714 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11200 | loss=0.08295 | file=93800853.json
+2026-08-30 10:55:43,285 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11300 | loss=0.41453 | file=93905747.json
+2026-08-30 10:55:50,699 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11400 | loss=0.28952 | file=93945266.json
+2026-08-30 10:55:57,303 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11500 | loss=0.67945 | file=93983034.json
+2026-08-30 10:56:04,645 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11600 | loss=0.02625 | file=93887187.json
+2026-08-30 10:56:11,093 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11700 | loss=0.46639 | file=94031435.json
+2026-08-30 10:56:18,414 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11800 | loss=0.01277 | file=93816747.json
+2026-08-30 10:56:24,887 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11900 | loss=0.24390 | file=94046415.json
+2026-08-30 10:56:32,276 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12000 | loss=0.00185 | file=93986592.json
+2026-08-30 10:56:39,038 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12100 | loss=0.02342 | file=93928503.json
+2026-08-30 10:56:45,503 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12200 | loss=0.11304 | file=93978784.json
+2026-08-30 10:56:52,850 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12300 | loss=0.56257 | file=93990240.json
+2026-08-30 10:56:59,338 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12400 | loss=0.39413 | file=93962102.json
+2026-08-30 10:57:06,990 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12500 | loss=0.00746 | file=93933760.json
+2026-08-30 10:57:13,518 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12600 | loss=0.17304 | file=93961987.json
+2026-08-30 10:57:21,063 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12700 | loss=0.00857 | file=93787886.json
+2026-08-30 10:57:27,624 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12800 | loss=0.07523 | file=93791580.json
+2026-08-30 10:57:35,034 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12900 | loss=0.00651 | file=93897794.json
+2026-08-30 10:57:41,535 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13000 | loss=0.02020 | file=93787890.json
+2026-08-30 10:57:49,199 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13100 | loss=0.10726 | file=93990994.json
+2026-08-30 10:57:55,683 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13200 | loss=0.04481 | file=93976841.json
+2026-08-30 10:58:02,204 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13300 | loss=0.25189 | file=93960265.json
+2026-08-30 10:58:09,595 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13400 | loss=0.07035 | file=93950486.json
+2026-08-30 10:58:16,138 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13500 | loss=0.45803 | file=93906454.json
+2026-08-30 10:58:23,411 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13600 | loss=0.03606 | file=94010415.json
+2026-08-30 10:58:29,963 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13700 | loss=0.09015 | file=93828121.json
+2026-08-30 10:58:37,400 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13800 | loss=0.03125 | file=93963770.json
+2026-08-30 10:58:43,964 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13900 | loss=0.09178 | file=93847515.json
+2026-08-30 10:58:51,392 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14000 | loss=0.00172 | file=93964554.json
+2026-08-30 10:58:58,174 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14100 | loss=0.11261 | file=93808093.json
+2026-08-30 10:59:04,785 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14200 | loss=0.34646 | file=93892502.json
+2026-08-30 10:59:12,215 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14300 | loss=0.04313 | file=93868606.json
+2026-08-30 10:59:18,788 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14400 | loss=0.32414 | file=93965461.json
+2026-08-30 10:59:26,170 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14500 | loss=0.02068 | file=94038537.json
+2026-08-30 10:59:32,749 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14600 | loss=0.06762 | file=93997161.json
+2026-08-30 10:59:40,242 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14700 | loss=0.01917 | file=94049920.json
+2026-08-30 10:59:46,768 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14800 | loss=0.38191 | file=93862567.json
+2026-08-30 10:59:54,248 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14900 | loss=0.00327 | file=94023580.json
+2026-08-30 11:00:00,675 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15000 | loss=0.10170 | file=93863418.json
+2026-08-30 11:00:08,317 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15100 | loss=0.00971 | file=93797539.json
+2026-08-30 11:00:14,896 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15200 | loss=0.05110 | file=93862421.json
+2026-08-30 11:00:21,383 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15300 | loss=0.04590 | file=93997939.json
+2026-08-30 11:00:28,678 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15400 | loss=0.38626 | file=94020937.json
+2026-08-30 11:00:35,161 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15500 | loss=0.12170 | file=93797468.json
+2026-08-30 11:00:42,609 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15600 | loss=0.01053 | file=93849372.json
+2026-08-30 11:00:49,122 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15700 | loss=0.09250 | file=93895176.json
+2026-08-30 11:00:49,271 [INFO] path_b_bootstrap: BC stream epoch 1/1 | steps=15705 | avg loss: 0.12563
+2026-08-30 11:01:10,476 [INFO] path_b_bootstrap: Bootstrap state saved: 19 days bootstrapped → /kaggle/working/run/metrics/bootstrap_state.json
+2026-08-30 11:01:10,477 [INFO] path_b_bootstrap: Marked day bootstrapped: 2026-08-17 (19 days total)
+2026-08-30 11:01:13,091 [INFO] path_b_bootstrap: Bootstrap day 2026-08-18: 697 episodes (all transitions, streaming BC)
+2026-08-30 11:01:13,093 [INFO] path_b_bootstrap: Streaming BC over 697 episode files (epochs=1, batch=64, steps/epoch=all)
+2026-08-30 11:01:14,030 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1 | loss=0.00361 | file=94258871.json
+2026-08-30 11:01:14,062 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2 | loss=0.00394 | file=94258871.json
+2026-08-30 11:01:14,093 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3 | loss=0.01908 | file=94258871.json
+2026-08-30 11:01:20,334 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 100 | loss=0.43086 | file=94279198.json
+2026-08-30 11:01:26,907 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 200 | loss=0.43813 | file=94069250.json
+2026-08-30 11:01:34,312 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 300 | loss=0.36302 | file=94231342.json
+2026-08-30 11:01:40,703 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 400 | loss=0.91353 | file=94208933.json
+2026-08-30 11:01:48,144 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 500 | loss=0.02679 | file=94308596.json
+2026-08-30 11:01:54,653 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 600 | loss=0.47952 | file=94107087.json
+2026-08-30 11:02:02,310 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 700 | loss=0.02053 | file=94291875.json
+2026-08-30 11:02:08,805 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 800 | loss=0.04831 | file=94329653.json
+2026-08-30 11:02:16,248 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 900 | loss=0.11149 | file=94249731.json
+2026-08-30 11:02:22,689 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1000 | loss=0.02432 | file=94347091.json
+2026-08-30 11:02:29,256 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1100 | loss=0.03905 | file=94319174.json
+2026-08-30 11:02:36,651 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1200 | loss=0.00387 | file=94236933.json
+2026-08-30 11:02:43,172 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1300 | loss=0.01885 | file=94078084.json
+2026-08-30 11:02:50,480 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1400 | loss=0.02490 | file=94140674.json
+2026-08-30 11:02:56,996 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1500 | loss=0.16545 | file=94223167.json
+2026-08-30 11:03:04,397 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1600 | loss=0.01034 | file=94101792.json
+2026-08-30 11:03:11,120 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1700 | loss=1.00163 | file=94335819.json
+2026-08-30 11:03:18,467 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1800 | loss=0.01048 | file=94100790.json
+2026-08-30 11:03:25,057 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1900 | loss=0.11065 | file=94279482.json
+2026-08-30 11:03:32,428 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2000 | loss=0.10854 | file=94131652.json
+2026-08-30 11:03:39,120 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2100 | loss=0.04688 | file=94235352.json
+2026-08-30 11:03:45,719 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2200 | loss=0.03321 | file=94194550.json
+2026-08-30 11:03:52,985 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2300 | loss=0.01251 | file=94320952.json
+2026-08-30 11:03:59,537 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2400 | loss=0.05057 | file=94279504.json
+2026-08-30 11:04:06,983 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2500 | loss=0.28290 | file=94086914.json
+2026-08-30 11:04:13,466 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2600 | loss=0.03711 | file=94251422.json
+2026-08-30 11:04:21,046 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2700 | loss=0.00557 | file=94107125.json
+2026-08-30 11:04:27,610 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2800 | loss=0.04322 | file=94093996.json
+2026-08-30 11:04:34,952 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2900 | loss=0.00318 | file=94339265.json
+2026-08-30 11:04:41,406 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3000 | loss=0.03368 | file=94070176.json
+2026-08-30 11:04:47,931 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3100 | loss=0.08847 | file=94087828.json
+2026-08-30 11:04:55,465 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3200 | loss=0.39384 | file=94100037.json
+2026-08-30 11:05:02,054 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3300 | loss=0.51435 | file=94130963.json
+2026-08-30 11:05:09,453 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3400 | loss=0.04337 | file=94107860.json
+2026-08-30 11:05:16,029 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3500 | loss=0.03181 | file=94176802.json
+2026-08-30 11:05:23,373 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3600 | loss=0.00705 | file=94098355.json
+2026-08-30 11:05:30,232 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3700 | loss=0.19429 | file=94128285.json
+2026-08-30 11:05:37,747 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3800 | loss=0.00579 | file=94307798.json
+2026-08-30 11:05:44,190 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3900 | loss=0.00768 | file=94105323.json
+2026-08-30 11:05:51,575 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4000 | loss=0.10517 | file=94144943.json
+2026-08-30 11:05:58,025 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4100 | loss=0.01942 | file=94346365.json
+2026-08-30 11:06:04,580 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4200 | loss=0.10528 | file=94080774.json
+2026-08-30 11:06:11,975 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4300 | loss=0.02801 | file=94102666.json
+2026-08-30 11:06:18,447 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4400 | loss=0.06763 | file=94092968.json
+2026-08-30 11:06:25,859 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4500 | loss=0.09154 | file=94220381.json
+2026-08-30 11:06:32,367 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4600 | loss=0.15323 | file=94172471.json
+2026-08-30 11:06:40,047 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4700 | loss=0.13629 | file=94331469.json
+2026-08-30 11:06:46,536 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4800 | loss=0.01335 | file=94334148.json
+2026-08-30 11:06:54,109 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4900 | loss=0.00487 | file=94126438.json
+2026-08-30 11:07:00,970 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5000 | loss=0.04240 | file=94305011.json
+2026-08-30 11:07:09,396 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5100 | loss=0.13927 | file=94268266.json
+2026-08-30 11:07:19,026 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5200 | loss=0.02332 | file=94117771.json
+2026-08-30 11:07:26,457 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5300 | loss=0.56511 | file=94106275.json
+2026-08-30 11:07:34,451 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5400 | loss=0.05322 | file=94234157.json
+2026-08-30 11:07:41,263 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5500 | loss=0.09019 | file=94186837.json
+2026-08-30 11:07:48,955 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5600 | loss=0.00733 | file=94296242.json
+2026-08-30 11:07:55,857 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5700 | loss=0.03340 | file=94104494.json
+2026-08-30 11:08:03,434 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5800 | loss=0.00552 | file=94135298.json
+2026-08-30 11:08:10,056 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5900 | loss=0.01108 | file=94177740.json
+2026-08-30 11:08:17,848 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6000 | loss=0.03179 | file=94173916.json
+2026-08-30 11:08:24,579 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6100 | loss=0.02159 | file=94341119.json
+2026-08-30 11:08:31,345 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6200 | loss=0.17580 | file=94251716.json
+2026-08-30 11:08:38,837 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6300 | loss=0.62334 | file=94104325.json
+2026-08-30 11:08:45,791 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6400 | loss=0.34688 | file=94225733.json
+2026-08-30 11:08:53,652 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6500 | loss=0.00442 | file=94229224.json
+2026-08-30 11:09:00,418 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6600 | loss=0.11616 | file=94319141.json
+2026-08-30 11:09:08,461 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6700 | loss=0.02190 | file=94142273.json
+2026-08-30 11:09:15,239 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6800 | loss=0.27748 | file=94102730.json
+2026-08-30 11:09:22,900 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6900 | loss=0.00909 | file=94130964.json
+2026-08-30 11:09:29,549 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7000 | loss=0.02887 | file=94306778.json
+2026-08-30 11:09:36,338 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7100 | loss=0.52093 | file=94279305.json
+2026-08-30 11:09:44,010 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7200 | loss=0.12163 | file=94176774.json
+2026-08-30 11:09:50,663 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7300 | loss=0.06576 | file=94218595.json
+2026-08-30 11:09:58,329 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7400 | loss=0.01120 | file=94135383.json
+2026-08-30 11:10:05,020 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7500 | loss=0.39973 | file=94176801.json
+2026-08-30 11:10:12,607 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7600 | loss=0.03549 | file=94093842.json
+2026-08-30 11:10:19,859 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7700 | loss=0.05720 | file=94144125.json
+2026-08-30 11:10:27,387 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7800 | loss=0.03973 | file=94094721.json
+2026-08-30 11:10:34,007 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7900 | loss=0.04147 | file=94209874.json
+2026-08-30 11:10:41,535 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8000 | loss=0.00571 | file=94249822.json
+2026-08-30 11:10:48,256 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8100 | loss=0.04630 | file=94176772.json
+2026-08-30 11:10:54,911 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8200 | loss=0.17081 | file=94270158.json
+2026-08-30 11:11:02,411 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8300 | loss=0.47524 | file=94247912.json
+2026-08-30 11:11:09,060 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8400 | loss=0.29216 | file=94070125.json
+2026-08-30 11:11:16,768 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8500 | loss=0.04825 | file=94118654.json
+2026-08-30 11:11:23,260 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8600 | loss=0.04650 | file=94290132.json
+2026-08-30 11:11:31,063 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8700 | loss=0.00765 | file=94262606.json
+2026-08-30 11:11:37,701 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8800 | loss=0.17924 | file=94309435.json
+2026-08-30 11:11:45,365 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8900 | loss=0.04116 | file=94320884.json
+2026-08-30 11:11:51,942 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9000 | loss=0.11772 | file=94347245.json
+2026-08-30 11:11:59,393 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9100 | loss=0.18376 | file=94070175.json
+2026-08-30 11:12:05,970 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9200 | loss=0.05345 | file=94133622.json
+2026-08-30 11:12:12,705 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9300 | loss=0.15193 | file=94281328.json
+2026-08-30 11:12:20,252 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9400 | loss=0.02026 | file=94222196.json
+2026-08-30 11:12:26,968 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9500 | loss=0.08965 | file=94290943.json
+2026-08-30 11:12:34,489 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9600 | loss=0.00434 | file=94320976.json
+2026-08-30 11:12:41,273 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9700 | loss=0.20949 | file=94092230.json
+2026-08-30 11:12:49,114 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9800 | loss=0.01506 | file=94132537.json
+2026-08-30 11:12:56,170 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9900 | loss=0.26231 | file=94241176.json
+2026-08-30 11:13:04,049 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10000 | loss=0.00168 | file=94221419.json
+2026-08-30 11:13:10,753 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10100 | loss=0.06029 | file=94217891.json
+2026-08-30 11:13:17,466 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10200 | loss=0.04687 | file=94116879.json
+2026-08-30 11:13:25,479 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10300 | loss=0.02772 | file=94338432.json
+2026-08-30 11:13:32,200 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10400 | loss=0.12938 | file=94080775.json
+2026-08-30 11:13:39,978 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10500 | loss=0.27092 | file=94141444.json
+2026-08-30 11:13:46,670 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10600 | loss=0.40697 | file=94085016.json
+2026-08-30 11:13:54,721 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10700 | loss=0.00485 | file=94122138.json
+2026-08-30 11:14:01,704 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10800 | loss=0.43532 | file=94069249.json
+2026-08-30 11:14:09,620 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10900 | loss=0.01297 | file=94094798.json
+2026-08-30 11:14:16,577 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11000 | loss=0.00461 | file=94320046.json
+2026-08-30 11:14:24,282 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11100 | loss=0.01603 | file=94264317.json
+2026-08-30 11:14:31,517 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11200 | loss=0.10446 | file=94286633.json
+2026-08-30 11:14:38,330 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11300 | loss=0.06056 | file=94224026.json
+2026-08-30 11:14:46,310 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11400 | loss=0.03026 | file=94095686.json
+2026-08-30 11:14:52,967 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11500 | loss=0.45547 | file=94327979.json
+2026-08-30 11:15:00,782 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11600 | loss=0.00593 | file=94111399.json
+2026-08-30 11:15:07,924 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11700 | loss=0.03624 | file=94260620.json
+2026-08-30 11:15:15,688 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11800 | loss=0.00524 | file=94104488.json
+2026-08-30 11:15:22,082 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11900 | loss=0.25089 | file=94208930.json
+2026-08-30 11:15:29,621 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12000 | loss=0.00330 | file=94341959.json
+2026-08-30 11:15:36,169 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12100 | loss=0.01962 | file=94296234.json
+2026-08-30 11:15:42,701 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12200 | loss=0.35593 | file=94069273.json
+2026-08-30 11:15:50,231 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12300 | loss=0.06530 | file=94088672.json
+2026-08-30 11:15:56,660 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12400 | loss=0.14166 | file=94106979.json
+2026-08-30 11:16:04,245 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12500 | loss=0.01620 | file=94092227.json
+2026-08-30 11:16:10,900 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12600 | loss=0.03346 | file=94334138.json
+2026-08-30 11:16:18,691 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12700 | loss=0.32534 | file=94235463.json
+2026-08-30 11:16:25,250 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12800 | loss=0.06818 | file=94116749.json
+2026-08-30 11:16:32,685 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12900 | loss=0.00473 | file=94330526.json
+2026-08-30 11:16:39,341 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13000 | loss=0.02252 | file=94259136.json
+2026-08-30 11:16:47,003 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13100 | loss=0.07945 | file=94119418.json
+2026-08-30 11:16:53,519 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13200 | loss=0.05882 | file=94106102.json
+2026-08-30 11:17:00,223 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13300 | loss=0.02457 | file=94302506.json
+2026-08-30 11:17:07,737 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13400 | loss=0.01776 | file=94100921.json
+2026-08-30 11:17:14,350 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13500 | loss=0.17338 | file=94123849.json
+2026-08-30 11:17:22,012 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13600 | loss=0.00798 | file=94271790.json
+2026-08-30 11:17:28,661 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13700 | loss=0.03897 | file=94121249.json
+2026-08-30 11:17:36,216 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13800 | loss=0.02523 | file=94212311.json
+2026-08-30 11:17:42,816 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13900 | loss=0.02958 | file=94094802.json
+2026-08-30 11:17:50,348 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14000 | loss=0.00639 | file=94342875.json
+2026-08-30 11:17:56,980 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14100 | loss=0.40669 | file=94300659.json
+2026-08-30 11:18:03,556 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14200 | loss=0.03629 | file=94064862.json
+2026-08-30 11:18:11,032 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14300 | loss=0.06172 | file=94347258.json
+2026-08-30 11:18:17,622 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14400 | loss=0.48916 | file=94275616.json
+2026-08-30 11:18:25,149 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14500 | loss=0.01240 | file=94226742.json
+2026-08-30 11:18:31,669 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14600 | loss=0.12070 | file=94076333.json
+2026-08-30 11:18:39,550 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14700 | loss=0.00117 | file=94209388.json
+2026-08-30 11:18:46,310 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14800 | loss=0.04208 | file=94103600.json
+2026-08-30 11:18:53,934 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14900 | loss=0.01933 | file=94241343.json
+2026-08-30 11:19:00,510 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15000 | loss=0.05340 | file=94347260.json
+2026-08-30 11:19:08,073 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15100 | loss=0.00605 | file=94125611.json
+2026-08-30 11:19:14,683 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15200 | loss=0.02977 | file=94131822.json
+2026-08-30 11:19:21,483 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15300 | loss=0.08287 | file=94337599.json
+2026-08-30 11:19:29,215 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15400 | loss=0.03192 | file=94338440.json
+2026-08-30 11:19:36,118 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15500 | loss=0.11694 | file=94262602.json
+2026-08-30 11:19:44,222 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15600 | loss=0.05442 | file=94081472.json
+2026-08-30 11:19:47,916 [INFO] path_b_bootstrap: BC stream epoch 1/1 | steps=15660 | avg loss: 0.11191
+2026-08-30 11:20:08,671 [INFO] path_b_bootstrap: Bootstrap state saved: 20 days bootstrapped → /kaggle/working/run/metrics/bootstrap_state.json
+2026-08-30 11:20:08,672 [INFO] path_b_bootstrap: Marked day bootstrapped: 2026-08-18 (20 days total)
+2026-08-30 11:20:11,705 [INFO] path_b_bootstrap: Bootstrap day 2026-08-19: 695 episodes (all transitions, streaming BC)
+2026-08-30 11:20:11,706 [INFO] path_b_bootstrap: Streaming BC over 695 episode files (epochs=1, batch=64, steps/epoch=all)
+2026-08-30 11:20:12,658 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1 | loss=0.00187 | file=94674668.json
+2026-08-30 11:20:12,690 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2 | loss=0.00286 | file=94674668.json
+2026-08-30 11:20:12,722 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3 | loss=0.27682 | file=94674668.json
+2026-08-30 11:20:19,546 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 100 | loss=0.34591 | file=94698311.json
+2026-08-30 11:20:26,223 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 200 | loss=0.27736 | file=94560614.json
+2026-08-30 11:20:34,219 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 300 | loss=0.00913 | file=94535837.json
+2026-08-30 11:20:40,823 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 400 | loss=0.08955 | file=94504834.json
+2026-08-30 11:20:48,768 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 500 | loss=0.00807 | file=94370235.json
+2026-08-30 11:20:55,644 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 600 | loss=0.01073 | file=94689800.json
+2026-08-30 11:21:03,347 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 700 | loss=0.00558 | file=94604172.json
+2026-08-30 11:21:10,238 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 800 | loss=0.48152 | file=94621064.json
+2026-08-30 11:21:18,219 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 900 | loss=0.40509 | file=94452034.json
+2026-08-30 11:21:25,036 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1000 | loss=0.56978 | file=94493570.json
+2026-08-30 11:21:31,879 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1100 | loss=0.40674 | file=94475712.json
+2026-08-30 11:21:39,626 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1200 | loss=0.33177 | file=94396475.json
+2026-08-30 11:21:46,656 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1300 | loss=0.44207 | file=94542867.json
+2026-08-30 11:21:54,207 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1400 | loss=0.03446 | file=94559660.json
+2026-08-30 11:22:00,837 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1500 | loss=0.01443 | file=94679842.json
+2026-08-30 11:22:08,254 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1600 | loss=0.00846 | file=94615928.json
+2026-08-30 11:22:14,942 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1700 | loss=0.01081 | file=94371074.json
+2026-08-30 11:22:22,439 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1800 | loss=0.01747 | file=94541091.json
+2026-08-30 11:22:29,038 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1900 | loss=0.04993 | file=94693275.json
+2026-08-30 11:22:36,545 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2000 | loss=0.02726 | file=94519037.json
+2026-08-30 11:22:43,038 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2100 | loss=0.06662 | file=94689983.json
+2026-08-30 11:22:49,661 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2200 | loss=0.17931 | file=94688121.json
+2026-08-30 11:22:57,416 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2300 | loss=0.85321 | file=94636231.json
+2026-08-30 11:23:03,975 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2400 | loss=0.39114 | file=94474821.json
+2026-08-30 11:23:11,372 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2500 | loss=0.03766 | file=94610863.json
+2026-08-30 11:23:17,912 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2600 | loss=0.06586 | file=94491545.json
+2026-08-30 11:23:25,297 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2700 | loss=0.00586 | file=94708332.json
+2026-08-30 11:23:31,702 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2800 | loss=0.39483 | file=94562263.json
+2026-08-30 11:23:39,110 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2900 | loss=0.01020 | file=94411569.json
+2026-08-30 11:23:45,645 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3000 | loss=0.00857 | file=94381655.json
+2026-08-30 11:23:52,052 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3100 | loss=0.65863 | file=94384294.json
+2026-08-30 11:23:59,407 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3200 | loss=0.02337 | file=94437136.json
+2026-08-30 11:24:06,118 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3300 | loss=0.42934 | file=94693301.json
+2026-08-30 11:24:13,440 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3400 | loss=0.00321 | file=94634383.json
+2026-08-30 11:24:20,079 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3500 | loss=0.57604 | file=94438725.json
+2026-08-30 11:24:27,478 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3600 | loss=0.02709 | file=94355168.json
+2026-08-30 11:24:33,951 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3700 | loss=0.10724 | file=94626005.json
+2026-08-30 11:24:41,282 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3800 | loss=0.18501 | file=94489011.json
+2026-08-30 11:24:47,732 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3900 | loss=0.07755 | file=94571181.json
+2026-08-30 11:24:55,185 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4000 | loss=0.03558 | file=94654551.json
+2026-08-30 11:25:01,814 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4100 | loss=0.42980 | file=94501384.json
+2026-08-30 11:25:08,267 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4200 | loss=0.09620 | file=94530576.json
+2026-08-30 11:25:15,955 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4300 | loss=0.78889 | file=94508472.json
+2026-08-30 11:25:22,391 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4400 | loss=0.08997 | file=94644453.json
+2026-08-30 11:25:29,824 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4500 | loss=0.00835 | file=94662986.json
+2026-08-30 11:25:36,376 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4600 | loss=0.08678 | file=94541071.json
+2026-08-30 11:25:43,767 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4700 | loss=0.31546 | file=94601031.json
+2026-08-30 11:25:50,419 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4800 | loss=0.00503 | file=94366538.json
+2026-08-30 11:25:57,888 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 4900 | loss=0.00693 | file=94377910.json
+2026-08-30 11:26:04,497 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5000 | loss=0.03636 | file=94391332.json
+2026-08-30 11:26:10,979 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5100 | loss=0.04761 | file=94383428.json
+2026-08-30 11:26:18,413 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5200 | loss=0.40996 | file=94437841.json
+2026-08-30 11:26:25,071 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5300 | loss=0.01782 | file=94381650.json
+2026-08-30 11:26:32,510 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5400 | loss=0.12316 | file=94728571.json
+2026-08-30 11:26:39,145 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5500 | loss=0.23355 | file=94461848.json
+2026-08-30 11:26:46,682 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5600 | loss=0.56753 | file=94524402.json
+2026-08-30 11:26:53,191 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5700 | loss=0.06902 | file=94493555.json
+2026-08-30 11:27:00,774 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5800 | loss=0.15442 | file=94679898.json
+2026-08-30 11:27:07,413 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 5900 | loss=0.03346 | file=94678082.json
+2026-08-30 11:27:14,889 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6000 | loss=0.54743 | file=94629354.json
+2026-08-30 11:27:21,492 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6100 | loss=0.07727 | file=94511905.json
+2026-08-30 11:27:28,002 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6200 | loss=0.04904 | file=94554328.json
+2026-08-30 11:27:35,599 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6300 | loss=0.07741 | file=94676384.json
+2026-08-30 11:27:42,071 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6400 | loss=0.06468 | file=94547331.json
+2026-08-30 11:27:49,483 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6500 | loss=0.47520 | file=94568487.json
+2026-08-30 11:27:56,018 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6600 | loss=0.74113 | file=94661381.json
+2026-08-30 11:28:03,409 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6700 | loss=0.01852 | file=94520811.json
+2026-08-30 11:28:10,037 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6800 | loss=0.25262 | file=94408887.json
+2026-08-30 11:28:17,573 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 6900 | loss=0.01383 | file=94540200.json
+2026-08-30 11:28:24,168 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7000 | loss=0.10780 | file=94400921.json
+2026-08-30 11:28:30,603 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7100 | loss=0.02961 | file=94394731.json
+2026-08-30 11:28:38,062 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7200 | loss=0.06135 | file=94395617.json
+2026-08-30 11:28:44,768 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7300 | loss=0.03469 | file=94723532.json
+2026-08-30 11:28:52,141 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7400 | loss=0.00822 | file=94415051.json
+2026-08-30 11:28:58,717 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7500 | loss=0.05739 | file=94476774.json
+2026-08-30 11:29:06,205 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7600 | loss=0.00818 | file=94378052.json
+2026-08-30 11:29:12,669 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7700 | loss=0.05022 | file=94430982.json
+2026-08-30 11:29:20,177 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7800 | loss=0.01708 | file=94604382.json
+2026-08-30 11:29:26,750 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 7900 | loss=0.06671 | file=94561504.json
+2026-08-30 11:29:34,216 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8000 | loss=0.00837 | file=94462671.json
+2026-08-30 11:29:40,737 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8100 | loss=0.02856 | file=94435379.json
+2026-08-30 11:29:47,311 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8200 | loss=0.39411 | file=94674807.json
+2026-08-30 11:29:54,947 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8300 | loss=0.00693 | file=94629371.json
+2026-08-30 11:30:01,362 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8400 | loss=0.75736 | file=94545578.json
+2026-08-30 11:30:08,831 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8500 | loss=0.04377 | file=94516335.json
+2026-08-30 11:30:15,550 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8600 | loss=0.88530 | file=94499615.json
+2026-08-30 11:30:23,100 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8700 | loss=0.02371 | file=94616013.json
+2026-08-30 11:30:29,582 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8800 | loss=0.71138 | file=94492617.json
+2026-08-30 11:30:37,024 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 8900 | loss=0.00368 | file=94400975.json
+2026-08-30 11:30:43,468 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9000 | loss=0.51540 | file=94627672.json
+2026-08-30 11:30:50,892 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9100 | loss=0.07740 | file=94601024.json
+2026-08-30 11:30:57,582 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9200 | loss=0.01607 | file=94430987.json
+2026-08-30 11:31:04,345 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9300 | loss=0.17390 | file=94622631.json
+2026-08-30 11:31:11,826 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9400 | loss=0.03997 | file=94571180.json
+2026-08-30 11:31:18,375 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9500 | loss=0.04740 | file=94477657.json
+2026-08-30 11:31:25,945 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9600 | loss=0.01290 | file=94602584.json
+2026-08-30 11:31:32,453 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9700 | loss=0.00501 | file=94376278.json
+2026-08-30 11:31:39,888 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9800 | loss=0.02147 | file=94541183.json
+2026-08-30 11:31:46,440 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 9900 | loss=0.04207 | file=94541962.json
+2026-08-30 11:31:53,909 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10000 | loss=0.00296 | file=94518112.json
+2026-08-30 11:32:00,462 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10100 | loss=0.04506 | file=94674701.json
+2026-08-30 11:32:07,039 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10200 | loss=0.19620 | file=94589300.json
+2026-08-30 11:32:14,799 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10300 | loss=0.39062 | file=94538501.json
+2026-08-30 11:32:21,249 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10400 | loss=0.36168 | file=94552557.json
+2026-08-30 11:32:28,786 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10500 | loss=0.38661 | file=94436066.json
+2026-08-30 11:32:35,394 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10600 | loss=0.72415 | file=94457314.json
+2026-08-30 11:32:42,920 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10700 | loss=0.00482 | file=94565885.json
+2026-08-30 11:32:49,644 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10800 | loss=0.84759 | file=94494307.json
+2026-08-30 11:32:57,134 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 10900 | loss=0.07645 | file=94495193.json
+2026-08-30 11:33:03,839 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11000 | loss=0.02965 | file=94384987.json
+2026-08-30 11:33:11,307 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11100 | loss=0.49203 | file=94641102.json
+2026-08-30 11:33:17,983 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11200 | loss=0.69041 | file=94711809.json
+2026-08-30 11:33:24,895 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11300 | loss=0.48383 | file=94564946.json
+2026-08-30 11:33:32,342 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11400 | loss=0.01060 | file=94606043.json
+2026-08-30 11:33:38,968 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11500 | loss=0.02048 | file=94708448.json
+2026-08-30 11:33:46,444 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11600 | loss=0.36262 | file=94701756.json
+2026-08-30 11:33:52,951 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11700 | loss=0.33585 | file=94549007.json
+2026-08-30 11:34:00,529 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11800 | loss=0.05771 | file=94445828.json
+2026-08-30 11:34:07,151 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 11900 | loss=0.47632 | file=94676497.json
+2026-08-30 11:34:14,471 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12000 | loss=0.00314 | file=94651389.json
+2026-08-30 11:34:21,065 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12100 | loss=0.04661 | file=94385863.json
+2026-08-30 11:34:27,668 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12200 | loss=0.11800 | file=94617689.json
+2026-08-30 11:34:35,454 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12300 | loss=0.36583 | file=94583354.json
+2026-08-30 11:34:41,985 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12400 | loss=0.63496 | file=94401808.json
+2026-08-30 11:34:49,467 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12500 | loss=0.02194 | file=94648064.json
+2026-08-30 11:34:56,089 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12600 | loss=0.39082 | file=94476699.json
+2026-08-30 11:35:03,492 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12700 | loss=0.02102 | file=94659599.json
+2026-08-30 11:35:10,034 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12800 | loss=0.12460 | file=94606044.json
+2026-08-30 11:35:17,458 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 12900 | loss=0.00560 | file=94624310.json
+2026-08-30 11:35:24,117 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13000 | loss=0.03229 | file=94499679.json
+2026-08-30 11:35:31,438 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13100 | loss=0.01478 | file=94374510.json
+2026-08-30 11:35:38,014 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13200 | loss=0.12589 | file=94606122.json
+2026-08-30 11:35:44,814 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13300 | loss=0.44241 | file=94456434.json
+2026-08-30 11:35:52,214 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13400 | loss=0.08700 | file=94547204.json
+2026-08-30 11:35:58,752 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13500 | loss=0.25011 | file=94405442.json
+2026-08-30 11:36:06,393 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13600 | loss=0.38930 | file=94583351.json
+2026-08-30 11:36:13,029 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13700 | loss=0.24506 | file=94384090.json
+2026-08-30 11:36:20,583 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13800 | loss=0.25816 | file=94601030.json
+2026-08-30 11:36:27,158 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 13900 | loss=0.13634 | file=94393832.json
+2026-08-30 11:36:34,518 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14000 | loss=0.00671 | file=94383212.json
+2026-08-30 11:36:41,113 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14100 | loss=0.01213 | file=94709973.json
+2026-08-30 11:36:47,603 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14200 | loss=0.13835 | file=94637743.json
+2026-08-30 11:36:55,344 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14300 | loss=0.53966 | file=94368398.json
+2026-08-30 11:37:01,862 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14400 | loss=0.66554 | file=94483680.json
+2026-08-30 11:37:09,272 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14500 | loss=0.33612 | file=94452915.json
+2026-08-30 11:37:15,762 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14600 | loss=0.43884 | file=94559597.json
+2026-08-30 11:37:23,074 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14700 | loss=0.00362 | file=94359478.json
+2026-08-30 11:37:29,878 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14800 | loss=0.42612 | file=94439616.json
+2026-08-30 11:37:37,477 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 14900 | loss=0.00509 | file=94519002.json
+2026-08-30 11:37:43,933 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15000 | loss=0.78089 | file=94481907.json
+2026-08-30 11:37:51,514 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15100 | loss=0.00683 | file=94547300.json
+2026-08-30 11:37:57,993 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15200 | loss=0.22277 | file=94401879.json
+2026-08-30 11:38:04,794 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15300 | loss=0.03598 | file=94370969.json
+2026-08-30 11:38:12,264 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15400 | loss=0.79843 | file=94568513.json
+2026-08-30 11:38:18,881 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15500 | loss=0.08629 | file=94365777.json
+2026-08-30 11:38:26,362 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 15600 | loss=0.05319 | file=94379749.json
+2026-08-30 11:38:26,806 [INFO] path_b_bootstrap: BC stream epoch 1/1 | steps=15615 | avg loss: 0.19731
+2026-08-30 11:38:48,008 [INFO] path_b_bootstrap: Bootstrap state saved: 21 days bootstrapped → /kaggle/working/run/metrics/bootstrap_state.json
+2026-08-30 11:38:48,009 [INFO] path_b_bootstrap: Marked day bootstrapped: 2026-08-19 (21 days total)
+2026-08-30 11:38:48,011 [INFO] path_b_bootstrap: Bootstrap state saved: 21 days bootstrapped → /kaggle/working/run/metrics/bootstrap_state.json
+2026-08-30 11:38:48,017 [INFO] kaggriculture_self_play_training: Replay buffer size after bootstrap: 200000
+2026-08-30 11:38:48,018 [INFO] kaggriculture_self_play_training: BC pretrain metrics saved to: /kaggle/working/run/metrics/bc_pretrain.json
+2026-08-30 11:39:18,214 [INFO] kaggriculture_dataset_publish: Running: kaggle datasets download -d scottweeden/kaggriculture-self-training-code -p /kaggle/working/kaggriculture-self-training-code-publish --unzip
+2026-08-30 11:39:27,789 [INFO] kaggriculture_dataset_publish: Copied artifact → /kaggle/working/kaggriculture-self-training-code-publish/training_artifacts/models/model.pth
+2026-08-30 11:39:30,224 [INFO] kaggriculture_dataset_publish: Copied artifact → /kaggle/working/kaggriculture-self-training-code-publish/training_artifacts/checkpoints/training_state_latest.pt
+2026-08-30 11:39:30,226 [INFO] kaggriculture_dataset_publish: Copied artifact → /kaggle/working/kaggriculture-self-training-code-publish/training_artifacts/metrics/bootstrap_state.json
+2026-08-30 11:39:30,228 [INFO] kaggriculture_dataset_publish: Copied artifact → /kaggle/working/kaggriculture-self-training-code-publish/training_artifacts/metrics/bc_pretrain.json
+2026-08-30 11:39:30,260 [INFO] kaggriculture_dataset_publish: Copied artifact → /kaggle/working/kaggriculture-self-training-code-publish/training_artifacts/metrics/episode_metrics.json
+2026-08-30 11:39:30,262 [INFO] kaggriculture_dataset_publish: Copied artifact → /kaggle/working/kaggriculture-self-training-code-publish/training_artifacts/metrics/win_rate_eval.json
+2026-08-30 11:39:30,264 [INFO] kaggriculture_dataset_publish: Copied artifact → /kaggle/working/kaggriculture-self-training-code-publish/training_artifacts/config.json
+2026-08-30 11:39:30,265 [INFO] kaggriculture_dataset_publish: Copied artifact → /kaggle/working/kaggriculture-self-training-code-publish/training_artifacts/agent.py
+2026-08-30 11:39:30,281 [INFO] kaggriculture_dataset_publish: Copied artifact dir → /kaggle/working/kaggriculture-self-training-code-publish/training_artifacts/plots (8 files)
+2026-08-30 11:39:30,283 [INFO] kaggriculture_dataset_publish: Running: kaggle datasets version -p /kaggle/working/kaggriculture-self-training-code-publish -r zip -m Bootstrap 21 days through 2026-08-19; self-play ep 25/25; win vs random 100%; plots included; 2026-08-30 11:39 UTC
+2026-08-30 11:40:00,499 [INFO] kaggriculture_dataset_publish: Published code dataset version: {'dataset_slug': 'scottweeden/kaggriculture-self-training-code', 'publish_dir': '/kaggle/working/kaggriculture-self-training-code-publish', 'copied_artifacts': ['models/model.pth', 'checkpoints/training_state_latest.pt', 'metrics/bootstrap_state.json', 'metrics/bc_pretrain.json', 'metrics/episode_metrics.json', 'metrics/win_rate_eval.json', 'config.json', 'agent.py', 'plots/ (8 files)'], 'version_message': 'Bootstrap 21 days through 2026-08-19; self-play ep 25/25; win vs random 100%; plots included; 2026-08-30 11:39 UTC', 'published_at': '2026-08-30T11:40:00.499314+00:00'}
+2026-08-30 11:40:00,500 [INFO] kaggriculture_self_play_training: Published code dataset after bootstrapping days ['2026-08-15', '2026-08-16', '2026-08-17', '2026-08-18', '2026-08-19']
+2026-08-30 11:40:00,501 [INFO] kaggriculture_self_play_training: Already completed 25 episodes (target 25). Running export/eval only.
+2026-08-30 11:40:03,625 [DEBUG] kaggriculture_self_play_training: Self-play env: KaggleCompetitiveEnv max_steps=720 use_kaggle=True
+2026-08-30 11:40:03,651 [INFO] kaggriculture_self_play_training: Final model saved to: /kaggle/working/run/models/model.pth
+2026-08-30 11:41:18,833 [INFO] kaggriculture_self_play_training: Win-rate eval vs random baseline: 1.00 (10/10)
+2026-08-30 11:41:18,847 [INFO] kaggriculture_self_play_training: Agent export saved to: /kaggle/working/run/agent.py
+2026-08-30 11:41:18,849 [INFO] kaggriculture_self_play_training: Episode metrics saved to: /kaggle/working/run/metrics/episode_metrics.json
+2026-08-30 11:41:18,850 [INFO] kaggriculture_self_play_training: --- SELF-PLAY TRAINING LOOP COMPLETED ---
+2026-08-30 11:41:20,552 [INFO] visualize: Saved: /kaggle/working/run/plots/run_training_loss.png
+2026-08-30 11:41:20,777 [INFO] visualize: Saved: /kaggle/working/run/plots/run_epsilon_decay.png
+2026-08-30 11:41:21,013 [INFO] visualize: Saved: /kaggle/working/run/plots/run_buffer_size.png
+2026-08-30 11:41:21,244 [INFO] visualize: Saved: /kaggle/working/run/plots/run_eval_rewards.png
+2026-08-30 11:41:21,631 [INFO] visualize: Saved: /kaggle/working/run/plots/run_final_rewards.png
+2026-08-30 11:41:21,992 [INFO] visualize: Saved: /kaggle/working/run/plots/run_self_play_episodes.png
+2026-08-30 11:41:22,132 [INFO] visualize: Saved: /kaggle/working/run/plots/run_win_rate_eval.png
+2026-08-30 11:41:23,574 [INFO] kaggriculture_dataset_publish: Running: kaggle datasets download -d scottweeden/kaggriculture-self-training-code -p /kaggle/working/kaggriculture-self-training-code-publish --unzip

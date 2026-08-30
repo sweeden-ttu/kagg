@@ -8,9 +8,9 @@
 - [x] Full training run: bootstrap + BC pretrain + self-play + ladder eval
 - [ ] Pass ladder eval: win rate ≥ 50% vs every opponent including tier 0
 
-**Ladder status (2026-08-30, daily HIRE≤4 + hand WATER/HARVEST, 10 ep, 720×24):** **3/10** cleared.
-Finn **PASS** (win 100%, p0 **$12425** vs $3000). Walter **PASS** (win 100%, p0 **$10611** vs $5497).
-Rosa **PASS** (win 80%, p0 **$9950** vs $9665). Other 7 **FAIL** — next bottleneck **homestead_hana** (p0 ~$10.0k vs ~$12.3k; Hana buys NE land + ramps 4→8 hands + carrot/tomato/wheat). Self-play still off (wipes BC). Experiment: `farm_bc_only_ladder`.
+**Ladder status (2026-08-30, scale-gated HIRE≤8 + NE land when opp buys land, 10 ep, 720×24):** **3/10** cleared.
+Finn **PASS** (win 100%, p0 **$11022** vs $3000). Walter **PASS** (win 100%, p0 **$10280** vs $5493).
+Rosa **PASS** (win 80%, p0 **$9953** vs $9648). **homestead_hana FAIL** (win 20%, p0 ~$9.7k vs ~$11.7k) — scale gate mirrors opp land buy + 4→8 hands + sell chunks, but still ~$2k short. Other 6 also FAIL. Self-play still off (wipes BC). Experiment: `farm_bc_only_ladder`.
 
 ---
 

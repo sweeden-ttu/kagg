@@ -35,14 +35,12 @@ from __future__ import annotations
 
 import collections
 import random
-from typing import Any, Dict, List, Optional, Sequence, Tuple, TypedDict, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-from kaggriculture_adapter import CYCLES_PER_EPISODE, TURNS_PER_CYCLE
 
 
 # ─────────────────────────────────────────────────────────────
@@ -131,8 +129,8 @@ class KaggricultureFeatureExtractor(nn.Module):
 
         # ── MLP Branch ──
         parts: List[torch.Tensor] = []
-        parts.append(observations["day"].float() / float(max(CYCLES_PER_EPISODE - 1, 1)))
-        parts.append(observations["hour"].float() / float(TURNS_PER_CYCLE))
+        parts.append(observations["day"].float() / 29.0)
+        parts.append(observations["hour"].float() / 24.0)
         parts.append(observations["player_id"].float())
         parts.append(observations["farms_p0_money"].float() / 10_000.0)
         parts.append(observations["farms_p1_money"].float() / 10_000.0)
@@ -174,13 +172,6 @@ class KaggricultureFeatureExtractor(nn.Module):
 # ─────────────────────────────────────────────────────────────
 # 2. Dueling Double DQN with Action Branching
 # ─────────────────────────────────────────────────────────────
-
-class BranchingQOutput(TypedDict):
-    farmer_q: torch.Tensor
-    hand_q: List[torch.Tensor]
-    market_q: torch.Tensor
-    value: torch.Tensor
-
 
 class DuelingDoubleDQNBranching(nn.Module):
     """Dueling Double DQN with separate action heads.
@@ -266,7 +257,7 @@ class DuelingDoubleDQNBranching(nn.Module):
 
     # ── Forward Pass ───────────────────────────────────────────
 
-    def forward(self, observations: Dict[str, Any]) -> BranchingQOutput:
+    def forward(self, observations: Dict[str, Any]) -> Dict[str, torch.Tensor]:
         """Forward pass returning Q-values for every branch.
 
         Returns a dict:
@@ -362,7 +353,7 @@ class DuelingDoubleDQNBranching(nn.Module):
     def get_q_values(
         self,
         observations: Dict[str, Any],
-    ) -> BranchingQOutput:
+    ) -> Dict[str, torch.Tensor]:
         """Return raw Q-values (for debugging / logging)."""
         return self.forward(observations)
 
@@ -395,18 +386,18 @@ class DuelingDoubleDQNBranching(nn.Module):
 # 3. Replay Buffer
 # ─────────────────────────────────────────────────────────────
 
-_STATE_SPECS: Dict[str, Tuple[Tuple[int, ...], np.dtype[Any]]] = {
-    "tiles": ((10, 10), np.dtype(np.int64)),
-    "day": ((1,), np.dtype(np.float32)),
-    "hour": ((1,), np.dtype(np.float32)),
-    "player_id": ((1,), np.dtype(np.float32)),
-    "farms_p0_money": ((1,), np.dtype(np.float32)),
-    "farms_p1_money": ((1,), np.dtype(np.float32)),
-    "market_prices": ((5,), np.dtype(np.float32)),
-    "market_inventory": ((5,), np.dtype(np.float32)),
-    "seeds": ((5,), np.dtype(np.float32)),
-    "shed": ((5,), np.dtype(np.float32)),
-    "inventories": ((30,), np.dtype(np.float32)),
+_STATE_SPECS: Dict[str, Tuple[Tuple[int, ...], np.dtype]] = {
+    "tiles": ((10, 10), np.int64),
+    "day": ((1,), np.float32),
+    "hour": ((1,), np.float32),
+    "player_id": ((1,), np.float32),
+    "farms_p0_money": ((1,), np.float32),
+    "farms_p1_money": ((1,), np.float32),
+    "market_prices": ((5,), np.float32),
+    "market_inventory": ((5,), np.float32),
+    "seeds": ((5,), np.float32),
+    "shed": ((5,), np.float32),
+    "inventories": ((30,), np.float32),
 }
 
 
@@ -621,7 +612,6 @@ class DoubleDQNLearner:
         epsilon_final: float = 0.01,
         epsilon_decay_steps: int = 2_000_000,
         epsilon_decay_method: str = "linear",
-        max_grad_norm: float = 0.5,
     ):
         self.online = online_network
         self.target = target_network
@@ -639,7 +629,6 @@ class DoubleDQNLearner:
         self.epsilon_final = epsilon_final
         self.epsilon_decay_steps = epsilon_decay_steps
         self.epsilon_decay_method = epsilon_decay_method
-        self.max_grad_norm = max_grad_norm
 
         self.optimizer = torch.optim.Adam(
             online_network.parameters(),
@@ -685,7 +674,7 @@ class DoubleDQNLearner:
         self,
         env,
         observation: Dict[str, Any],
-    ) -> Tuple[Optional[Dict[str, Any]], bool, Optional[Dict[str, float]]]:
+    ) -> Optional[Dict[str, float]]:
         """One step of interaction + training.
 
         1. Select ε-greedy action
@@ -699,9 +688,8 @@ class DoubleDQNLearner:
             observation: Current observation dict
 
         Returns:
-            ``(next_obs_or_none, done, result)`` where ``result`` is a
-            training dict with ``loss`` and ``td_error``, or ``None`` if
-            training was skipped.
+            Training result dict with "loss" and "td_error", or None
+            if training was skipped.
         """
         action = self.online.get_action(observation, epsilon=self.epsilon)
 
@@ -822,9 +810,7 @@ class DoubleDQNLearner:
         # Backward + optimizer step
         self.optimizer.zero_grad()
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(
-            self.online.parameters(), max_norm=self.max_grad_norm
-        )
+        torch.nn.utils.clip_grad_norm_(self.online.parameters(), max_norm=0.5)
         self.optimizer.step()
 
         # ── Target network update ──

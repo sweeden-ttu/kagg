@@ -114,16 +114,22 @@ HIRE_CASH_RESERVE = 80
 # One extra quadrant (NE @ $1000) only after the wheat engine is printing cash.
 LAND_BUY_TARGET = 1
 LAND_CASH_BUFFER = 500
-LAND_MIN_PLANTS = 10
-LAND_MIN_DAY = 6
-LAND_MIN_MONEY = 2800
+LAND_MIN_PLANTS = 8
+LAND_MIN_DAY = 5
+LAND_MIN_MONEY = 2400
 TARGET_WHEAT_PLANTS = 16
-TARGET_PLANTS_PER_QUADRANT = 16
-# Carrot mix only after NE is unlocked (wheat-only until then).
+TARGET_PLANTS_PER_QUADRANT = 18
+# After NE unlock: wheat-led staples (carrot for faster cycles; no tomato yet).
 STAPLE_CROPS: Tuple[str, ...] = ("WHEAT", "CARROT")
-STAPLE_SHARE = {"WHEAT": 0.75, "CARROT": 0.25}
-SEED_BUY_BATCH = 6
+STAPLE_SHARE = {"WHEAT": 0.7, "CARROT": 0.3}
+SEED_BUY_BATCH = 8
 SELL_CHUNK = 30
+MAX_SELL_ORDERS = 4
+# Season gates (match homestead reference: invest → plant → liquidate).
+INVEST_UNTIL_DAY = 22
+PLANT_UNTIL_DAY = 25
+LIQUIDATE_FROM_DAY = 28
+FILL_RATIO_TARGET = 0.9
 ANIMAL_MIN_COST = 400
 SHED_CAP = 100
 DEFAULT_FERTILIZER_PRICE = 100
@@ -183,10 +189,10 @@ def farm_labor_state(observation: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def should_scale_farm(observation: Dict[str, Any]) -> bool:
-    """Hire 8 / buy NE only when behind a richer farm or already compounding.
+    """Hire 8 / buy NE only when opponent is homestead-tier (land or bank).
 
-    Finn/Walter/Rosa stay on the 4-hand wheat loop unless we are losing or
-    already well above their banks. Hana's ~12k bank trips the scale gate.
+    Finn/Walter/Rosa stay on the 4-hand wheat loop. Scaling trips when the
+    opponent has bought land (Hana+) or is clearly ahead late.
     """
     labor = farm_labor_state(observation)
     day = int(labor["day"])
@@ -194,11 +200,17 @@ def should_scale_farm(observation: Dict[str, Any]) -> bool:
     opp = float(labor.get("opp_money") or 0.0)
     if day < 4:
         return False
-    if opp >= mine + 400.0:
+    player = int(observation.get("player", 0) or 0)
+    farms = observation.get("farms", []) or []
+    opp_farm = _farm_mapping(farms[1 - player] if len(farms) > (1 - player) else {})
+    opp_unlocked = opp_farm.get("unlocked_quadrants") or []
+    opp_bought = max(0, len(opp_unlocked) - 1) if isinstance(opp_unlocked, list) else 0
+    # Hana buys NE; Rosa never does. Mirror land + crew when they expand.
+    if opp_bought >= 1 and day >= 4:
         return True
-    if opp >= 9000.0 and day >= 6:
+    if opp >= mine + 2000.0 and day >= 8:
         return True
-    if mine >= 8000.0 and day >= 8:
+    if mine >= 11000.0 and day >= 12:
         return True
     return False
 
@@ -252,6 +264,8 @@ def land_buy_wanted(
     if bought >= int(target) or bought >= len(LAND_PRICES):
         return False
     if int(labor["day"]) < int(LAND_MIN_DAY):
+        return False
+    if not season_phase(observation)["investing"]:
         return False
     if not should_scale_farm(observation):
         return False
@@ -313,7 +327,10 @@ def plant_is_harvestable(tile: Any, day: int) -> bool:
 
 
 def plant_is_mature(tile: Any, day: int) -> bool:
-    """True when a one-shot crop has finished its watering bonus window."""
+    """True when a one-shot crop has finished most of its watering window.
+
+    Wait for near-cap yield (or max-day age) instead of cutting wheat at 3/6.
+    """
     if not isinstance(tile, dict) or tile.get("kind") != "PLANT":
         return False
     crop = str(tile.get("crop") or "WHEAT")
@@ -324,12 +341,13 @@ def plant_is_mature(tile: Any, day: int) -> bool:
         return plant_is_harvestable(tile, day)
     units = int(tile.get("yield_units", 0) or 0)
     cap = int(info.get("max_yield") or 0)
-    # Good-enough yield: don't wait for the last watering tick if already ≥3.
-    if units >= min(3, cap or 3):
-        return True
+    max_day = int(info["max_yield_day"])
     if cap and units >= cap:
         return True
-    return age >= int(info["max_yield_day"])
+    # Near-cap is good enough once watering has done real work.
+    if cap and units >= max(4, cap - 1):
+        return True
+    return age >= max_day
 
 
 def farm_plant_census(observation: Dict[str, Any]) -> Dict[str, int]:
@@ -413,6 +431,58 @@ def empty_neighbor_move_indices(
     return tuple(hits)
 
 
+def _shed_access_xy(tiles: Any) -> Tuple[int, int]:
+    """Inner-corner shed tile that is not LOCKED (engine NWSE order)."""
+    for x, y in ((4, 4), (5, 4), (4, 5), (5, 5)):
+        if y < len(tiles) and x < len(tiles[y]) and tiles[y][x] != "LOCKED":
+            return (x, y)
+    return (4, 4)
+
+
+def nearest_empty_plant_tile(
+    observation: Dict[str, Any],
+    pos: Optional[Tuple[int, int]] = None,
+    claimed: Optional[set] = None,
+) -> Optional[Tuple[int, int]]:
+    """Nearest unlocked empty tile, shed-proximal first (Hana fill order)."""
+    player = int(observation.get("player", 0) or 0)
+    farms = observation.get("farms", []) or []
+    farm = _farm_mapping(farms[player] if len(farms) > player else {})
+    tiles = farm.get("tiles") or []
+    if pos is None:
+        farmer_pos = farm.get("farmer") or [0, 0]
+        fx = int(farmer_pos[0]) if len(farmer_pos) >= 1 else 0
+        fy = int(farmer_pos[1]) if len(farmer_pos) >= 2 else 0
+    else:
+        fx, fy = int(pos[0]), int(pos[1])
+    skip = claimed or set()
+    sx, sy = _shed_access_xy(tiles)
+    candidates = []
+    for y, row in enumerate(tiles):
+        for x, tile in enumerate(row):
+            if tile is not None or (x, y) in skip:
+                continue
+            # Prefer tiles near the shed, then near the worker.
+            shed_d = abs(x - sx) + abs(y - sy)
+            self_d = abs(x - fx) + abs(y - fy)
+            candidates.append((shed_d, self_d, y, x))
+    if not candidates:
+        return None
+    candidates.sort()
+    _, _, ty, tx = candidates[0]
+    return (tx, ty)
+
+
+def season_phase(observation: Dict[str, Any]) -> Dict[str, bool]:
+    """Invest / plant / liquidate gates for late-season cash."""
+    day = int(observation.get("day", 0) or 0)
+    return {
+        "investing": day <= int(INVEST_UNTIL_DAY),
+        "planting": day <= int(PLANT_UNTIL_DAY),
+        "liquidating": day >= int(LIQUIDATE_FROM_DAY),
+    }
+
+
 def _step_toward_move_index(fx: int, fy: int, tx: int, ty: int) -> Optional[int]:
     """One Manhattan step, horizontal first (same as the reference ladder)."""
     if fx != tx:
@@ -488,10 +558,20 @@ def select_hand_farm_verbs(
     if not isinstance(hands, list) or not hands:
         return verbs
     day = int(observation.get("day", 0) or 0)
+    phase = season_phase(observation)
     census = farm_plant_census(observation)
     seed_count = int(census["seed_count"])
     plant_count = int(census["plants"])
     plant_cap = int(target_plants) if target_plants is not None else target_plant_count(observation)
+    # Late season: stop expanding; liquidate standing crops.
+    allow_plant = bool(phase["planting"]) and seed_count > 0 and plant_count < plant_cap
+    underfilled = plant_count < int(plant_cap * float(FILL_RATIO_TARGET))
+    need_fill = allow_plant and underfilled
+    n_hands_live = min(len(hands), int(CREW_HAND_CAP))
+    # Reserve roughly half the crew for watering/harvest once some plants exist.
+    fill_slots = n_hands_live
+    if plant_count >= 8 and need_fill:
+        fill_slots = max(2, n_hands_live // 2)
     claimed: set = set()
     farmer_pos = farm.get("farmer") or [0, 0]
     if len(farmer_pos) >= 2:
@@ -506,23 +586,62 @@ def select_hand_farm_verbs(
         standing = None
         if 0 <= hy < len(tiles) and 0 <= hx < len(tiles[hy]):
             standing = tiles[hy][hx]
+        prefer_fill = need_fill and i < fill_slots
         if isinstance(standing, dict) and standing.get("kind") == "PLANT":
-            if not standing.get("watered_today", False):
+            if not standing.get("watered_today", False) and not phase["liquidating"]:
                 verbs[i] = FARMER_ACTIONS["WATER"]
                 claimed.add((hx, hy))
                 continue
-            if plant_is_mature(standing, day) and plant_is_harvestable(standing, day):
+            ready = plant_is_harvestable(standing, day) and (
+                phase["liquidating"] or plant_is_mature(standing, day)
+            )
+            if ready:
                 verbs[i] = FARMER_ACTIONS["HARVEST"]
                 claimed.add((hx, hy))
                 continue
+            # Immature watered plant: leave it; fill empty land when under target.
+            if prefer_fill:
+                empty = nearest_empty_plant_tile(
+                    observation, pos=(hx, hy), claimed=claimed
+                )
+                if empty is not None:
+                    claimed.add(empty)
+                    step = _step_toward_move_index(hx, hy, empty[0], empty[1])
+                    if step is not None:
+                        verbs[i] = step
+                        continue
         if isinstance(standing, dict) and standing.get("kind") == "WEED":
             verbs[i] = FARMER_ACTIONS["DIG"]
             continue
-        if standing is None and seed_count > 0 and plant_count < plant_cap:
+        if standing is None and allow_plant and (prefer_fill or not underfilled or i < fill_slots):
             verbs[i] = FARMER_ACTIONS["PLANT"]
             plant_count += 1
             seed_count -= 1
+            if seed_count <= 0 or plant_count >= plant_cap:
+                allow_plant = False
+                need_fill = False
+                underfilled = False
             continue
+        # Under-filled board: dedicated fill hands walk to shed-proximal empties.
+        if prefer_fill and allow_plant:
+            empty = nearest_empty_plant_tile(
+                observation, pos=(hx, hy), claimed=claimed
+            )
+            if empty is not None:
+                claimed.add(empty)
+                if empty == (hx, hy):
+                    verbs[i] = FARMER_ACTIONS["PLANT"]
+                    plant_count += 1
+                    seed_count -= 1
+                else:
+                    step = _step_toward_move_index(hx, hy, empty[0], empty[1])
+                    if step is not None:
+                        verbs[i] = step
+                if seed_count <= 0 or plant_count >= plant_cap:
+                    allow_plant = False
+                    need_fill = False
+                    underfilled = False
+                continue
         target = None
         unwatered = []
         mature = []
@@ -533,6 +652,10 @@ def select_hand_farm_verbs(
                 if (x, y) in claimed or (x == hx and y == hy):
                     continue
                 dist = abs(x - hx) + abs(y - hy)
+                if phase["liquidating"]:
+                    if plant_is_harvestable(tile, day):
+                        mature.append((dist, y, x))
+                    continue
                 if not tile.get("watered_today", False):
                     unwatered.append((dist, y, x))
                 elif plant_is_mature(tile, day) and plant_is_harvestable(tile, day):
@@ -552,7 +675,7 @@ def select_hand_farm_verbs(
                 verbs[i] = step
             continue
         expand = empty_neighbor_move_indices(observation, pos=(hx, hy))
-        if expand and seed_count > 0 and plant_count < plant_cap:
+        if expand and allow_plant:
             verbs[i] = expand[0]
     return verbs
 
@@ -864,15 +987,17 @@ def _crop_plant_counts(observation: Dict[str, Any]) -> Dict[str, int]:
 
 def _best_plant_crop(observation: Dict[str, Any]) -> str:
     seeds = observation.get("private", {}).get("seeds", {}) or {}
-    # Spend wheat seeds first (cash crop); only plant carrot when wheat is gone
-    # or standing mix is short on carrot.
+    # Spend wheat seeds first while under-filling land; carrot only once dense.
     if seeds.get("WHEAT", 0) > 0:
         mix_on = unlocked_quadrant_count(observation) > 1
-        if mix_on and seeds.get("CARROT", 0) > 0:
+        census = farm_plant_census(observation)
+        plant_cap = target_plant_count(observation)
+        underfilled = int(census["plants"]) < int(plant_cap * float(FILL_RATIO_TARGET))
+        if mix_on and not underfilled and seeds.get("CARROT", 0) > 0:
             counts = _crop_plant_counts(observation)
             total = sum(counts.get(c, 0) for c in STAPLE_CROPS) + 1e-6
             carrot_share = float(counts.get("CARROT", 0)) / total
-            if carrot_share + 0.05 < float(STAPLE_SHARE.get("CARROT", 0.35)):
+            if carrot_share + 0.05 < float(STAPLE_SHARE.get("CARROT", 0.3)):
                 return "CARROT"
         return "WHEAT"
     for crop in STAPLE_CROPS:
@@ -903,6 +1028,11 @@ def _sell_quantity(observation: Dict[str, Any], crop: str) -> int:
 
 
 def _best_buy_seed_crop(observation: Dict[str, Any]) -> Optional[str]:
+    if not season_phase(observation)["planting"]:
+        return None
+    if not season_phase(observation)["investing"] and unlocked_quadrant_count(observation) <= 1:
+        # Single-quadrant late season: still top up wheat lightly while planting.
+        pass
     money = 0.0
     farms = observation.get("farms", [])
     player = observation.get("player", 0)
@@ -912,11 +1042,11 @@ def _best_buy_seed_crop(observation: Dict[str, Any]) -> Optional[str]:
         observation.get("day", 0) or 0
     ) >= 6
     seeds = observation.get("private", {}).get("seeds", {}) or {}
-    # Don't buy more seed while inventory is already deep.
-    if int(sum(int(v or 0) for v in (seeds.values() if isinstance(seeds, dict) else []))) >= 8:
-        # Still allow top-up of the under-shared staple when nearly empty of it.
-        pass
-    if mix_on:
+    # Prefer wheat fill until NE is densely planted; then allow carrot share.
+    census = farm_plant_census(observation)
+    plant_cap = target_plant_count(observation)
+    underfilled = int(census["plants"]) < int(plant_cap * float(FILL_RATIO_TARGET))
+    if mix_on and not underfilled:
         counts = _crop_plant_counts(observation)
         seed_counts = {
             c: int((seeds or {}).get(c, 0) or 0) for c in STAPLE_CROPS
@@ -928,7 +1058,7 @@ def _best_buy_seed_crop(observation: Dict[str, Any]) -> Optional[str]:
             cost = int(SEED_COSTS.get(crop, 999))
             if money < cost:
                 continue
-            if seed_counts.get(crop, 0) >= 6:
+            if seed_counts.get(crop, 0) >= 8:
                 continue
             share = float(STAPLE_SHARE.get(crop, 0.0))
             gap = share - (float(counts.get(crop, 0)) / total)
@@ -937,8 +1067,8 @@ def _best_buy_seed_crop(observation: Dict[str, Any]) -> Optional[str]:
                 best = crop
         if best is not None:
             return best
-    # Default: wheat-only expansion (Finn/Walter/Rosa safe path).
-    if money >= SEED_COSTS.get("WHEAT", 10) and int((seeds or {}).get("WHEAT", 0) or 0) < 10:
+    # Default / underfill: wheat-only expansion (Finn/Walter/Rosa + NE fill).
+    if money >= SEED_COSTS.get("WHEAT", 10) and int((seeds or {}).get("WHEAT", 0) or 0) < 12:
         return "WHEAT"
     for crop in CROPS:
         if money >= SEED_COSTS.get(crop, 999):
@@ -947,7 +1077,9 @@ def _best_buy_seed_crop(observation: Dict[str, Any]) -> Optional[str]:
 
 
 def _buy_seed_quantity(observation: Dict[str, Any], crop: str) -> int:
-    """Buy a small staple batch while expanding; never drain the hire reserve."""
+    """Buy a staple batch while expanding; never drain the hire/land reserve."""
+    if not season_phase(observation)["planting"]:
+        return 1
     census = farm_plant_census(observation)
     labor = farm_labor_state(observation)
     plant_cap = target_plant_count(observation)
@@ -955,15 +1087,44 @@ def _buy_seed_quantity(observation: Dict[str, Any], crop: str) -> int:
     if gap <= 0:
         return 1
     unit = int(SEED_COSTS.get(crop, 10) or 10)
-    # Hold land buffer once we are close to buying NE.
+    # Hold land buffer only when we are actually about to expand.
     reserve = float(HIRE_CASH_RESERVE)
     bought = unlocked_quadrant_count(observation) - 1
-    if bought < int(LAND_BUY_TARGET) and bought < len(LAND_PRICES):
-        if int(labor["day"]) >= int(LAND_MIN_DAY) - 1:
-            reserve += float(LAND_CASH_BUFFER)
+    if (
+        bought < int(LAND_BUY_TARGET)
+        and bought < len(LAND_PRICES)
+        and should_scale_farm(observation)
+        and season_phase(observation)["investing"]
+    ):
+        reserve += float(LAND_CASH_BUFFER)
     spendable = max(0.0, float(labor["money"]) - reserve)
     afford = int(spendable // max(unit, 1))
-    return max(1, min(int(SEED_BUY_BATCH), gap, afford if afford > 0 else 1))
+    batch = int(SEED_BUY_BATCH)
+    if unlocked_quadrant_count(observation) > 1 and should_scale_farm(observation):
+        batch = max(batch, 10)
+    return max(1, min(batch, gap, afford if afford > 0 else 1))
+
+
+def sell_orders_wanted(observation: Dict[str, Any]) -> int:
+    """How many SELL market slots to boost this turn."""
+    census = farm_plant_census(observation)
+    shed = int(census["shed_count"])
+    if shed <= 0:
+        return 0
+    phase = season_phase(observation)
+    if phase["liquidating"]:
+        # Dump everything before the final bell.
+        return min(int(MAX_SELL_ORDERS), max(1, (shed + int(SELL_CHUNK) - 1) // int(SELL_CHUNK)))
+    slots = 1
+    if shed >= 30:
+        slots = 2
+    if shed >= 60:
+        slots = 3
+    if shed >= 90 or (should_scale_farm(observation) and shed >= 40):
+        slots = max(slots, 3)
+    if should_scale_farm(observation) and shed >= 20:
+        slots = max(slots, 2)
+    return min(int(MAX_SELL_ORDERS), slots)
 
 
 def decode_farmer_verb(verb_idx: int, crop_idx: int, observation: Dict[str, Any]) -> List[Any]:
