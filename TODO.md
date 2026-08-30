@@ -8,9 +8,9 @@
 - [x] Full training run: bootstrap + BC pretrain + self-play + ladder eval
 - [ ] Pass ladder eval: win rate ≥ 50% vs every opponent including tier 0
 
-**Ladder status (2026-08-30, multi-wheat decode heuristics, 10 ep, 720×24):** **2/10** cleared.
-Finn **PASS** (win 100%, p0 **$7300** vs $3000). Walter **PASS** (win 100%, p0 **$6789** vs $6211).
-Other 8 **FAIL** — next bottleneck **rotation_rosa** (p0 ~$6.2k vs ~$11.1k; Rosa hires 4 hands for ~7 coins/day + 3-crop rotation). Decode still soft-penalizes HIRE; hands never hired (0 hand actions). Self-play still wipes BC. Experiment: `farm_bc_only_ladder`.
+**Ladder status (2026-08-30, daily HIRE≤4 + hand WATER/HARVEST, 10 ep, 720×24):** **3/10** cleared.
+Finn **PASS** (win 100%, p0 **$12425** vs $3000). Walter **PASS** (win 100%, p0 **$10611** vs $5497).
+Rosa **PASS** (win 80%, p0 **$9950** vs $9665). Other 7 **FAIL** — next bottleneck **homestead_hana** (p0 ~$10.0k vs ~$12.3k; Hana buys NE land + ramps 4→8 hands + carrot/tomato/wheat). Self-play still off (wipes BC). Experiment: `farm_bc_only_ladder`.
 
 ---
 
