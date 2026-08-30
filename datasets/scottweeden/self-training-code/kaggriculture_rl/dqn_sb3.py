@@ -91,8 +91,8 @@ class DQN:
         Train every N environment steps. Pass a negative number to train
         every N *episode* steps (not supported).
     gradient_steps : int
-        Number of gradient steps per training event. Only 1 is supported
-        for off-policy DQN (default: 1).
+        Number of gradient steps per training event. Only ``1`` (or the
+        SB3 default ``-1`` meaning "use train_freq") is supported.
     batch_size : int
         Mini-batch size for replay buffer sampling (default: 64).
     learning_starts : int
@@ -238,10 +238,10 @@ class DQN:
         # ── Deprecation warnings ──────────────────────────────────
         if max_buffer_size is not None:
             buffer_size = max_buffer_size
-        if gradient_steps is not None and gradient_steps != -1:
+        if gradient_steps is not None and gradient_steps not in (-1, 1):
             raise NotImplementedError(
-                "gradient_steps > 0 is not yet supported for DQN. "
-                "Set to -1 to disable (use train_freq instead)."
+                "Only gradient_steps=1 (or -1 meaning use train_freq) is "
+                "supported for this DQN."
             )
         if repeat_training != 0:
             raise NotImplementedError(
@@ -413,6 +413,13 @@ class DQN:
     #  Learn
     # ────────────────────────────────────────────────────────────
 
+    @staticmethod
+    def _unpack_reset(reset_out: Any) -> Any:
+        """Accept Gymnasium ``(obs, info)`` or legacy bare ``obs``."""
+        if isinstance(reset_out, tuple) and len(reset_out) == 2:
+            return reset_out[0]
+        return reset_out
+
     def learn(
         self,
         total_timesteps: int,
@@ -426,7 +433,7 @@ class DQN:
         reset_num_timesteps: bool = False,
         progress_bar: bool = False,
     ) -> "DQN":
-        """Train the model.
+        """Train the model via env interaction (``act_and_train``).
 
         Parameters
         ----------
@@ -464,13 +471,14 @@ class DQN:
 
         # Determine epsilon decay steps from exploration fraction
         if self.exploration_decay_steps is None:
-            self.learner.epsilon_decay_steps = (
-                int(self.exploration_fraction * total_timesteps)
+            self.learner.epsilon_decay_steps = max(
+                1, int(self.exploration_fraction * total_timesteps)
             )
         else:
-            self.learner.epsilon_decay_steps = self.exploration_decay_steps
+            self.learner.epsilon_decay_steps = max(1, self.exploration_decay_steps)
 
         # Progress bar setup
+        progress_iter = None
         if progress_bar:
             try:
                 from tqdm import tqdm
@@ -486,10 +494,10 @@ class DQN:
         if self.env is None:
             raise ValueError("DQN.learn() requires an environment passed to DQN(...)")
 
-        obs = self.env.reset()
+        obs = self._unpack_reset(self.env.reset())
         for timestep in range(total_timesteps):
             if obs is None:
-                obs = self.env.reset()
+                obs = self._unpack_reset(self.env.reset())
 
             obs, done, result = self.learner.act_and_train(self.env, obs)
 
@@ -526,38 +534,6 @@ class DQN:
             progress_iter.close()
 
         return self
-
-    def _train_step(self, env: Any = None, timestep: int = 0):
-        """Execute one training step (train on buffer if conditions met)."""
-        if timestep % self.learner.train_frequency != 0:
-            return None
-
-        if len(self.replay_buffer) < self.learner.batch_size:
-            return None
-
-        # Sample batch
-        batch = self.replay_buffer.sample(self.batch_size)
-
-        # Compute observation tensors for current step
-        batch["state"] = {
-            k: (v.to(self.device) if isinstance(v, torch.Tensor) else torch.tensor(v).float().to(self.device))
-            for k, v in batch["state"].items()
-            if k in ["tiles", "day", "hour", "player_id",
-                      "farms_p0_money", "farms_p1_money",
-                      "market_prices", "market_inventory",
-                      "seeds", "shed", "inventories"]
-        }
-        batch["next_state"] = {
-            k: (v.to(self.device) if isinstance(v, torch.Tensor) else torch.tensor(v).float().to(self.device))
-            for k, v in batch["next_state"].items()
-            if k in ["tiles", "day", "hour", "player_id",
-                      "farms_p0_money", "farms_p1_money",
-                      "market_prices", "market_inventory",
-                      "seeds", "shed", "inventories"]
-        }
-
-        result = self.learner.train_step(batch)
-        return result
 
     def _log_metrics(
         self, result: Dict[str, float], timestep: int, start_time: float
@@ -606,7 +582,7 @@ class DQN:
         """Evaluate the agent on the environment for N episodes."""
         rewards = []
         for ep in range(n_episodes):
-            obs = env.reset()
+            obs = self._unpack_reset(env.reset())
             done = False
             total_reward = 0
             while not done:

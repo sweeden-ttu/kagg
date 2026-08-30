@@ -22,7 +22,8 @@ for _extra in (_SCRIPT_DIR, _SCRIPT_DIR / "artifacts", _SCRIPT_DIR / "scratch"):
 try:
     from kaggriculture_path_b_rebuild import (
         KaggricultureJSONParser,
-        KaggricultureFeatureExtractor,
+        PathBFeatureExtractor,
+        KaggricultureFeatureExtractor,  # alias of PathBFeatureExtractor
         HierarchicalDQNBranching,
         HierarchicalActionMasker,
         HierarchicalDoubleDQNLearner,
@@ -169,14 +170,32 @@ SOURCE_SELFPLAY = "selfplay"
 
 
 class PrioritizedReplayBuffer:
-    """Dual-partition PER buffer: 50% past-gameplay bootstrap, 50% self-play."""
+    """Dual-partition PER: bootstrap (reservoir when full) + self-play (circular).
 
-    def __init__(self, capacity: int = 50000, alpha: float = 0.6, bootstrap_fraction: float = 0.5):
+    Sample indices are tagged as ``(source_flag, local_idx, generation)`` so
+    ``update_priorities`` ignores slots overwritten since the sample was drawn.
+    Importance-sampling ``beta`` anneals from ``beta_init`` toward ``beta_final``.
+    """
+
+    def __init__(
+        self,
+        capacity: int = 50000,
+        alpha: float = 0.6,
+        bootstrap_fraction: float = 0.5,
+        beta_init: float = 0.4,
+        beta_final: float = 1.0,
+        beta_anneal_steps: int = 100_000,
+    ):
         self.capacity = capacity
         self.alpha = alpha
         self.bootstrap_fraction = bootstrap_fraction
         self.bootstrap_capacity = max(1, int(capacity * bootstrap_fraction))
         self.selfplay_capacity = max(1, capacity - self.bootstrap_capacity)
+        self.beta_init = float(beta_init)
+        self.beta_final = float(beta_final)
+        self.beta_anneal_steps = max(1, int(beta_anneal_steps))
+        self._sample_count = 0
+        self._bootstrap_seen = 0
         self._init_partition(SOURCE_BOOTSTRAP)
         self._init_partition(SOURCE_SELFPLAY)
 
@@ -185,11 +204,28 @@ class PrioritizedReplayBuffer:
         setattr(self, f"{source}_buffer", [])
         setattr(self, f"{source}_pos", 0)
         setattr(self, f"{source}_priorities", np.zeros((cap,), dtype=np.float32))
+        setattr(self, f"{source}_generations", np.zeros((cap,), dtype=np.int64))
 
     def _partition(self, source: str):
         if source == SOURCE_BOOTSTRAP:
-            return self.bootstrap_buffer, self.bootstrap_pos, self.bootstrap_priorities, self.bootstrap_capacity
-        return self.selfplay_buffer, self.selfplay_pos, self.selfplay_priorities, self.selfplay_capacity
+            return (
+                self.bootstrap_buffer,
+                self.bootstrap_pos,
+                self.bootstrap_priorities,
+                self.bootstrap_capacity,
+                self.bootstrap_generations,
+            )
+        return (
+            self.selfplay_buffer,
+            self.selfplay_pos,
+            self.selfplay_priorities,
+            self.selfplay_capacity,
+            self.selfplay_generations,
+        )
+
+    def current_beta(self) -> float:
+        t = min(1.0, self._sample_count / float(self.beta_anneal_steps))
+        return self.beta_init + t * (self.beta_final - self.beta_init)
 
     def push(
         self,
@@ -208,34 +244,47 @@ class PrioritizedReplayBuffer:
         if source not in (SOURCE_BOOTSTRAP, SOURCE_SELFPLAY):
             raise ValueError(f"source must be {SOURCE_BOOTSTRAP!r} or {SOURCE_SELFPLAY!r}, got {source!r}")
 
-        buf, pos, prios, cap = self._partition(source)
+        buf, pos, prios, cap, gens = self._partition(source)
         transition = (
             tiles, numeric, action_verb, action_crop, action_hands,
             action_market, reward, next_tiles, next_numeric, done,
         )
         max_prio = float(prios[: len(buf)].max()) if buf else 1.0
+
         if len(buf) < cap:
             buf.append(transition)
             idx = len(buf) - 1
+            gens[idx] = 0
+        elif source == SOURCE_BOOTSTRAP:
+            # Reservoir: keep a uniform sample of all bootstrap transitions seen.
+            self._bootstrap_seen += 1
+            j = int(np.random.randint(0, self._bootstrap_seen))
+            if j >= cap:
+                return
+            idx = j
+            buf[idx] = transition
+            gens[idx] = int(gens[idx]) + 1
         else:
             idx = pos
             buf[idx] = transition
+            gens[idx] = int(gens[idx]) + 1
             pos = (pos + 1) % cap
-            if source == SOURCE_BOOTSTRAP:
-                self.bootstrap_pos = pos
-            else:
-                self.selfplay_pos = pos
+            self.selfplay_pos = pos
+
         prios[idx] = max_prio
+        if source == SOURCE_BOOTSTRAP:
+            self._bootstrap_seen = max(self._bootstrap_seen, len(buf))
 
     def _sample_partition(
         self,
         source: str,
         batch_size: int,
         beta: float,
-    ) -> Tuple[List[tuple], np.ndarray, np.ndarray, np.ndarray]:
-        buf, _, prios, _ = self._partition(source)
+    ) -> Tuple[List[tuple], np.ndarray, np.ndarray]:
+        buf, _, prios, _, gens = self._partition(source)
         if not buf or batch_size <= 0:
-            return [], np.array([], dtype=int), np.array([], dtype=np.float32), np.array([], dtype=int)
+            empty = np.zeros((0, 3), dtype=np.int64)
+            return [], empty, np.array([], dtype=np.float32)
 
         n = min(batch_size, len(buf))
         prios_slice = prios[: len(buf)].astype(np.float64)
@@ -245,10 +294,16 @@ class PrioritizedReplayBuffer:
         samples = [buf[i] for i in local_indices]
         weights = (len(buf) * probs[local_indices]) ** (-beta)
         weights /= weights.max()
-        global_indices = np.array([(0 if source == SOURCE_BOOTSTRAP else 1), *local_indices], dtype=object)
-        # Encode global index as (source_flag, local_idx) for priority updates
-        tagged_indices = np.array([(0 if source == SOURCE_BOOTSTRAP else 1, int(i)) for i in local_indices])
-        return samples, tagged_indices, np.asarray(weights, dtype=np.float32), local_indices
+        flag = 0 if source == SOURCE_BOOTSTRAP else 1
+        tagged = np.stack(
+            [
+                np.full(n, flag, dtype=np.int64),
+                local_indices.astype(np.int64),
+                gens[local_indices].astype(np.int64),
+            ],
+            axis=1,
+        )
+        return samples, tagged, np.asarray(weights, dtype=np.float32)
 
     def _batch_from_samples(self, samples: List[tuple], weights: np.ndarray) -> Dict[str, torch.Tensor]:
         tiles_b, numeric_b, act_v_b, act_c_b, act_h_b, act_m_b, r_b, n_tiles_b, n_num_b, d_b = zip(*samples)
@@ -266,27 +321,33 @@ class PrioritizedReplayBuffer:
             "weights": torch.as_tensor(weights, dtype=torch.float32),
         }
 
-    def sample(self, batch_size: int, beta: float = 0.4) -> Tuple[Dict[str, torch.Tensor], np.ndarray, np.ndarray]:
+    def sample(
+        self, batch_size: int, beta: Optional[float] = None
+    ) -> Tuple[Dict[str, torch.Tensor], np.ndarray, np.ndarray]:
+        if beta is None:
+            beta = self.current_beta()
+        self._sample_count += 1
         n_bootstrap = batch_size // 2
         n_selfplay = batch_size - n_bootstrap
-        b_samples, b_indices, b_weights, _ = self._sample_partition(SOURCE_BOOTSTRAP, n_bootstrap, beta)
-        s_samples, s_indices, s_weights, _ = self._sample_partition(SOURCE_SELFPLAY, n_selfplay, beta)
+        b_samples, b_indices, b_weights = self._sample_partition(SOURCE_BOOTSTRAP, n_bootstrap, beta)
+        s_samples, s_indices, s_weights = self._sample_partition(SOURCE_SELFPLAY, n_selfplay, beta)
         samples = b_samples + s_samples
         if not samples:
-            return {}, np.array([]), np.array([])
+            return {}, np.zeros((0, 3), dtype=np.int64), np.array([])
 
-        indices = np.concatenate([b_indices, s_indices]) if len(b_indices) and len(s_indices) else (
-            b_indices if len(b_indices) else s_indices
-        )
-        weights = np.concatenate([b_weights, s_weights]) if len(b_weights) and len(s_weights) else (
-            b_weights if len(b_weights) else s_weights
-        )
+        if len(b_indices) and len(s_indices):
+            indices = np.concatenate([b_indices, s_indices], axis=0)
+            weights = np.concatenate([b_weights, s_weights])
+        elif len(b_indices):
+            indices, weights = b_indices, b_weights
+        else:
+            indices, weights = s_indices, s_weights
         return self._batch_from_samples(samples, weights), indices, weights
 
     def sample_uniform(self, batch_size: int, source: Optional[str] = None) -> Dict[str, torch.Tensor]:
         """Uniform sample for BC — defaults to bootstrap partition."""
         src = source or SOURCE_BOOTSTRAP
-        buf, _, _, _ = self._partition(src)
+        buf, _, _, _, _ = self._partition(src)
         if not buf:
             return {}
         n = min(batch_size, len(buf))
@@ -302,20 +363,25 @@ class PrioritizedReplayBuffer:
             return
         if indices.ndim == 1 and indices.dtype == object:
             rows = list(indices)
-        elif indices.ndim == 2 and indices.shape[-1] == 2:
+        elif indices.ndim == 2 and indices.shape[-1] >= 2:
             rows = indices
         else:
             return
         for idx, prio in zip(rows, priorities.reshape(-1)):
             try:
-                source_flag, local_idx = int(idx[0]), int(idx[1])
+                source_flag = int(idx[0])
+                local_idx = int(idx[1])
+                gen = int(idx[2]) if len(idx) > 2 else None
             except (TypeError, IndexError, ValueError):
                 continue
             source = SOURCE_BOOTSTRAP if source_flag == 0 else SOURCE_SELFPLAY
-            buf, _, prios, _ = self._partition(source)
+            buf, _, prios, _, gens = self._partition(source)
             n = len(buf)
-            if 0 <= local_idx < n:
-                prios[local_idx] = max(float(prio), 1e-6)
+            if not (0 <= local_idx < n):
+                continue
+            if gen is not None and int(gens[local_idx]) != gen:
+                continue  # slot overwritten since sample
+            prios[local_idx] = max(float(prio), 1e-6)
 
     @property
     def bootstrap_size(self) -> int:
@@ -338,6 +404,13 @@ class PrioritizedReplayBuffer:
             "selfplay_buffer": self.selfplay_buffer,
             "bootstrap_priorities": self.bootstrap_priorities[: len(self.bootstrap_buffer)].copy(),
             "selfplay_priorities": self.selfplay_priorities[: len(self.selfplay_buffer)].copy(),
+            "bootstrap_generations": self.bootstrap_generations[: len(self.bootstrap_buffer)].copy(),
+            "selfplay_generations": self.selfplay_generations[: len(self.selfplay_buffer)].copy(),
+            "beta_init": self.beta_init,
+            "beta_final": self.beta_final,
+            "beta_anneal_steps": self.beta_anneal_steps,
+            "sample_count": self._sample_count,
+            "bootstrap_seen": self._bootstrap_seen,
         }
 
     def load_state_dict(self, state: Dict[str, Any]) -> None:
@@ -353,12 +426,25 @@ class PrioritizedReplayBuffer:
             self.selfplay_buffer = list(state.get("selfplay_buffer", []))
             self.bootstrap_priorities = np.zeros((self.bootstrap_capacity,), dtype=np.float32)
             self.selfplay_priorities = np.zeros((self.selfplay_capacity,), dtype=np.float32)
+            self.bootstrap_generations = np.zeros((self.bootstrap_capacity,), dtype=np.int64)
+            self.selfplay_generations = np.zeros((self.selfplay_capacity,), dtype=np.int64)
             bp = state.get("bootstrap_priorities")
             sp = state.get("selfplay_priorities")
             if bp is not None and len(self.bootstrap_buffer):
                 self.bootstrap_priorities[: len(self.bootstrap_buffer)] = np.asarray(bp, dtype=np.float32)
             if sp is not None and len(self.selfplay_buffer):
                 self.selfplay_priorities[: len(self.selfplay_buffer)] = np.asarray(sp, dtype=np.float32)
+            bg = state.get("bootstrap_generations")
+            sg = state.get("selfplay_generations")
+            if bg is not None and len(self.bootstrap_buffer):
+                self.bootstrap_generations[: len(self.bootstrap_buffer)] = np.asarray(bg, dtype=np.int64)
+            if sg is not None and len(self.selfplay_buffer):
+                self.selfplay_generations[: len(self.selfplay_buffer)] = np.asarray(sg, dtype=np.int64)
+            self.beta_init = float(state.get("beta_init", 0.4))
+            self.beta_final = float(state.get("beta_final", 1.0))
+            self.beta_anneal_steps = int(state.get("beta_anneal_steps", 100_000))
+            self._sample_count = int(state.get("sample_count", 0))
+            self._bootstrap_seen = int(state.get("bootstrap_seen", len(self.bootstrap_buffer)))
             return
 
         # Legacy single-buffer checkpoint → assign to bootstrap partition
@@ -374,6 +460,8 @@ class PrioritizedReplayBuffer:
         self.selfplay_pos = len(self.selfplay_buffer) % self.selfplay_capacity
         self.bootstrap_priorities = np.zeros((self.bootstrap_capacity,), dtype=np.float32)
         self.selfplay_priorities = np.zeros((self.selfplay_capacity,), dtype=np.float32)
+        self.bootstrap_generations = np.zeros((self.bootstrap_capacity,), dtype=np.int64)
+        self.selfplay_generations = np.zeros((self.selfplay_capacity,), dtype=np.int64)
         legacy_p = state.get("priorities")
         if legacy_p is not None:
             legacy_p = np.asarray(legacy_p, dtype=np.float32)
@@ -383,6 +471,11 @@ class PrioritizedReplayBuffer:
                 self.bootstrap_priorities[:n_b] = legacy_p[:n_b]
             if n_s:
                 self.selfplay_priorities[:n_s] = legacy_p[n_b : n_b + n_s]
+        self.beta_init = 0.4
+        self.beta_final = 1.0
+        self.beta_anneal_steps = 100_000
+        self._sample_count = 0
+        self._bootstrap_seen = len(self.bootstrap_buffer)
 
     def __len__(self) -> int:
         return len(self.bootstrap_buffer) + len(self.selfplay_buffer)
@@ -391,8 +484,11 @@ class PrioritizedReplayBuffer:
         if source is None:
             self._init_partition(SOURCE_BOOTSTRAP)
             self._init_partition(SOURCE_SELFPLAY)
+            self._bootstrap_seen = 0
+            self._sample_count = 0
         elif source == SOURCE_BOOTSTRAP:
             self._init_partition(SOURCE_BOOTSTRAP)
+            self._bootstrap_seen = 0
         elif source == SOURCE_SELFPLAY:
             self._init_partition(SOURCE_SELFPLAY)
         else:
@@ -1164,8 +1260,7 @@ def train_self_play(total_episodes: int = 15,
     with open(dirs["root"] / "config.json", "w", encoding="utf-8") as fh:
         json.dump({**config, "last_completed_episode": start_episode}, fh, indent=2)
 
-    # Exploration parameter decay. After BC, keep ε low so random
-    # self-play does not wipe the cloned farming policy before DQN can refine it.
+    # Exploration: after BC keep meaningful ε so rotating opponents stay explorative.
     if not bc_loss_history:
         bc_metrics_path = dirs["metrics"] / "bc_pretrain.json"
         if bc_metrics_path.exists():
@@ -1176,19 +1271,20 @@ def train_self_play(total_episodes: int = 15,
                 if prior_losses:
                     bc_loss_history = list(prior_losses)
                     logger.info(
-                        "Using prior BC metrics (%d epoch losses) for low-ε self-play",
+                        "Using prior BC metrics (%d epoch losses) for moderated-ε self-play",
                         len(bc_loss_history),
                     )
             except (json.JSONDecodeError, OSError) as exc:
                 logger.warning("Could not read prior BC metrics: %s", exc)
-    eps_start = 0.12 if bc_loss_history else 1.0
-    eps_end = 0.03
+    eps_start = 0.35 if bc_loss_history else 1.0
+    eps_end = 0.05
     eps_decay_steps = max(1, total_episodes - learning_start_episodes)
     if bc_loss_history:
         logger.info(
-            "BC completed (%d epoch losses); self-play eps_start=%.2f (was 1.0 without BC)",
+            "BC completed (%d epoch losses); self-play eps_start=%.2f eps_end=%.2f",
             len(bc_loss_history),
             eps_start,
+            eps_end,
         )
 
     # Initialize competitive self-play environment (official Kaggle simulator required).
@@ -1634,7 +1730,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from kaggriculture_adapter import decode_path_b_action, parse_observation
 from kaggriculture_path_b_rebuild import (
     KaggricultureJSONParser,
-    KaggricultureFeatureExtractor,
+    PathBFeatureExtractor,
     HierarchicalDQNBranching,
     HierarchicalActionMasker,
     apply_hierarchical_masks,
@@ -1643,14 +1739,34 @@ from kaggriculture_path_b_rebuild import (
 )
 
 
+def _resolve_model_path() -> str:
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(here, "models", "model.pth"),
+        os.path.join(here, "model.pth"),
+        "/kaggle/working/models/model.pth",
+        "/kaggle/working/run/models/model.pth",
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            return path
+    raise FileNotFoundError(
+        "model.pth not found. Tried: " + ", ".join(candidates)
+    )
+
+
 class Agent:
     def __init__(self):
         self.device = torch.device("cpu")
         self.parser = KaggricultureJSONParser()
-        extractor = KaggricultureFeatureExtractor(latent_dim=512)
+        extractor = PathBFeatureExtractor(latent_dim=512)
         self.net = HierarchicalDQNBranching(extractor, latent_dim=512, shared_dim=256)
-        model_path = os.path.join(os.path.dirname(__file__), "models", "model.pth")
-        self.net.load_state_dict(torch.load(model_path, map_location=self.device))
+        model_path = _resolve_model_path()
+        try:
+            state = torch.load(model_path, map_location=self.device, weights_only=True)
+        except TypeError:
+            state = torch.load(model_path, map_location=self.device)
+        self.net.load_state_dict(state)
         self.net.eval()
 
     def act(self, obs, action_space=None):

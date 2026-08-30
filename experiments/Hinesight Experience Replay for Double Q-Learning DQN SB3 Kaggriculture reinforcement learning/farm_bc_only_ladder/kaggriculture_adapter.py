@@ -97,22 +97,10 @@ CROP_TO_TILE_CLASS = {crop: TILE_CLASS[crop] for crop in CROPS}
 
 SEED_COSTS = {"WHEAT": 10, "CARROT": 8, "TOMATO": 5, "STRAWBERRY": 3, "MELON": 2}
 LAND_PRICES = [1000, 2000, 4000]
-# Engine: cost = farmHandCostMult * fib(hires_today), fib(0)=1,1,2,3,5,...
-# Four morning hires cost 1+1+2+3 = 7. The old 400 floor hid cheap labour.
-HIRE_FIB_COSTS = (1, 1, 2, 3, 5, 8, 13, 21)
-HIRE_COST = 1
-DAILY_HIRE_TARGET = 4
-HIRE_HOUR_LIMIT = 2
-HIRE_CASH_RESERVE = 80
-TARGET_WHEAT_PLANTS = 16
-SEED_BUY_BATCH = 6
+HIRE_COST = 400
 ANIMAL_MIN_COST = 400
 SHED_CAP = 100
 DEFAULT_FERTILIZER_PRICE = 100
-_HAND_VERBS = frozenset({
-    "PASS", "DIG", "WATER", "PLANT", "HARVEST",
-    "NORTH", "SOUTH", "WEST", "EAST", "DROP", "PICKUP",
-})
 
 # Engine growth table (kaggriculture.py CROPS). Wheat is planted with
 # yield_units=1 immediately, but HARVEST is a no-op until first_yield_day.
@@ -134,57 +122,6 @@ def _farm_mapping(farm: Any) -> Dict[str, Any]:
         return dict(farm)
     except (TypeError, ValueError):
         return {}
-
-
-def hire_cost_today(hires_today: int) -> int:
-    """Next HIRE coin cost (engine ``_hire_cost`` with mult=1)."""
-    n = max(0, int(hires_today))
-    if n < len(HIRE_FIB_COSTS):
-        return int(HIRE_FIB_COSTS[n])
-    a, b = 1, 1
-    for _ in range(n):
-        a, b = b, a + b
-    return int(a)
-
-
-def farm_labor_state(observation: Dict[str, Any]) -> Dict[str, Any]:
-    """Hour, cash, and crew size for daily HIRE gating."""
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    hands = farm.get("hands") or []
-    return {
-        "hour": int(observation.get("hour", 0) or 0),
-        "day": int(observation.get("day", 0) or 0),
-        "money": float(farm.get("money", 0.0) or 0.0),
-        "hires_today": int(farm.get("hires_today", 0) or 0),
-        "n_hands": len(hands) if isinstance(hands, list) else 0,
-    }
-
-
-def daily_hire_orders_wanted(
-    observation: Dict[str, Any],
-    *,
-    target: int = DAILY_HIRE_TARGET,
-    hour_limit: int = HIRE_HOUR_LIMIT,
-    cash_reserve: int = HIRE_CASH_RESERVE,
-) -> int:
-    """How many HIRE orders to emit this turn (0 unless early + cheap fib)."""
-    labor = farm_labor_state(observation)
-    if int(labor["hour"]) > int(hour_limit):
-        return 0
-    already = int(labor["hires_today"])
-    have = int(labor["n_hands"])
-    cap = int(target)
-    todo = max(0, min(cap - already, cap - have, NUM_HANDS - have))
-    money = float(labor["money"])
-    while todo > 0:
-        cost_sum = sum(hire_cost_today(already + i) for i in range(todo))
-        last_cost = hire_cost_today(already + todo - 1)
-        if last_cost <= 5 and money >= cost_sum + float(cash_reserve):
-            return todo
-        todo -= 1
-    return 0
 
 
 def plant_is_harvestable(tile: Any, day: int) -> bool:

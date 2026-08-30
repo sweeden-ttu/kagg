@@ -102,11 +102,16 @@ conda activate kagg
 conda install -c conda-forge uv -y
 KAGG_PY="$(conda info --base)/envs/kagg/bin/python"
 uv pip install --python "$KAGG_PY" torch torchvision torchaudio
-uv pip install --python "$KAGG_PY" "stable-baselines3[extra]" kaggle-environments kagglehub jupyter ipykernel
+uv pip install --python "$KAGG_PY" "stable-baselines3[extra]" kaggle-environments kagglehub jupyter ipykernel pytest
+
+# Editable install of this repo into the same conda env (no pip venv)
+uv pip install -e ".[dev]" --python "$KAGG_PY"
 
 # Register Jupyter kernel for notebooks in this repo
 python -m ipykernel install --user --name kagg --display-name "Python (kagg)"
 ```
+
+After the editable install, `import kaggriculture_rl` and sibling modules (`kaggriculture_adapter`, `kaggle_env_wrapper`, …) resolve without relying only on `extraPaths`. LSP still uses `extraPaths` for analysis.
 
 ### Cursor / VS Code
 

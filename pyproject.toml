@@ -1,11 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "kagg"
 version = "0.1.0"
 description = "Kaggriculture Path B self-play training (DQN / SB3)"
 readme = "README.md"
 requires-python = ">=3.12"
-# Runtime packages live in conda env `kagg` (not a pip venv).
-# Install / refresh with: conda run -n kagg python -m pip install stable-baselines3 gymnasium kaggle-environments
+# Install into conda env `kagg` with uv (never a separate pip venv):
+#   KAGG_PY="$(conda info --base)/envs/kagg/bin/python"
+#   uv pip install -e . --python "$KAGG_PY"
+dependencies = [
+  "torch",
+  "numpy",
+  "gymnasium",
+  "kaggle-environments",
+  "matplotlib",
+  "tqdm",
+  "tensorboard",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "stable-baselines3"]
+
+[tool.setuptools.packages.find]
+where = ["datasets/scottweeden/self-training-code"]
+include = ["kaggriculture_rl*"]
+
+[tool.setuptools]
+package-dir = {"" = "datasets/scottweeden/self-training-code"}
+py-modules = [
+  "kaggriculture_adapter",
+  "kaggle_env_wrapper",
+  "dataset_loader",
+  "episode_catalog",
+  "path_b_bootstrap",
+  "kaggriculture_path_b_rebuild",
+  "kaggriculture_self_play_training",
+  "kaggriculture_dataset_publish",
+  "eval_policy",
+  "training_metrics",
+  "visualize",
+  "notebook_paths",
+]
 
 [tool.basedpyright]
 include = [
@@ -84,3 +122,7 @@ executionEnvironments = [
     "datasets/scottweeden/self-training-code",
   ] },
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["datasets/scottweeden/self-training-code"]

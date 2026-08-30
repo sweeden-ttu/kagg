@@ -52,3 +52,24 @@
 2026-08-30 07:31:40,085 [INFO] kaggriculture_self_play_training: Already completed 0 episodes (target 0). Running export/eval only.
 2026-08-30 07:31:41,117 [DEBUG] kaggriculture_self_play_training: Self-play env: KaggleCompetitiveEnv max_steps=720 turns_per_cycle=24 use_kaggle=True
 2026-08-30 07:31:41,152 [INFO] kaggriculture_self_play_training: Final model saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/models/model.pth
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training: League win-rate summary: 0.00 (0/100 ep), cleared=0/10, beats_all=False
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training: Ladder eval (10 opponents, 10 ep each, target 50%): beats_all=False → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/metrics/ladder_eval.json
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training:   [FAIL] vs fallow_finn      win=0% (0/10) money 0 vs 3000
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training:   [FAIL] vs wheat_walter     win=0% (0/10) money 0 vs 6466
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training:   [FAIL] vs rotation_rosa    win=0% (0/10) money 0 vs 12234
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training:   [FAIL] vs homestead_hana   win=0% (0/10) money 0 vs 14162
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training:   [FAIL] vs melon_mateo      win=0% (0/10) money 0 vs 23859
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training:   [FAIL] vs rancher_rita     win=0% (0/10) money 0 vs 35969
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training:   [FAIL] vs broker_bea       win=0% (0/10) money 0 vs 45475
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training:   [FAIL] vs ledger_lena      win=0% (0/10) money 0 vs 44739
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training:   [FAIL] vs slotter_silas    win=0% (0/10) money 0 vs 44044
+2026-08-30 07:46:51,830 [INFO] kaggriculture_self_play_training:   [FAIL] vs closer_cleo      win=0% (0/10) money 0 vs 21944
+2026-08-30 07:46:51,832 [INFO] kaggriculture_self_play_training: Agent export saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/agent.py
+2026-08-30 07:46:51,832 [INFO] kaggriculture_self_play_training: Episode metrics saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/metrics/episode_metrics.json
+2026-08-30 07:46:51,833 [INFO] kaggriculture_self_play_training: Cumulative training progress saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/metrics/training_progress.json
+2026-08-30 07:46:51,941 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/plots/run_win_rate_eval.png
+2026-08-30 07:46:51,941 [INFO] visualize: Run stats/plots updated: 1 PNGs → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/plots
+2026-08-30 07:46:51,942 [INFO] kaggriculture_self_play_training: Trend plots updated (1 files) → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/plots
+2026-08-30 07:46:51,942 [INFO] kaggriculture_self_play_training: --- SELF-PLAY TRAINING LOOP COMPLETED ---
+2026-08-30 07:46:52,012 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/plots/run_win_rate_eval.png
+2026-08-30 07:46:52,012 [INFO] visualize: Run stats/plots updated: 1 PNGs → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/plots
