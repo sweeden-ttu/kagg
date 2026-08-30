@@ -635,3 +635,8 @@ Successfully imported Kaggriculture Path B components.
 2026-08-30 06:36:21,605 [DEBUG] kaggriculture_self_play_training: Ep 11 step 400: verb=3 crop=0 raw_r=0.000 shaped_r=-0.287 done=False buffer=32591 learn=True
 2026-08-30 06:36:31,045 [DEBUG] kaggriculture_self_play_training: Ep 11 step 500 DQN update: loss=7.54232 batch=32 priorities_updated=32
 2026-08-30 06:36:31,068 [DEBUG] kaggriculture_self_play_training: Ep 11 step 500: verb=3 crop=0 raw_r=0.000 shaped_r=-0.201 done=False buffer=32691 learn=True
+2026-08-30 06:36:40,476 [DEBUG] kaggriculture_self_play_training: Ep 11 step 600 DQN update: loss=23.09488 batch=32 priorities_updated=32
+2026-08-30 06:36:40,499 [DEBUG] kaggriculture_self_play_training: Ep 11 step 600: verb=1 crop=0 raw_r=0.000 shaped_r=-0.073 done=False buffer=32791 learn=True
+2026-08-30 06:36:50,191 [DEBUG] kaggriculture_self_play_training: Ep 11 step 700 DQN update: loss=30.68623 batch=32 priorities_updated=32
+2026-08-30 06:36:50,215 [DEBUG] kaggriculture_self_play_training: Ep 11 step 700: verb=4 crop=0 raw_r=0.000 shaped_r=0.014 done=False buffer=32891 learn=True
+2026-08-30 06:36:51,963 [INFO] kaggriculture_self_play_training: Episode 11/36 | Epsilon: 0.096 | Buffer Size: 32909 | Raw Reward: -29.93 | Shaped Reward: -160.35 | Avg Loss: 26.43706

@@ -40,7 +40,6 @@ import time
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
-import numpy.typing as npt
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -391,18 +390,18 @@ class DuelingDoubleDQNBranching(nn.Module):
 # 3. Replay Buffer
 # ─────────────────────────────────────────────────────────────
 
-_STATE_SPECS: Dict[str, Tuple[Tuple[int, ...], npt.DTypeLike]] = {
-    "tiles": ((10, 10), np.int64),
-    "day": ((1,), np.float32),
-    "hour": ((1,), np.float32),
-    "player_id": ((1,), np.float32),
-    "farms_p0_money": ((1,), np.float32),
-    "farms_p1_money": ((1,), np.float32),
-    "market_prices": ((5,), np.float32),
-    "market_inventory": ((5,), np.float32),
-    "seeds": ((5,), np.float32),
-    "shed": ((5,), np.float32),
-    "inventories": ((30,), np.float32),
+_STATE_SPECS: Dict[str, Tuple[Tuple[int, ...], np.dtype[Any]]] = {
+    "tiles": ((10, 10), np.dtype(np.int64)),
+    "day": ((1,), np.dtype(np.float32)),
+    "hour": ((1,), np.dtype(np.float32)),
+    "player_id": ((1,), np.dtype(np.float32)),
+    "farms_p0_money": ((1,), np.dtype(np.float32)),
+    "farms_p1_money": ((1,), np.dtype(np.float32)),
+    "market_prices": ((5,), np.dtype(np.float32)),
+    "market_inventory": ((5,), np.dtype(np.float32)),
+    "seeds": ((5,), np.dtype(np.float32)),
+    "shed": ((5,), np.dtype(np.float32)),
+    "inventories": ((30,), np.dtype(np.float32)),
 }
 # #region agent log
 with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
