@@ -749,7 +749,7 @@ def train_self_play(total_episodes: int = 15,
                     metadata_path: Optional[str] = None,
                     bootstrap_top_per_day: Optional[int] = 20,
                     bootstrap_passes: int = 1,
-                    bc_epochs_per_pass: int = 1,
+                    bc_epochs_per_pass: int = 2,
                     verbose: bool = False,
                     code_src: Optional[str] = None,
                     bootstrap_mode: str = "streaming",
@@ -1765,8 +1765,8 @@ def main() -> None:
     parser.add_argument(
         "--bc-epochs-per-pass",
         type=int,
-        default=1,
-        help="BC epochs after each bootstrap pass (used when --bootstrap-passes > 1)",
+        default=2,
+        help="BC stream epochs per bootstrap day/pass (default: 2)",
     )
     parser.add_argument(
         "--bc-epochs",

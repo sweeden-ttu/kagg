@@ -762,7 +762,7 @@ def stream_bootstrap_bc_pretrain(
     episode_files: List[Path],
     bootstrap_passes: int = 10,
     max_transitions_per_pass: Optional[int] = None,
-    bc_epochs_per_pass: int = 1,
+    bc_epochs_per_pass: int = 2,
     bc_batch_size: int = 64,
     bc_steps_per_epoch: Optional[int] = None,
     max_market_orders: int = 10,
