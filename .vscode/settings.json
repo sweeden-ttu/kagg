@@ -2,6 +2,10 @@
   "python.defaultInterpreterPath": "/Users/sweeden/miniforge3/envs/kagg/bin/python",
   "python.condaPath": "/Users/sweeden/miniforge3/bin/conda",
   "python.terminal.activateEnvironment": true,
-  "jupyter.jupyterServerType": "local",
-  "notebook.defaultFormatter": "ms-python.python"
+  "jupyter.jupyterServerType": "remote",
+  "jupyter.jupyterServerURI": "http://nb.local.com:8888/",
+  "jupyter.allowUnauthorizedRemoteConnection": true,
+  "jupyter.notebookFileRoot": "${workspaceFolder}",
+  "notebook.defaultFormatter": "ms-python.python",
+  "kagg.jupyterServerFallbackURI": "http://ai-rig.local:8888/"
 }
