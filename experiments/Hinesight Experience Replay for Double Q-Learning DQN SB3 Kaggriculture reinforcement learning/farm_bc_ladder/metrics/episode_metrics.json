@@ -1,10 +1,10 @@
 {
   "totals": {
-    "episodes": 27,
-    "cumulative_raw_reward": -806.23,
-    "cumulative_shaped_reward": -8641.15354886815,
-    "gradient_updates": 17975,
-    "cumulative_loss": 887603.7549257278
+    "episodes": 31,
+    "cumulative_raw_reward": -921.23,
+    "cumulative_shaped_reward": -11165.397623065588,
+    "gradient_updates": 20851,
+    "cumulative_loss": 1331821.790986061
   },
   "episodes": [
     {
@@ -465,6 +465,74 @@
       "cumulative_shaped_reward": -8641.15354886815,
       "cumulative_loss": 887603.7549257278,
       "cumulative_gradient_updates": 17975
+    },
+    {
+      "episode": 28,
+      "epsilon": 0.051176470588235295,
+      "buffer_size": 45132,
+      "bootstrap_buffer_size": 25000,
+      "selfplay_buffer_size": 20132,
+      "steps": 719,
+      "raw_reward": -28.710000000000004,
+      "shaped_reward": 583.4220023367666,
+      "avg_loss": 122.03655750131408,
+      "loss_sum": 87744.28484344482,
+      "gradient_updates": 719,
+      "cumulative_raw_reward": -834.94,
+      "cumulative_shaped_reward": -8057.731546531382,
+      "cumulative_loss": 975348.0397691727,
+      "cumulative_gradient_updates": 18694
+    },
+    {
+      "episode": 29,
+      "epsilon": 0.04852941176470589,
+      "buffer_size": 45851,
+      "bootstrap_buffer_size": 25000,
+      "selfplay_buffer_size": 20851,
+      "steps": 719,
+      "raw_reward": -29.930000000000003,
+      "shaped_reward": 357.7071981000102,
+      "avg_loss": 147.03724727179642,
+      "loss_sum": 105719.78078842163,
+      "gradient_updates": 719,
+      "cumulative_raw_reward": -864.87,
+      "cumulative_shaped_reward": -7700.024348431372,
+      "cumulative_loss": 1081067.8205575943,
+      "cumulative_gradient_updates": 19413
+    },
+    {
+      "episode": 30,
+      "epsilon": 0.04588235294117647,
+      "buffer_size": 46570,
+      "bootstrap_buffer_size": 25000,
+      "selfplay_buffer_size": 21570,
+      "steps": 719,
+      "raw_reward": -27.200000000000003,
+      "shaped_reward": -4041.536108267854,
+      "avg_loss": 161.94614746772862,
+      "loss_sum": 116439.28002929688,
+      "gradient_updates": 719,
+      "cumulative_raw_reward": -892.07,
+      "cumulative_shaped_reward": -11741.560456699226,
+      "cumulative_loss": 1197507.1005868912,
+      "cumulative_gradient_updates": 20132
+    },
+    {
+      "episode": 31,
+      "epsilon": 0.04323529411764705,
+      "buffer_size": 47289,
+      "bootstrap_buffer_size": 25000,
+      "selfplay_buffer_size": 22289,
+      "steps": 719,
+      "raw_reward": -29.16000000000001,
+      "shaped_reward": 576.1628336336386,
+      "avg_loss": 186.8076361601807,
+      "loss_sum": 134314.69039916992,
+      "gradient_updates": 719,
+      "cumulative_raw_reward": -921.23,
+      "cumulative_shaped_reward": -11165.397623065588,
+      "cumulative_loss": 1331821.790986061,
+      "cumulative_gradient_updates": 20851
     }
   ]
 }

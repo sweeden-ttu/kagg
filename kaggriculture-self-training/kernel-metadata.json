@@ -44,13 +44,11 @@
     "kaggle/kaggriculture-episodes-2026-08-27",
     "kaggle/kaggriculture-episodes-2026-08-28",
     "kaggle/kaggriculture-episodes-2026-08-29",
+    "kaggle/kaggriculture-episodes-2026-08-30",
     "kaggle/kaggriculture-episodes-index",
-    "raykkretzschmar/kaggriculture-reference-agents",
     "scottweeden/kaggriculture-self-training-code"
   ],
-  "kernel_sources": [
-    "packagemanager/pm-132346105-at-08-29-2026-19-50-58"
-  ],
+  "kernel_sources": [],
   "competition_sources": [],
   "model_sources": [],
   "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
