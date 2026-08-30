@@ -42,7 +42,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from kaggriculture_adapter import CYCLES_PER_EPISODE, TURNS_PER_CYCLE
+from kaggriculture_adapter import (
+    CYCLES_PER_EPISODE,
+    TURNS_PER_CYCLE,
+    get_action_masks,
+)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -652,7 +656,8 @@ class DoubleDQNLearner:
 
     @property
     def epsilon(self) -> float:
-        progress = min(1.0, self.step_count / self.epsilon_decay_steps)
+        decay_steps = max(1, int(self.epsilon_decay_steps))
+        progress = min(1.0, self.step_count / decay_steps)
 
         if self.epsilon_decay_method == "linear":
             return max(self.epsilon_final,
@@ -957,7 +962,7 @@ class DoubleDQNLearner:
         learner.target.load_state_dict(data["target_state_dict"])
         learner.optimizer.load_state_dict(data["optimizer_state_dict"])
         learner.step_count = data["step_count"]
-        learner.epsilon = data["epsilon"]
+        # epsilon is a read-only property derived from step_count + decay params
         learner.loss_history = data["loss_history"]
 
         return learner
@@ -968,83 +973,24 @@ class DoubleDQNLearner:
 # ─────────────────────────────────────────────────────────────
 
 class ActionMasker:
-    """Generate valid-action masks based on current game state.
+    """Valid-action masks via ``kaggriculture_adapter.get_action_masks``.
 
-    Masks prevent the agent from selecting illegal actions,
-    which is especially important when the action space is
-    branched and each branch may have different constraints.
+    Nested observation schema (``farms`` / ``private`` / ``market``) is required.
+    Farmer and market indices match the canonical verb tables in the adapter.
     """
 
     @staticmethod
     def get_valid_farmer_actions(obs: Dict) -> np.ndarray:
-        """Return boolean mask for farmer actions (length 15).
-
-        Index mapping:
-            0=PASS, 1=DIG, 2=WATER, 3=PLANT, 4=HARVEST,
-            5=NORTH, 6=SOUTH, 7=WEST, 8=EAST,
-            9=DROP, 10=PICKUP, 11=BUILD_COOP, 12=BUILD_PASTURE,
-            13=BUY_ANIMAL, 14=OTHER
-        """
-        mask = np.zeros(15, dtype=bool)
-        mask[0] = True  # PASS always valid
-
-        farm = obs["farms"][0]
-        private = obs["private"]
-        x, y = int(farm["farmer"][0]), int(farm["farmer"][1])
-        tile = farm["tiles"][y][x]
-
-        if isinstance(tile, dict) and tile.get("kind") == "WEED":
-            mask[1] = True  # DIG
-        if isinstance(tile, dict) and tile.get("kind") == "PLANT":
-            if tile.get("yield_units", 0) > 0:
-                mask[4] = True  # HARVEST
-            if not tile.get("watered_today", False):
-                mask[2] = True  # WATER
-            mask[3] = True  # PLANT (if space available)
-
-        # Movement actions
-        moves = [(0, -1, 5, "NORTH"), (0, 1, 6, "SOUTH"),
-                 (-1, 0, 7, "WEST"), (1, 0, 8, "EAST")]
-        for dx, dy, idx, _ in moves:
-            nx, ny = x + dx, y + dy
-            if (0 <= nx < 10 and 0 <= ny < 10
-                    and farm["tiles"][ny][nx] != "LOCKED"):
-                mask[idx] = True
-
-        return mask
+        """Return boolean mask for farmer actions (length 15)."""
+        return get_action_masks(obs)["farmer_verb"]
 
     @staticmethod
     def get_valid_market_actions(obs: Dict) -> np.ndarray:
         """Return boolean mask for market actions (length 10).
 
-        Index mapping:
-            0=PASS, 1=BUY_SEED, 2=BUY_PRODUCT, 3=BUY_ANIMAL,
-            4=SELL, 5=HIRE, 6=BUY_LAND, 7-9=OTHER
+        Indices 7–9 are OTHER padding and stay False.
         """
-        mask = np.zeros(10, dtype=bool)
-        mask[0] = True  # PASS always valid
-
-        money = obs["farms"][0]["money"]
-        seeds = obs["private"]["seeds"]
-
-        # Buy seeds
-        seed_costs = {"WHEAT": 10, "CARROT": 8, "TOMATO": 5,
-                      "STRAWBERRY": 3, "MELON": 2}
-        for seed, cost in seed_costs.items():
-            if money >= cost and seeds.get(seed, 0) < 100:
-                mask[1] = True
-
-        # Buy animals
-        if money >= 400:
-            mask[3] = True  # BUY_ANIMAL
-            mask[5] = True  # HIRE
-
-        # Sell
-        shed = obs["private"].get("shed", {})
-        if any(v > 0 for v in shed.values()):
-            mask[4] = True  # SELL
-
-        return mask
+        return get_action_masks(obs)["market"]
 
     @staticmethod
     def apply_mask_to_logits(
