@@ -1,0 +1,30 @@
+{
+  "pairs": [
+    {
+      "name": "training_kernel",
+      "github": "kaggriculture-self-training",
+      "kaggle": "working/scottweeden-kaggriculture-self-training",
+      "include": ["*.ipynb", "kernel-metadata.json", "input_requirements.txt", "pip_install.sh"]
+    },
+    {
+      "name": "code_modules",
+      "github": "datasets/scottweeden/self-training-code",
+      "kaggle": "working",
+      "include": ["*.py"],
+      "exclude": ["training_artifacts/**", "kaggriculture_rl/**", "run/**", "kaggle_episodes/**", "__pycache__/**"]
+    },
+    {
+      "name": "kaggriculture_rl",
+      "github": "datasets/scottweeden/self-training-code/kaggriculture_rl",
+      "kaggle": "working/kaggriculture_rl",
+      "include": ["**/*"]
+    },
+    {
+      "name": "training_artifacts",
+      "github": "datasets/scottweeden/self-training-code/training_artifacts",
+      "kaggle": "working/run",
+      "include": ["**/*"],
+      "exclude": ["**/__pycache__/**", "__pycache__/**", "**/*.pt", "**/logs/**"]
+    }
+  ]
+}

@@ -380,51 +380,23 @@ class HierarchicalDoubleDQNLearner:
 
 class CompetitiveRewardShaper:
     """
-    Shapes step rewards with a relative bank-balance term aligned to corpus trends.
-
-    Episode metadata shows ``avg_score`` / ``min_score`` rising from ~700→~3100 over
-    a season while ``sum_score ≈ 2 × avg_score`` (balanced opponents).  Step rewards
-    use money-delta / ``bank_scale``; the competitive margin term scales with total
-    stake so late-meta games (~6k combined bank) weight relative lead appropriately.
+    Shapes step rewards with a relative bank-balance term so the agent optimizes
+    margin over the opponent, not absolute coins alone.
     """
-
-    def __init__(
-        self,
-        parser: KaggricultureJSONParser,
-        *,
-        bank_scale: float = 100.0,
-        margin_scale: float = 500.0,
-        stake_reference: float = 6000.0,
-        clip: float = 20.0,
-        bankruptcy_penalty: float = -10.0,
-    ):
+    def __init__(self, parser: KaggricultureJSONParser, death_penalty: float = -10.0):
         self.parser = parser
-        self.bank_scale = bank_scale
-        self.margin_scale = margin_scale
-        self.stake_reference = stake_reference
-        self.clip = clip
-        self.bankruptcy_penalty = bankruptcy_penalty
-
-    @staticmethod
-    def money_delta_reward(prev_money: float, cur_money: float, bank_scale: float = 100.0) -> float:
-        """Per-step reward from bank change (matches self-play env and bootstrap parser)."""
-        return (cur_money - prev_money) / bank_scale
+        self.death_penalty = death_penalty
 
     def shape_reward(self, obs: Dict[str, Any], raw_reward: float) -> float:
-        """Competitive shaping: step reward + stake-weighted relative equity."""
+        """Competitive shaping: step reward + relative equity delta."""
         player_idx = obs.get("player", 0)
         opp_idx = 1 - player_idx
         farms = obs.get("farms", [])
 
         if len(farms) < 2:
-            return float(np.clip(raw_reward, -self.clip, self.clip))
+            return float(np.clip(raw_reward, -20.0, 20.0))
 
         my_money = float(farms[player_idx].get("money", 0.0))
         opp_money = float(farms[opp_idx].get("money", 0.0))
-
-        if my_money <= 0.0 and opp_money > 0.0:
-            return float(np.clip(self.bankruptcy_penalty, -self.clip, self.clip))
-
-        stake = max(1.0, (my_money + opp_money) / self.stake_reference)
-        competitive_delta = stake * (my_money - opp_money) / self.margin_scale
-        return float(np.clip(raw_reward + competitive_delta, -self.clip, self.clip))
+        competitive_delta = (my_money - opp_money) / 10000.0
+        return float(np.clip(raw_reward + competitive_delta, -20.0, 20.0))

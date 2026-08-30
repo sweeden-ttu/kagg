@@ -27,10 +27,22 @@ from episode_catalog import (
 if TYPE_CHECKING:
     from kaggriculture_path_b_rebuild import HierarchicalDoubleDQNLearner
 
+from training_metrics import corpus_stats_for_episodes
+
 logger = logging.getLogger(__name__)
 
 DAILY_DATASET_PREFIX = "kaggriculture-episodes-"
 BOOTSTRAP_STATE_FILENAME = "bootstrap_state.json"
+_DEFAULT_REWARD_SHAPER = None
+
+
+def _default_reward_shaper() -> Any:
+    global _DEFAULT_REWARD_SHAPER
+    if _DEFAULT_REWARD_SHAPER is None:
+        from kaggriculture_path_b_rebuild import CompetitiveRewardShaper, KaggricultureJSONParser
+
+        _DEFAULT_REWARD_SHAPER = CompetitiveRewardShaper(KaggricultureJSONParser())
+    return _DEFAULT_REWARD_SHAPER
 
 
 def _episode_date_from_path(path: Path) -> str:
@@ -68,6 +80,8 @@ def order_episode_files_by_date(
 def parse_path_b_episode_transitions(
     episode_data: Dict[str, Any],
     max_market_orders: int = 10,
+    *,
+    reward_shaper: Any = None,
 ) -> List[Dict[str, Any]]:
     """Parse one Kaggle episode JSON into Path B replay-buffer transitions."""
     steps = episode_data.get("steps")
@@ -104,7 +118,14 @@ def parse_path_b_episode_transitions(
                 parsed_next = encode_path_b_observation(next_with_player, player_id)
                 action = encode_path_b_action(action_raw, max_market_orders=max_market_orders)
 
-                reward = float(nxt.get("reward", 0.0))
+                cur_farms = observation.get("farms") or []
+                next_farms = next_observation.get("farms") or []
+                prev_money = float(cur_farms[player_id].get("money", 0.0)) if len(cur_farms) > player_id else 0.0
+                cur_money = float(next_farms[player_id].get("money", 0.0)) if len(next_farms) > player_id else 0.0
+                raw_reward = (cur_money - prev_money) / 100.0
+                shaper = reward_shaper if reward_shaper is not None else _default_reward_shaper()
+                reward = float(shaper.shape_reward(obs_with_player, raw_reward))
+
                 status = nxt.get("status", "ACTIVE")
                 done = status in ("DONE", "TIMEOUT", "INVALID")
             except Exception:
@@ -119,6 +140,7 @@ def parse_path_b_episode_transitions(
                     "action_hands": action["hands"],
                     "action_market": action["market"],
                     "reward": reward,
+                    "raw_reward": raw_reward,
                     "next_tiles": parsed_next["tiles"],
                     "next_numeric": parsed_next["numeric"],
                     "done": done,
@@ -129,18 +151,27 @@ def parse_path_b_episode_transitions(
 
 
 def _push_transition(buffer: Any, transition: Dict[str, Any]) -> None:
-    buffer.push(
-        tiles=transition["tiles"],
-        numeric=transition["numeric"],
-        action_verb=transition["action_verb"],
-        action_crop=transition["action_crop"],
-        action_hands=transition["action_hands"],
-        action_market=transition["action_market"],
-        reward=transition["reward"],
-        next_tiles=transition["next_tiles"],
-        next_numeric=transition["next_numeric"],
-        done=transition["done"],
-    )
+    push_kwargs = {
+        "tiles": transition["tiles"],
+        "numeric": transition["numeric"],
+        "action_verb": transition["action_verb"],
+        "action_crop": transition["action_crop"],
+        "action_hands": transition["action_hands"],
+        "action_market": transition["action_market"],
+        "reward": transition["reward"],
+        "next_tiles": transition["next_tiles"],
+        "next_numeric": transition["next_numeric"],
+        "done": transition["done"],
+    }
+    if hasattr(buffer, "push"):
+        try:
+            import inspect
+
+            if "source" in inspect.signature(buffer.push).parameters:
+                push_kwargs["source"] = "bootstrap"
+        except (TypeError, ValueError):
+            pass
+    buffer.push(**push_kwargs)
 
 
 def resolve_bootstrap_episode_files(
@@ -225,7 +256,16 @@ def bootstrap_pass_fill_buffer(
     Returns ``(transitions_loaded, episodes_read, next_episode_idx)``.
     """
     if clear_buffer and hasattr(buffer, "clear"):
-        buffer.clear()
+        try:
+            import inspect
+
+            sig = inspect.signature(buffer.clear)
+            if "source" in sig.parameters:
+                buffer.clear("bootstrap")
+            else:
+                buffer.clear()
+        except (TypeError, ValueError):
+            buffer.clear()
 
     loaded = 0
     episodes_read = 0
@@ -985,6 +1025,9 @@ def incremental_daily_bootstrap_bc(
             "buffer_seeded": seeded,
             "bc_epoch_losses": day_losses,
             "bc_final_loss": day_losses[-1] if day_losses else None,
+            "corpus_stats": corpus_stats_for_episodes(
+                ep for ep in metadata.get("episodes", []) if ep.get("date") == day
+            ),
         }
         run_day_stats.append(day_record)
         mark_day_bootstrapped(experiment_root, state, day, day_stats=day_record)

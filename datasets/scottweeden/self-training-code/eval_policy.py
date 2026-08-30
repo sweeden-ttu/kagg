@@ -126,6 +126,8 @@ def evaluate_ladder(
     opponents = discover_reference_opponents(opponents_dir or resolve_opponents_dir(code_src=code_src))
     results: Dict[str, Any] = {}
     beats_all = True
+    wins_total = losses_total = ties_total = 0
+    opponents_cleared = 0
     for slug, opp_fn in opponents:
         stats = evaluate_win_rate(
             challenger_policy,
@@ -140,12 +142,25 @@ def evaluate_ladder(
             summary["avg_p1_money"] = sum(e["p1_money"] for e in stats["episodes"]) / len(stats["episodes"])
         summary["cleared"] = stats["win_rate"] >= win_rate_target
         beats_all &= summary["cleared"]
+        if summary["cleared"]:
+            opponents_cleared += 1
+        wins_total += int(stats.get("wins", 0))
+        losses_total += int(stats.get("losses", 0))
+        ties_total += int(stats.get("ties", 0))
         results[slug] = summary
+    n_opponents = len(opponents)
+    n_episodes_total = n_opponents * n_episodes
     return {
         "opponents_dir": str(
             resolve_opponents_dir(opponents_dir, code_src=code_src) or opponents_dir or ""
         ),
         "n_episodes_per_opponent": n_episodes,
+        "n_opponents": n_opponents,
+        "n_episodes_total": n_episodes_total,
+        "wins_total": wins_total,
+        "losses_total": losses_total,
+        "ties_total": ties_total,
+        "opponents_cleared": opponents_cleared,
         "win_rate_target": win_rate_target,
         "beats_all_opponents": beats_all,
         "results": results,

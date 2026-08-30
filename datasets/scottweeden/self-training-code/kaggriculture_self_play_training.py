@@ -49,6 +49,12 @@ try:
         run_bc_pretrain,
         stream_bootstrap_bc_pretrain,
     )
+    from training_metrics import (
+        TrainingProgressRecorder,
+        merge_corpus_trends,
+        save_episode_metrics,
+        save_progress,
+    )
     print("Successfully imported Kaggriculture Path B components.")
 except ImportError as exc:
     raise ImportError(
@@ -57,7 +63,7 @@ except ImportError as exc:
     ) from exc
 
 # =============================================================================
-# 1. ENVIRONMENT (Kaggle or mock fallback)
+# 1. ENVIRONMENT (official kaggle-environments only)
 # =============================================================================
 
 def _normalize_env_states(result):
@@ -120,106 +126,108 @@ class KaggleCompetitiveEnv:
 
 
 def create_competitive_env(use_kaggle: bool = True, max_steps: int = 720, seed: int = 42):
-    if use_kaggle:
-        try:
-            return KaggleCompetitiveEnv(max_steps=max_steps, seed=seed)
-        except ImportError:
-            logging.getLogger(__name__).warning(
-                "kaggle-environments unavailable; falling back to mock env"
-            )
-    return MockKaggricultureEnv(max_steps=max_steps)
+    if not use_kaggle:
+        raise RuntimeError(
+            "Offline training requires the official Kaggle simulator (use_kaggle_env=True). "
+            "Install kaggle-environments and attach the kaggriculture environment."
+        )
+    try:
+        return KaggleCompetitiveEnv(max_steps=max_steps, seed=seed)
+    except ImportError as exc:
+        raise ImportError(
+            "kaggle-environments is required for self-play training. "
+            "Install with: pip install kaggle-environments"
+        ) from exc
 
 
-# Legacy mock kept for offline smoke tests
+SOURCE_BOOTSTRAP = "bootstrap"
+SOURCE_SELFPLAY = "selfplay"
+
 
 class PrioritizedReplayBuffer:
-    """
-    Prioritized Experience Replay buffer storing structured state/action pairs 
-    with temporal-difference error scaling to accelerate learning.
-    """
-    def __init__(self, capacity: int = 50000, alpha: float = 0.6):
+    """Dual-partition PER buffer: 50% past-gameplay bootstrap, 50% self-play."""
+
+    def __init__(self, capacity: int = 50000, alpha: float = 0.6, bootstrap_fraction: float = 0.5):
         self.capacity = capacity
         self.alpha = alpha
-        self.buffer = []
-        self.pos = 0
-        self.priorities = np.zeros((capacity,), dtype=np.float32)
+        self.bootstrap_fraction = bootstrap_fraction
+        self.bootstrap_capacity = max(1, int(capacity * bootstrap_fraction))
+        self.selfplay_capacity = max(1, capacity - self.bootstrap_capacity)
+        self._init_partition(SOURCE_BOOTSTRAP)
+        self._init_partition(SOURCE_SELFPLAY)
 
-    def push(self, 
-             tiles: np.ndarray, 
-             numeric: np.ndarray, 
-             action_verb: int, 
-             action_crop: int, 
-             action_hands: np.ndarray, 
-             action_market: np.ndarray, 
-             reward: float, 
-             next_tiles: np.ndarray, 
-             next_numeric: np.ndarray, 
-             done: bool):
-        """
-        Saves a transition. Priority is initialized to the max priority currently in buffer.
-        """
-        max_prio = self.priorities.max() if self.buffer else 1.0
-        
+    def _init_partition(self, source: str) -> None:
+        cap = self.bootstrap_capacity if source == SOURCE_BOOTSTRAP else self.selfplay_capacity
+        setattr(self, f"{source}_buffer", [])
+        setattr(self, f"{source}_pos", 0)
+        setattr(self, f"{source}_priorities", np.zeros((cap,), dtype=np.float32))
+
+    def _partition(self, source: str):
+        if source == SOURCE_BOOTSTRAP:
+            return self.bootstrap_buffer, self.bootstrap_pos, self.bootstrap_priorities, self.bootstrap_capacity
+        return self.selfplay_buffer, self.selfplay_pos, self.selfplay_priorities, self.selfplay_capacity
+
+    def push(
+        self,
+        tiles: np.ndarray,
+        numeric: np.ndarray,
+        action_verb: int,
+        action_crop: int,
+        action_hands: np.ndarray,
+        action_market: np.ndarray,
+        reward: float,
+        next_tiles: np.ndarray,
+        next_numeric: np.ndarray,
+        done: bool,
+        source: str = SOURCE_SELFPLAY,
+    ) -> None:
+        if source not in (SOURCE_BOOTSTRAP, SOURCE_SELFPLAY):
+            raise ValueError(f"source must be {SOURCE_BOOTSTRAP!r} or {SOURCE_SELFPLAY!r}, got {source!r}")
+
+        buf, pos, prios, cap = self._partition(source)
         transition = (
-            tiles, numeric, action_verb, action_crop, action_hands, 
-            action_market, reward, next_tiles, next_numeric, done
+            tiles, numeric, action_verb, action_crop, action_hands,
+            action_market, reward, next_tiles, next_numeric, done,
         )
-        
-        if len(self.buffer) < self.capacity:
-            self.buffer.append(transition)
+        max_prio = float(prios[: len(buf)].max()) if buf else 1.0
+        if len(buf) < cap:
+            buf.append(transition)
+            idx = len(buf) - 1
         else:
-            self.buffer[self.pos] = transition
-            
-        self.priorities[self.pos] = max_prio
-        self.pos = (self.pos + 1) % self.capacity
+            idx = pos
+            buf[idx] = transition
+            pos = (pos + 1) % cap
+            if source == SOURCE_BOOTSTRAP:
+                self.bootstrap_pos = pos
+            else:
+                self.selfplay_pos = pos
+        prios[idx] = max_prio
 
-    def sample(self, batch_size: int, beta: float = 0.4) -> Tuple[Dict[str, torch.Tensor], np.ndarray, np.ndarray]:
-        if len(self.buffer) == 0:
-            return {}, np.array([]), np.array([])
-            
-        prios = self.priorities[:len(self.buffer)]
-        probs = prios ** self.alpha
+    def _sample_partition(
+        self,
+        source: str,
+        batch_size: int,
+        beta: float,
+    ) -> Tuple[List[tuple], np.ndarray, np.ndarray, np.ndarray]:
+        buf, _, prios, _ = self._partition(source)
+        if not buf or batch_size <= 0:
+            return [], np.array([], dtype=int), np.array([], dtype=np.float32), np.array([], dtype=int)
+
+        n = min(batch_size, len(buf))
+        prios_slice = prios[: len(buf)].astype(np.float64)
+        probs = prios_slice ** self.alpha
         probs /= probs.sum()
-        
-        indices = np.random.choice(len(self.buffer), batch_size, p=probs)
-        samples = [self.buffer[idx] for idx in indices]
-        
-        # Calculate Importance Sampling weights
-        total = len(self.buffer)
-        weights = (total * probs[indices]) ** (-beta)
+        local_indices = np.random.choice(len(buf), n, p=probs, replace=n > len(buf))
+        samples = [buf[i] for i in local_indices]
+        weights = (len(buf) * probs[local_indices]) ** (-beta)
         weights /= weights.max()
-        weights = np.array(weights, dtype=np.float32)
-        
-        # Unzip samples
+        global_indices = np.array([(0 if source == SOURCE_BOOTSTRAP else 1), *local_indices], dtype=object)
+        # Encode global index as (source_flag, local_idx) for priority updates
+        tagged_indices = np.array([(0 if source == SOURCE_BOOTSTRAP else 1, int(i)) for i in local_indices])
+        return samples, tagged_indices, np.asarray(weights, dtype=np.float32), local_indices
+
+    def _batch_from_samples(self, samples: List[tuple], weights: np.ndarray) -> Dict[str, torch.Tensor]:
         tiles_b, numeric_b, act_v_b, act_c_b, act_h_b, act_m_b, r_b, n_tiles_b, n_num_b, d_b = zip(*samples)
-        
-        batch = {
-            "tiles": torch.as_tensor(np.array(tiles_b), dtype=torch.float32),
-            "numeric": torch.as_tensor(np.array(numeric_b), dtype=torch.float32),
-            "action_verb": torch.as_tensor(act_v_b, dtype=torch.long),
-            "action_crop": torch.as_tensor(act_c_b, dtype=torch.long),
-            "action_hands": torch.as_tensor(np.array(act_h_b), dtype=torch.long),
-            "action_market": torch.as_tensor(np.array(act_m_b), dtype=torch.long),
-            "reward": torch.as_tensor(r_b, dtype=torch.float32),
-            "next_tiles": torch.as_tensor(np.array(n_tiles_b), dtype=torch.float32),
-            "next_numeric": torch.as_tensor(np.array(n_num_b), dtype=torch.float32),
-            "done": torch.as_tensor(d_b, dtype=torch.float32),
-            "weights": torch.as_tensor(weights, dtype=torch.float32)
-        }
-        
-        return batch, indices, weights
-
-    def sample_uniform(self, batch_size: int) -> Dict[str, torch.Tensor]:
-        """Uniform random sample for behavioral cloning (no PER weights)."""
-        if len(self.buffer) == 0:
-            return {}
-
-        n = min(batch_size, len(self.buffer))
-        indices = np.random.choice(len(self.buffer), n, replace=False)
-        samples = [self.buffer[idx] for idx in indices]
-
-        tiles_b, numeric_b, act_v_b, act_c_b, act_h_b, act_m_b, r_b, n_tiles_b, n_num_b, d_b = zip(*samples)
-
         return {
             "tiles": torch.as_tensor(np.array(tiles_b), dtype=torch.float32),
             "numeric": torch.as_tensor(np.array(numeric_b), dtype=torch.float32),
@@ -231,194 +239,133 @@ class PrioritizedReplayBuffer:
             "next_tiles": torch.as_tensor(np.array(n_tiles_b), dtype=torch.float32),
             "next_numeric": torch.as_tensor(np.array(n_num_b), dtype=torch.float32),
             "done": torch.as_tensor(d_b, dtype=torch.float32),
+            "weights": torch.as_tensor(weights, dtype=torch.float32),
         }
 
-    def update_priorities(self, indices: np.ndarray, priorities: np.ndarray):
+    def sample(self, batch_size: int, beta: float = 0.4) -> Tuple[Dict[str, torch.Tensor], np.ndarray, np.ndarray]:
+        n_bootstrap = batch_size // 2
+        n_selfplay = batch_size - n_bootstrap
+        b_samples, b_indices, b_weights, _ = self._sample_partition(SOURCE_BOOTSTRAP, n_bootstrap, beta)
+        s_samples, s_indices, s_weights, _ = self._sample_partition(SOURCE_SELFPLAY, n_selfplay, beta)
+        samples = b_samples + s_samples
+        if not samples:
+            return {}, np.array([]), np.array([])
+
+        indices = np.concatenate([b_indices, s_indices]) if len(b_indices) and len(s_indices) else (
+            b_indices if len(b_indices) else s_indices
+        )
+        weights = np.concatenate([b_weights, s_weights]) if len(b_weights) and len(s_weights) else (
+            b_weights if len(b_weights) else s_weights
+        )
+        return self._batch_from_samples(samples, weights), indices, weights
+
+    def sample_uniform(self, batch_size: int, source: Optional[str] = None) -> Dict[str, torch.Tensor]:
+        """Uniform sample for BC — defaults to bootstrap partition."""
+        src = source or SOURCE_BOOTSTRAP
+        buf, _, _, _ = self._partition(src)
+        if not buf:
+            return {}
+        n = min(batch_size, len(buf))
+        indices = np.random.choice(len(buf), n, replace=False)
+        samples = [buf[i] for i in indices]
+        weights = np.ones(n, dtype=np.float32)
+        return self._batch_from_samples(samples, weights)
+
+    def update_priorities(self, indices: np.ndarray, priorities: np.ndarray) -> None:
         for idx, prio in zip(indices, priorities):
-            self.priorities[idx] = max(prio, 1e-6)
+            if isinstance(idx, (list, tuple)) and len(idx) == 2:
+                source_flag, local_idx = int(idx[0]), int(idx[1])
+            else:
+                continue
+            source = SOURCE_BOOTSTRAP if source_flag == 0 else SOURCE_SELFPLAY
+            _, _, prios, _ = self._partition(source)
+            if 0 <= local_idx < len(prios):
+                prios[local_idx] = max(float(prio), 1e-6)
+
+    @property
+    def bootstrap_size(self) -> int:
+        return len(self.bootstrap_buffer)
+
+    @property
+    def selfplay_size(self) -> int:
+        return len(self.selfplay_buffer)
 
     def state_dict(self) -> Dict[str, Any]:
-        n = len(self.buffer)
         return {
             "capacity": self.capacity,
             "alpha": self.alpha,
-            "pos": self.pos,
-            "buffer": self.buffer,
-            "priorities": self.priorities[:n].copy(),
+            "bootstrap_fraction": self.bootstrap_fraction,
+            "bootstrap_capacity": self.bootstrap_capacity,
+            "selfplay_capacity": self.selfplay_capacity,
+            "bootstrap_pos": self.bootstrap_pos,
+            "selfplay_pos": self.selfplay_pos,
+            "bootstrap_buffer": self.bootstrap_buffer,
+            "selfplay_buffer": self.selfplay_buffer,
+            "bootstrap_priorities": self.bootstrap_priorities[: len(self.bootstrap_buffer)].copy(),
+            "selfplay_priorities": self.selfplay_priorities[: len(self.selfplay_buffer)].copy(),
         }
 
     def load_state_dict(self, state: Dict[str, Any]) -> None:
+        if "bootstrap_buffer" in state:
+            self.capacity = int(state["capacity"])
+            self.alpha = float(state["alpha"])
+            self.bootstrap_fraction = float(state.get("bootstrap_fraction", 0.5))
+            self.bootstrap_capacity = int(state.get("bootstrap_capacity", max(1, self.capacity // 2)))
+            self.selfplay_capacity = int(state.get("selfplay_capacity", self.capacity - self.bootstrap_capacity))
+            self.bootstrap_pos = int(state.get("bootstrap_pos", 0))
+            self.selfplay_pos = int(state.get("selfplay_pos", 0))
+            self.bootstrap_buffer = list(state.get("bootstrap_buffer", []))
+            self.selfplay_buffer = list(state.get("selfplay_buffer", []))
+            self.bootstrap_priorities = np.zeros((self.bootstrap_capacity,), dtype=np.float32)
+            self.selfplay_priorities = np.zeros((self.selfplay_capacity,), dtype=np.float32)
+            bp = state.get("bootstrap_priorities")
+            sp = state.get("selfplay_priorities")
+            if bp is not None and len(self.bootstrap_buffer):
+                self.bootstrap_priorities[: len(self.bootstrap_buffer)] = np.asarray(bp, dtype=np.float32)
+            if sp is not None and len(self.selfplay_buffer):
+                self.selfplay_priorities[: len(self.selfplay_buffer)] = np.asarray(sp, dtype=np.float32)
+            return
+
+        # Legacy single-buffer checkpoint → assign to bootstrap partition
         self.capacity = int(state["capacity"])
         self.alpha = float(state["alpha"])
-        self.pos = int(state["pos"])
-        self.buffer = state["buffer"]
-        self.priorities = np.zeros((self.capacity,), dtype=np.float32)
-        prios = state.get("priorities")
-        if prios is not None and len(self.buffer):
-            self.priorities[: len(self.buffer)] = np.asarray(prios, dtype=np.float32)
+        self.bootstrap_fraction = 0.5
+        self.bootstrap_capacity = max(1, self.capacity // 2)
+        self.selfplay_capacity = max(1, self.capacity - self.bootstrap_capacity)
+        legacy = list(state.get("buffer", []))
+        self.bootstrap_buffer = legacy[: self.bootstrap_capacity]
+        self.selfplay_buffer = legacy[self.bootstrap_capacity : self.bootstrap_capacity + self.selfplay_capacity]
+        self.bootstrap_pos = len(self.bootstrap_buffer) % self.bootstrap_capacity
+        self.selfplay_pos = len(self.selfplay_buffer) % self.selfplay_capacity
+        self.bootstrap_priorities = np.zeros((self.bootstrap_capacity,), dtype=np.float32)
+        self.selfplay_priorities = np.zeros((self.selfplay_capacity,), dtype=np.float32)
+        legacy_p = state.get("priorities")
+        if legacy_p is not None:
+            legacy_p = np.asarray(legacy_p, dtype=np.float32)
+            n_b = min(len(legacy_p), len(self.bootstrap_buffer))
+            n_s = min(max(0, len(legacy_p) - n_b), len(self.selfplay_buffer))
+            if n_b:
+                self.bootstrap_priorities[:n_b] = legacy_p[:n_b]
+            if n_s:
+                self.selfplay_priorities[:n_s] = legacy_p[n_b : n_b + n_s]
 
-    def __len__(self):
-        return len(self.buffer)
+    def __len__(self) -> int:
+        return len(self.bootstrap_buffer) + len(self.selfplay_buffer)
 
-    def clear(self) -> None:
-        """Drop all stored transitions (used between shuffle bootstrap passes)."""
-        self.buffer = []
-        self.pos = 0
-        self.priorities = np.zeros((self.capacity,), dtype=np.float32)
-
-
-# =============================================================================
-# 3. MOCK ENVIRONMENT (offline fallback)
-# =============================================================================
-
-class MockKaggricultureEnv:
-    """
-    Simulation engine replicating the official Kaggriculture game mechanics,
-    providing identical reset/step nested dictionary observation spaces.
-    Guarantees local testing capability if kaggle-environments is absent.
-    """
-    def __init__(self, max_steps: int = 100):
-        self.max_steps = max_steps
-        self.current_step = 0
-        self.player_money = [3000.0, 3000.0]
-        self._prev_money = [3000.0, 3000.0]
-        self.grid_size = (10, 10)
-        self.farmer_pos = [[2, 2], [7, 7]]
-        self.tiles_status = [
-            [[{"kind": None, "crop": None, "watered_today": False, "yield_units": 0.0} for _ in range(10)] for _ in range(10)],
-            [[{"kind": None, "crop": None, "watered_today": False, "yield_units": 0.0} for _ in range(10)] for _ in range(10)]
-        ]
-        self.seeds_inv = [{c: (10 if c == "WHEAT" else 0) for c in CROPS} for _ in range(2)]
-        self.shed_inv = [{c: 0 for c in CROPS} for _ in range(2)]
-        self.market_prices = {c: float(10 + i * 5) for i, c in enumerate(CROPS)}
-        self.market_inventory = {c: 1000 for c in CROPS}
-        self.unlocked_shops = ["BAKERY", "GROCERY"]
-        self.hands_list = [[{"id": 0}], [{"id": 0}]]
-
-    def reset(self) -> Dict[str, Any]:
-        self.current_step = 0
-        self.player_money = [3000.0, 3000.0]
-        self._prev_money = [3000.0, 3000.0]
-        self.farmer_pos = [[2, 2], [7, 7]]
-        self.tiles_status = [
-            [[{"kind": None, "crop": None, "watered_today": False, "yield_units": 0.0} for _ in range(10)] for _ in range(10)],
-            [[{"kind": None, "crop": None, "watered_today": False, "yield_units": 0.0} for _ in range(10)] for _ in range(10)]
-        ]
-        self.seeds_inv = [{c: (10 if c == "WHEAT" else 0) for c in CROPS} for _ in range(2)]
-        self.shed_inv = [{c: 0 for c in CROPS} for _ in range(2)]
-        return self._get_obs(player=0)
-
-    def _get_obs(self, player: int) -> Dict[str, Any]:
-        return {
-            "player": player,
-            "day": int(self.current_step // 24) + 1,
-            "hour": int(self.current_step % 24),
-            "farms": [
-                {
-                    "money": self.player_money[0],
-                    "tiles": self.tiles_status[0],
-                    "farmer": self.farmer_pos[0],
-                    "hands": self.hands_list[0]
-                },
-                {
-                    "money": self.player_money[1],
-                    "tiles": self.tiles_status[1],
-                    "farmer": self.farmer_pos[1],
-                    "hands": self.hands_list[1]
-                }
-            ],
-            "market": {
-                "inventory": self.market_inventory,
-                "prices": self.market_prices
-            },
-            "town": {
-                "unlocked_shops": self.unlocked_shops
-            },
-            "private": {
-                "shed": self.shed_inv[player],
-                "seeds": self.seeds_inv[player]
-            }
-        }
-
-    def step(self, actions: List[Dict[str, Any]]) -> Tuple[Tuple[Dict[str, Any], Dict[str, Any]], List[float], bool, Dict[str, Any]]:
-        self.current_step += 1
-        move_map = {"NORTH": (-1, 0), "SOUTH": (1, 0), "WEST": (0, -1), "EAST": (0, 1)}
-
-        for p_idx in range(2):
-            act = actions[p_idx]
-            f_act = act.get("farmer", ["PASS"])
-            verb = f_act[0] if f_act else "PASS"
-            curr_pos = self.farmer_pos[p_idx]
-
-            if verb in move_map:
-                dy, dx = move_map[verb]
-                curr_pos[0] = max(0, min(9, curr_pos[0] + dy))
-                curr_pos[1] = max(0, min(9, curr_pos[1] + dx))
-            elif verb == "DIG":
-                y, x = curr_pos
-                self.tiles_status[p_idx][y][x]["kind"] = None
-            elif verb == "PLANT" and len(f_act) > 1:
-                crop_name = f_act[1]
-                y, x = curr_pos
-                if self.seeds_inv[p_idx].get(crop_name, 0) > 0:
-                    self.tiles_status[p_idx][y][x] = {
-                        "kind": "PLANT", "crop": crop_name,
-                        "watered_today": True, "yield_units": 0.0,
-                    }
-                    self.seeds_inv[p_idx][crop_name] -= 1
-            elif verb == "WATER":
-                y, x = curr_pos
-                tile = self.tiles_status[p_idx][y][x]
-                if tile.get("kind") == "PLANT":
-                    tile["watered_today"] = True
-            elif verb == "HARVEST":
-                y, x = curr_pos
-                tile = self.tiles_status[p_idx][y][x]
-                if tile.get("kind") == "PLANT" and tile.get("yield_units", 0) >= 1.0:
-                    crop = tile["crop"]
-                    self.shed_inv[p_idx][crop] = self.shed_inv[p_idx].get(crop, 0) + 1
-                    self.tiles_status[p_idx][y][x] = {
-                        "kind": None, "crop": None, "watered_today": False, "yield_units": 0.0,
-                    }
-
-            for order in act.get("market", []) or []:
-                if not order:
-                    continue
-                order_verb = order[0]
-                if order_verb == "BUY_SEED" and len(order) >= 3:
-                    crop_name, qty = order[1], order[2]
-                    cost = self.market_prices.get(crop_name, 10.0) * qty
-                    if self.player_money[p_idx] >= cost:
-                        self.player_money[p_idx] -= cost
-                        self.seeds_inv[p_idx][crop_name] = self.seeds_inv[p_idx].get(crop_name, 0) + qty
-                elif order_verb == "SELL" and len(order) >= 3:
-                    crop_name, qty = order[1], order[2]
-                    sell_qty = min(qty, self.shed_inv[p_idx].get(crop_name, 0))
-                    if sell_qty > 0:
-                        self.player_money[p_idx] += self.market_prices.get(crop_name, 10.0) * sell_qty
-                        self.shed_inv[p_idx][crop_name] -= sell_qty
-
-        for p_idx in range(2):
-            for y in range(10):
-                for x in range(10):
-                    tile = self.tiles_status[p_idx][y][x]
-                    if tile.get("kind") == "PLANT":
-                        if tile.get("watered_today"):
-                            tile["yield_units"] = min(1.0, tile.get("yield_units", 0.0) + 0.1)
-                        tile["watered_today"] = False
-
-        rewards = []
-        for p in range(2):
-            delta = (self.player_money[p] - self._prev_money[p]) / 100.0
-            rewards.append(delta)
-            self._prev_money[p] = self.player_money[p]
-
-        done = self.current_step >= self.max_steps
-        return (self._get_obs(0), self._get_obs(1)), rewards, done, {}
+    def clear(self, source: Optional[str] = None) -> None:
+        if source is None:
+            self._init_partition(SOURCE_BOOTSTRAP)
+            self._init_partition(SOURCE_SELFPLAY)
+        elif source == SOURCE_BOOTSTRAP:
+            self._init_partition(SOURCE_BOOTSTRAP)
+        elif source == SOURCE_SELFPLAY:
+            self._init_partition(SOURCE_SELFPLAY)
+        else:
+            raise ValueError(f"unknown source: {source!r}")
 
 
 # =============================================================================
-# 4. SELF-PLAY TRAINER COORDINATOR
+# 3. SELF-PLAY TRAINER COORDINATOR
 # =============================================================================
 
 def setup_experiment_dirs(experiment_dir: Path) -> Dict[str, Path]:
@@ -844,6 +791,11 @@ def train_self_play(total_episodes: int = 15,
         ):
             logging.getLogger(module_name).setLevel(logging.DEBUG)
     logger.info("Experiment directory: %s", dirs["root"])
+    progress = TrainingProgressRecorder(dirs["root"], resumed=resuming)
+    if metadata_path and Path(metadata_path).exists():
+        with open(metadata_path, encoding="utf-8") as fh:
+            merge_corpus_trends(progress.state, json.load(fh))
+        save_progress(dirs["root"], progress.state)
     if verbose:
         logger.debug("Verbose debug logging enabled")
         logger.debug("Training config: %s", json.dumps(config, indent=2, default=str))
@@ -1026,6 +978,19 @@ def train_self_play(total_episodes: int = 15,
             )
         config["bootstrap_transitions_loaded"] = bootstrap_count
         logger.info("Replay buffer size after bootstrap: %d", len(buffer))
+        bootstrap_meta = None
+        if metadata_path and Path(metadata_path).exists():
+            with open(metadata_path, encoding="utf-8") as fh:
+                bootstrap_meta = json.load(fh)
+        progress.record_bootstrap_result(
+            {
+                **stream_stats,
+                "bootstrap_transitions_loaded": bootstrap_count,
+                "new_days": stream_stats.get("new_days") or config.get("bootstrap_days_this_run") or [],
+            },
+            bootstrap_meta,
+        )
+        save_progress(dirs["root"], progress.state)
     elif skip_bootstrap:
         logger.info(
             "Skipping bootstrap on full resume (buffer already has %d transitions)",
@@ -1066,6 +1031,7 @@ def train_self_play(total_episodes: int = 15,
                     "stream_stats": stream_stats,
                     "epoch_losses": bc_loss_history,
                     "final_loss": bc_loss_history[-1] if bc_loss_history else None,
+                    "cumulative_bc_loss": float(sum(bc_loss_history)),
                 },
                 fh,
                 indent=2,
@@ -1166,6 +1132,8 @@ def train_self_play(total_episodes: int = 15,
         
         ep_shaped_reward = 0.0
         ep_raw_reward = 0.0
+        ep_loss_sum = 0.0
+        ep_gradient_updates = 0
         loss_history = []
         step_num = 0
 
@@ -1295,6 +1263,8 @@ def train_self_play(total_episodes: int = 15,
                 optimizer.step()
                 learner.update_target_network()
                 loss_history.append(loss.item())
+                ep_loss_sum += float(loss.item())
+                ep_gradient_updates += 1
 
                 if verbose and (step_num <= 3 or step_num % 100 == 0):
                     logger.debug(
@@ -1317,14 +1287,22 @@ def train_self_play(total_episodes: int = 15,
             "Shaped Reward: %.2f | Avg Loss: %.5f",
             ep, total_episodes, eps, len(buffer), ep_raw_reward, ep_shaped_reward, avg_loss,
         )
-        episode_metrics.append({
+        ep_row = {
             "episode": ep,
             "epsilon": eps,
             "buffer_size": len(buffer),
+            "bootstrap_buffer_size": getattr(buffer, "bootstrap_size", len(buffer)),
+            "selfplay_buffer_size": getattr(buffer, "selfplay_size", 0),
+            "steps": step_num,
             "raw_reward": ep_raw_reward,
             "shaped_reward": ep_shaped_reward,
             "avg_loss": avg_loss,
-        })
+            "loss_sum": ep_loss_sum,
+            "gradient_updates": ep_gradient_updates,
+        }
+        episode_metrics.append(ep_row)
+        progress.record_self_play_episode(ep_row)
+        save_episode_metrics(dirs["root"], episode_metrics)
 
         # Periodically save models and append to Self-Play pool
         if ep % checkpoint_interval == 0:
@@ -1376,6 +1354,8 @@ def train_self_play(total_episodes: int = 15,
                 n_episodes=n_eval_episodes, max_steps=max_episode_steps, base_seed=seed + 1000,
             )
             save_eval_report(eval_stats, dirs["metrics"] / "win_rate_eval.json")
+            progress.record_eval("win_rate", eval_stats)
+            save_progress(dirs["root"], progress.state)
             logger.info(
                 "Win-rate eval vs random baseline: %.2f (%d/%d)",
                 eval_stats["win_rate"], eval_stats["wins"], eval_stats["n_episodes"],
@@ -1405,6 +1385,8 @@ def train_self_play(total_episodes: int = 15,
                 ladder_path = dirs["metrics"] / "ladder_eval.json"
                 with open(ladder_path, "w", encoding="utf-8") as fh:
                     json.dump(ladder_report, fh, indent=2)
+                progress.record_eval("ladder", ladder_report)
+                save_progress(dirs["root"], progress.state)
                 logger.info(
                     "Ladder eval (%d opponents, %d ep each, target %.0f%%): beats_all=%s → %s",
                     len(ladder_report.get("results", {})),
@@ -1433,10 +1415,12 @@ def train_self_play(total_episodes: int = 15,
     _export_path_b_agent(agent_path, dirs["root"], code_src=code_src)
     logger.info("Agent export saved to: %s", agent_path)
 
-    metrics_path = dirs["metrics"] / "episode_metrics.json"
-    with open(metrics_path, "w", encoding="utf-8") as fh:
-        json.dump({"episodes": episode_metrics}, fh, indent=2)
+    metrics_path = save_episode_metrics(dirs["root"], episode_metrics)
     logger.info("Episode metrics saved to: %s", metrics_path)
+
+    config["last_completed_episode"] = total_episodes
+    progress_path = progress.finalize_run(config)
+    logger.info("Cumulative training progress saved to: %s", progress_path)
     logger.info("--- SELF-PLAY TRAINING LOOP COMPLETED ---")
 
 

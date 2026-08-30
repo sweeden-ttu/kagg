@@ -97,3 +97,24 @@ Validated locally **2026-08-29** (automated + spot checks):
 - [ ] Bundle `opponents/` inside `scottweeden/kaggriculture-self-training-code` for offline Kaggle fallback
 - [ ] Ladder curriculum: sample reference opponents during self-play (not just post-hoc eval)
 - [ ] Re-run loop when ladder eval fails (previously removed §2b retrain)
+
+---
+
+## Kaggle ↔ GitHub sync (phases 0–4)
+
+Validated **2026-08-29** unless noted.
+
+| Phase | Deliverable | Status | Notes |
+|-------|-------------|--------|-------|
+| **0** | Notebook §0 — `kernels pull`, patch `kernel-metadata` (yesterday slug), promote | **PASS** | Cells in `kaggriculture-self-training.ipynb`; `kaggle kernels pull` → `working/scottweeden-kaggriculture-self-training/` verified |
+| **1** | `scripts/sync_manifest.py` + `scripts/sync_pairs.json` | **PASS** | `--direction github-to-kaggle` \| `kaggle-to-github`; `--force github` \| `kaggle` |
+| **2** | README sync section + directory map | **PASS** | `README.md` updated |
+| **3** | §0 idempotent metadata patch + promote rules | **PARTIAL** | Yesterday slug already in metadata (no dup); notebook promote skips ipynb if canonical newer — **push §0 to Kaggle** before round-trip |
+| **4** | Manifest scan/report/sync dry-run | **PASS** | 30 entries; `kaggle-to-github --dry-run` lists 7 training_artifact files |
+
+### Sync action items (later)
+
+- [ ] **Phase 3:** Push notebook with §0 to Kaggle (`kaggle kernels push`); re-run §0 and confirm staging + canonical stay in sync
+- [ ] **Phase 4:** After push, run `sync_manifest.py scan` — `training_kernel` pair should show `equal` or intentional `github_ahead`
+- [ ] **Phase 4:** Run `sync --direction kaggle-to-github` (no dry-run) to promote `ladder_eval.json` into `training_artifacts/` when ready
+- [ ] Add `scripts/verify_sync_phases.py` wrapper that runs scan + report + §0 smoke checks in one command

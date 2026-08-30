@@ -1,0 +1,85 @@
+2026-08-29 22:38:42,442 [INFO] kaggriculture_self_play_training: Experiment directory: /Users/sweeden/kagg/working/run
+2026-08-29 22:38:42,442 [DEBUG] kaggriculture_self_play_training: Verbose debug logging enabled
+2026-08-29 22:38:42,442 [DEBUG] kaggriculture_self_play_training: Training config: {
+  "experiment_dir": "/Users/sweeden/kagg/working/run",
+  "seed": 42,
+  "device": "auto",
+  "total_episodes": 2,
+  "learning_start_episodes": 1,
+  "batch_size": 32,
+  "checkpoint_interval": 10,
+  "use_kaggle_env": true,
+  "max_episode_steps": 50,
+  "n_eval_episodes": 1,
+  "bootstrap_episodes": null,
+  "bootstrap_transitions": null,
+  "data_dir": "/Users/sweeden/kagg/working/kaggle_episodes",
+  "download_bootstrap": false,
+  "bc_epochs": 0,
+  "bc_batch_size": 64,
+  "bc_steps_per_epoch": 50,
+  "buffer_capacity": 50000,
+  "metadata_path": "/Users/sweeden/kagg/working/kaggle_episodes/metadata.json",
+  "bootstrap_top_per_day": null,
+  "bootstrap_passes": 1,
+  "bc_epochs_per_pass": 1,
+  "verbose": true,
+  "code_src": "/Users/sweeden/kagg/datasets/scottweeden/self-training-code",
+  "bootstrap_mode": "daily_incremental",
+  "bootstrap_days_per_run": 1,
+  "publish_code_dataset": false,
+  "opponents_dir": "/Users/sweeden/kagg/opponents",
+  "ladder_eval_episodes": 1,
+  "ladder_win_rate_target": 0.5,
+  "min_self_play_episodes": 0,
+  "timestamp": "2026-08-29T22:38:42.441343",
+  "resumed_from": null
+}
+2026-08-29 22:38:42,462 [INFO] kaggriculture_self_play_training: Self-play pipeline running on device: mps
+2026-08-29 22:38:42,563 [DEBUG] kaggriculture_self_play_training: Model init: HierarchicalDQNBranching params=1716765 (1.72M) buffer_capacity=50000
+2026-08-29 22:38:43,263 [DEBUG] kaggriculture_self_play_training: Bootstrap phase: mode=daily_incremental episodes=None passes=1 transitions=None metadata=/Users/sweeden/kagg/working/kaggle_episodes/metadata.json
+2026-08-29 22:38:43,276 [INFO] path_b_bootstrap: Incremental daily bootstrap: adding 1 day(s) ['2026-08-16'] (17/13 dates already done)
+2026-08-29 22:38:43,288 [INFO] path_b_bootstrap: Bootstrap day 2026-08-16: 363 episodes (all transitions, streaming BC)
+2026-08-29 22:38:43,288 [INFO] path_b_bootstrap: Streaming BC over 363 episode files (epochs=1, batch=64, steps/epoch=50)
+2026-08-29 22:38:49,964 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1 | loss=2.43591 | file=93564338.json
+2026-08-29 22:38:49,997 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2 | loss=2.41115 | file=93564338.json
+2026-08-29 22:38:50,028 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3 | loss=2.38212 | file=93564338.json
+2026-08-29 22:38:51,915 [INFO] path_b_bootstrap: BC stream epoch 1/1 | steps=50 | avg loss: 1.90332
+2026-08-29 22:39:01,580 [INFO] path_b_bootstrap: Bootstrap state saved: 18 days bootstrapped → /Users/sweeden/kagg/working/run/metrics/bootstrap_state.json
+2026-08-29 22:39:01,581 [INFO] path_b_bootstrap: Marked day bootstrapped: 2026-08-16 (18 days total)
+2026-08-29 22:39:01,581 [INFO] path_b_bootstrap: Bootstrap state saved: 18 days bootstrapped → /Users/sweeden/kagg/working/run/metrics/bootstrap_state.json
+2026-08-29 22:39:01,584 [INFO] kaggriculture_self_play_training: Replay buffer size after bootstrap: 50000
+2026-08-29 22:39:01,584 [INFO] kaggriculture_self_play_training: BC pretrain metrics saved to: /Users/sweeden/kagg/working/run/metrics/bc_pretrain.json
+2026-08-29 22:39:06,561 [DEBUG] kaggriculture_self_play_training: Self-play env: KaggleCompetitiveEnv max_steps=50 use_kaggle=True
+2026-08-29 22:39:06,562 [INFO] kaggriculture_self_play_training: --- BEGINNING KAGGRICULTURE SELF-PLAY PIPELINE (episodes 1 → 2) ---
+2026-08-29 22:39:06,623 [DEBUG] kaggriculture_self_play_training: === Episode 1/2 | opponent=/Users/sweeden/kagg/working/run/checkpoints/checkpoint_ep_0.pt | eps=1.000 | buffer=50000 ===
+2026-08-29 22:39:06,633 [DEBUG] kaggriculture_self_play_training: Ep 1 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-29 22:39:08,015 [DEBUG] kaggriculture_self_play_training: Ep 1 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=50000 learn=False
+2026-08-29 22:39:08,029 [DEBUG] kaggriculture_self_play_training: Ep 1 step 1: verb=7 crop=0 raw_r=-12.310 shaped_r=-12.300 done=False buffer=50000 learn=False
+2026-08-29 22:39:08,044 [DEBUG] kaggriculture_self_play_training: Ep 1 step 2: verb=5 crop=0 raw_r=-0.010 shaped_r=-0.113 done=False buffer=50000 learn=False
+2026-08-29 22:39:08,570 [INFO] kaggriculture_self_play_training: Episode 01/02 | Epsilon: 1.000 | Buffer Size: 50000 | Raw Reward: -29.92 | Shaped Reward: -33.38 | Avg Loss: 0.00000
+2026-08-29 22:39:11,733 [DEBUG] kaggriculture_self_play_training: === Episode 2/2 | opponent=/Users/sweeden/kagg/working/run/checkpoints/checkpoint_ep_0.pt | eps=0.050 | buffer=50000 ===
+2026-08-29 22:39:11,743 [DEBUG] kaggriculture_self_play_training: Ep 2 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-29 22:39:11,776 [DEBUG] kaggriculture_self_play_training: Ep 2 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=50000 learn=True
+2026-08-29 22:39:13,317 [DEBUG] kaggriculture_self_play_training: Ep 2 step 1 DQN update: loss=32.64286 batch=32 priorities_updated=32
+2026-08-29 22:39:13,341 [DEBUG] kaggriculture_self_play_training: Ep 2 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.010 done=False buffer=50000 learn=True
+2026-08-29 22:39:13,383 [DEBUG] kaggriculture_self_play_training: Ep 2 step 2 DQN update: loss=33.45860 batch=32 priorities_updated=32
+2026-08-29 22:39:13,405 [DEBUG] kaggriculture_self_play_training: Ep 2 step 2: verb=0 crop=0 raw_r=0.000 shaped_r=0.020 done=False buffer=50000 learn=True
+2026-08-29 22:39:13,447 [DEBUG] kaggriculture_self_play_training: Ep 2 step 3 DQN update: loss=34.27380 batch=32 priorities_updated=32
+2026-08-29 22:39:16,319 [INFO] kaggriculture_self_play_training: Episode 02/02 | Epsilon: 0.050 | Buffer Size: 50000 | Raw Reward: -0.11 | Shaped Reward: 9.93 | Avg Loss: 201.89644
+2026-08-29 22:39:19,485 [INFO] kaggriculture_self_play_training: Final model saved to: /Users/sweeden/kagg/working/run/models/model.pth
+2026-08-29 22:39:20,137 [INFO] kaggriculture_self_play_training: Win-rate eval vs random baseline: 1.00 (1/1)
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training: Ladder eval (10 opponents, 1 ep each, target 50%): beats_all=False → /Users/sweeden/kagg/working/run/metrics/ladder_eval.json
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training:   [FAIL] vs fallow_finn      win=0% (0/1) money 3000 vs 3000
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training:   [PASS] vs wheat_walter     win=100% (1/1) money 3000 vs 2840
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training:   [PASS] vs rotation_rosa    win=100% (1/1) money 3000 vs 2359
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training:   [PASS] vs homestead_hana   win=100% (1/1) money 3000 vs 659
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training:   [PASS] vs melon_mateo      win=100% (1/1) money 3000 vs 184
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training:   [PASS] vs rancher_rita     win=100% (1/1) money 3000 vs 830
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training:   [PASS] vs broker_bea       win=100% (1/1) money 3000 vs 0
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training:   [PASS] vs ledger_lena      win=100% (1/1) money 3000 vs 0
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training:   [PASS] vs slotter_silas    win=100% (1/1) money 3000 vs 0
+2026-08-29 22:39:26,561 [INFO] kaggriculture_self_play_training:   [PASS] vs closer_cleo      win=100% (1/1) money 3000 vs 0
+2026-08-29 22:39:26,563 [INFO] kaggriculture_self_play_training: Agent export saved to: /Users/sweeden/kagg/working/run/agent.py
+2026-08-29 22:39:26,563 [INFO] kaggriculture_self_play_training: Episode metrics saved to: /Users/sweeden/kagg/working/run/metrics/episode_metrics.json
+2026-08-29 22:39:26,563 [INFO] kaggriculture_self_play_training: --- SELF-PLAY TRAINING LOOP COMPLETED ---

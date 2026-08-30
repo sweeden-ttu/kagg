@@ -23,6 +23,7 @@ DEFAULT_ARTIFACT_REL_PATHS: Sequence[str] = (
     "metrics/bootstrap_state.json",
     "metrics/bc_pretrain.json",
     "metrics/episode_metrics.json",
+    "metrics/training_progress.json",
     "metrics/win_rate_eval.json",
     "metrics/ladder_eval.json",
     "config.json",

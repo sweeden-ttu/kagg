@@ -1,0 +1,20 @@
+{
+  "episodes": [
+    {
+      "episode": 1,
+      "epsilon": 1.0,
+      "buffer_size": 50000,
+      "raw_reward": -29.92000000000001,
+      "shaped_reward": -33.37930000000002,
+      "avg_loss": 0.0
+    },
+    {
+      "episode": 2,
+      "epsilon": 0.050000000000000044,
+      "buffer_size": 50000,
+      "raw_reward": -0.11,
+      "shaped_reward": 9.926799999999997,
+      "avg_loss": 201.89644188783606
+    }
+  ]
+}

@@ -31,6 +31,7 @@ TRAINING_MODULES = (
     "kaggle_env_wrapper.py",
     "dataset_loader.py",
     "eval_policy.py",
+    "training_metrics.py",
     "visualize.py",
     "notebook_paths.py",
 )
@@ -130,6 +131,7 @@ def bust_stale_modules() -> None:
         "kaggle_env_wrapper",
         "dataset_loader",
         "eval_policy",
+        "training_metrics",
         "visualize",
         "kaggriculture_self_play_training",
         "notebook_paths",

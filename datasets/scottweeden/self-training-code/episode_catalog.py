@@ -20,6 +20,8 @@ from datetime import date as date_cls, datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from training_metrics import corpus_stats_for_episodes
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_START_DATE = "2026-07-30"
@@ -329,10 +331,13 @@ def merge_episode_metadata(
                 "dataset_slug": slug,
                 "episode_count": len(episodes),
                 "top_avg_score": float(day.get("top_avg_score", 0)),
+                "score_stats": corpus_stats_for_episodes(episodes),
             }
         )
 
     merged_episodes.sort(key=lambda r: r["avg_score"], reverse=True)
+
+    cumulative_corpus = corpus_stats_for_episodes(merged_episodes)
 
     metadata = {
         "generated_at": datetime.now().isoformat(),
@@ -340,6 +345,7 @@ def merge_episode_metadata(
         "date_range": {"start": start_date, "end": end_date},
         "daily_datasets": daily_stats,
         "total_episodes_indexed": len(merged_episodes),
+        "cumulative_corpus": cumulative_corpus,
         "episodes": merged_episodes,
     }
     return metadata

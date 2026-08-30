@@ -1,8 +1,11 @@
 # Kaggriculture — Training home for scottweeden/kaggriculture-self-training
 
 **Repository:** https://github.com/sweeden-ttu/kagg
+**Kaggle**:   https://kaggle.com/datasets/scottweeden/self-training-code
 
-Production home for the Kaggriculture agent.
+This is a reinforcement learning and immitation replay deep learning repository focused on a DQN SB3 Gymnasium dual action state and policy heuristics agent gameplay and training.
+
+Current experiment: 
 
 ---
 
@@ -29,8 +32,21 @@ Production home for the Kaggriculture agent.
 │   ├── slotter_silas.py      ← tier 8
 │   └── closer_cleo.py        ← tier 9
 │
-├── kaggriculture-self-training/   ← Kaggle training notebook + kernel-metadata.json
-│   └── kaggriculture-self-training.ipynb
+├── kaggriculture-self-training/   ← GitHub-canonical Kaggle kernel (push source)
+│   ├── kaggriculture-self-training.ipynb
+│   ├── kernel-metadata.json
+│   └── input_requirements.txt   ← packagemanager pip install lines
+│
+├── working/                     ← local mirror of /kaggle/working
+│   ├── scottweeden-kaggriculture-self-training/  ← staging after §0 kernels pull
+│   ├── *.py                     ← runtime copies from code dataset (§1a)
+│   └── run/                     ← experiment output (mirrors training_artifacts)
+│
+├── .sync/manifest.json          ← hash/mtime manifest (see Sync below)
+│
+├── scripts/
+│   ├── sync_manifest.py         ← scan/report/sync GitHub ↔ Kaggle mirrors
+│   └── sync_pairs.json          ← which directory pairs to compare
 │
 ├── datasets/
 │   ├── reference/            ← opponent ladder metadata (from Kaggle reference dataset)
@@ -87,6 +103,71 @@ This repo pins the interpreter in `.vscode/settings.json` to:
 `/Users/sweeden/miniforge3/envs/kagg/bin/python`
 
 Reload the window after first setup so notebooks and the integrated terminal pick up the `kagg` env automatically.
+
+---
+
+## Kaggle ↔ GitHub sync
+
+Notebook **§0** in [`kaggriculture-self-training/kaggriculture-self-training.ipynb`](kaggriculture-self-training/kaggriculture-self-training.ipynb) pulls the latest kernel from Kaggle into `working/scottweeden-kaggriculture-self-training/`, patches `kernel-metadata.json` with **yesterday's** daily episode dataset slug (if missing — same rule as `DEFAULT_END_DATE` in `episode_catalog.py`), and promotes the ipynb + metadata to `kaggriculture-self-training/` when running locally (`~/kagg`).
+
+Requires `kaggle` CLI credentials. On Kaggle runtime, staging under `/kaggle/working/scottweeden-kaggriculture-self-training/` is authoritative; promote to canonical is skipped when input is read-only.
+
+### Duplicate directories (mirrored pairs)
+
+These paths overlap because of **GitHub checkout**, **Kaggle kernel pull**, and **notebook runtime copies**:
+
+| Role | GitHub / push canonical | Kaggle pull / runtime mirror | Notes |
+|------|-------------------------|------------------------------|-------|
+| **Training kernel** | `kaggriculture-self-training/` | `working/scottweeden-kaggriculture-self-training/` | ipynb + kernel-metadata for `kaggle kernels push`; §0 staging dir |
+| **Code dataset** | `datasets/scottweeden/self-training-code/` | `working/` (top-level `.py` + `kaggriculture_rl/`) | Notebook §1a copies writable modules here each run |
+| **RL subpackage** | `datasets/.../kaggriculture_rl/` | `working/kaggriculture_rl/` | `dqn_sb3.py` and `ImitationLearning.ipynb` may differ between copies |
+| **Training artifacts** | `datasets/.../training_artifacts/` | `working/run/` | checkpoints, metrics, `agent.py`, plots — diverge after local runs |
+| **Adapter copies in run** | `datasets/.../kaggriculture_adapter.py` (read-only source) | `working/run/kaggriculture_adapter.py`, `working/run/kaggriculture_path_b_rebuild.py` | Extra copies written during agent export |
+| **Episode cache** | `datasets/kaggle/kaggriculture-episodes-*` | `working/kaggle_episodes/` | metadata merge cache (not a 1:1 hash mirror) |
+
+**Not duplicated:** `opponents/`, `scripts/`, root CLIs (`eval.py`, etc.), `datasets/reference/`.
+
+```mermaid
+flowchart LR
+  subgraph github [GitHub canonical]
+    KT[kaggriculture-self-training/]
+    CODE[datasets/scottweeden/self-training-code/]
+  end
+  subgraph kaggle [Kaggle retrieve]
+    KP["working/scottweeden-kaggriculture-self-training/"]
+    DS[datasets/kaggle/...]
+  end
+  subgraph runtime [Notebook runtime]
+    WK[working/*.py]
+    RUN[working/run/]
+  end
+  KT -->|"kernels pull §0"| KP
+  KP -->|"auto-promote"| KT
+  CODE -->|"§1a deploy"| WK
+  WK --> RUN
+  CODE -->|"training_artifacts publish"| RUN
+```
+
+### Hash manifest (`.sync/manifest.json`)
+
+Config: [`scripts/sync_pairs.json`](scripts/sync_pairs.json). CLI: [`scripts/sync_manifest.py`](scripts/sync_manifest.py).
+
+| Pair | GitHub | Kaggle/working |
+|------|--------|----------------|
+| `training_kernel` | `kaggriculture-self-training/` | `working/scottweeden-kaggriculture-self-training/` |
+| `code_modules` | `datasets/scottweeden/self-training-code/*.py` | `working/*.py` |
+| `kaggriculture_rl` | `…/kaggriculture_rl/` | `working/kaggriculture_rl/` |
+| `training_artifacts` | `…/training_artifacts/` | `working/run/` |
+
+```bash
+python scripts/sync_manifest.py scan
+python scripts/sync_manifest.py report
+python scripts/sync_manifest.py sync --direction kaggle-to-github --dry-run
+python scripts/sync_manifest.py sync --direction github-to-kaggle --dry-run
+python scripts/sync_manifest.py sync --direction github-to-kaggle --force github   # resolve conflicts
+```
+
+Bulk episode JSONs under `datasets/kaggle/kaggriculture-episodes-*` are not hash-tracked (too large). §0 does **not** call the manifest CLI — run `scan` manually after promote or sync.
 
 ---
 
