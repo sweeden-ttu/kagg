@@ -7,12 +7,15 @@ from typing import Dict, List, Tuple, Any, Optional
 from kaggriculture_adapter import (
     COMPETITION_TURNS_PER_DAY,
     CROPS,
+    DAILY_HIRE_TARGET,
     EPISODE_STEPS,
     FARMER_ACTIONS,
     MARKET_ACTIONS,
     NUM_FARMER_ACTIONS,
     NUM_HANDS,
     NUM_MARKET_ACTIONS,
+    TARGET_WHEAT_PLANTS,
+    daily_hire_orders_wanted,
     encode_path_b_observation,
     empty_neighbor_move_indices,
     farm_plant_census,
@@ -344,17 +347,19 @@ def prefer_farm_invest_actions(
     buy_seed_bonus: float = 10.0,
     buy_seed_surplus_penalty: float = 15.0,
     seed_surplus_threshold: int = 1,
-    target_plants: int = 6,
+    target_plants: int = TARGET_WHEAT_PLANTS,
     expensive_market_penalty: float = 20.0,
     sell_bonus: float = 8.0,
+    hire_bonus: float = 24.0,
+    daily_hire_target: int = DAILY_HIRE_TARGET,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
-    """Soft-boost legal farm actions; restock one seed while expanding wheat.
+    """Soft-boost legal farm actions; restock seed; hire a cheap morning crew.
 
     Never skip an engine-legal mature HARVEST (that regressed Finn). While a
     one-shot crop is still in its watering window, prefer WATER / expansion
-    MOVE over early HARVEST. Restock a single BUY_SEED when inventory is
-    empty and the farm is below ``target_plants``. Expensive animal/hire/land
-    orders stay penalized on every market slot.
+    MOVE over early HARVEST. Restock BUY_SEED while the farm is below
+    ``target_plants``. Early-hour HIRE (≤4, fib 1+1+2+3) is boosted; extra
+    hire/animal/land orders stay penalized.
     """
     f_mask = np.asarray(farmer_verb_mask, dtype=bool)
     farmer_out = farmer_verb_q.clone()
@@ -438,10 +443,28 @@ def prefer_farm_invest_actions(
             elif m_mask.ndim >= 2 and buy_seed < m_mask.shape[-1]:
                 buy_legal = bool(m_mask[..., 0, buy_seed])
 
-        # One restock slot while the farm is below the wheat-tile cap.
-        want_seeds = want_more_plants and seed_count < max(1, int(seed_surplus_threshold))
+        hire_idx = MARKET_ACTIONS["HIRE"]
+        hire_legal = True
+        if market_mask is not None:
+            m_mask = np.asarray(market_mask, dtype=bool)
+            if m_mask.ndim == 1 and hire_idx < m_mask.shape[0]:
+                hire_legal = bool(m_mask[hire_idx])
+            elif m_mask.ndim >= 2 and hire_idx < m_mask.shape[-1]:
+                hire_legal = bool(m_mask[..., 0, hire_idx])
+        hire_todo = 0
+        if hire_legal and observation is not None:
+            hire_todo = daily_hire_orders_wanted(
+                observation, target=int(daily_hire_target)
+            )
+        sell_first = shed_count > 0
+        hire_start = 1 if sell_first else 0
+        seed_slot = hire_start + hire_todo
+        want_seeds = want_more_plants and seed_count < max(
+            1, int(target_plants) - plant_count, int(seed_surplus_threshold)
+        )
         for t in range(n_orders):
-            if buy_legal and want_seeds and t == 0:
+            is_hire_slot = hire_todo > 0 and hire_start <= t < hire_start + hire_todo
+            if buy_legal and want_seeds and t == seed_slot:
                 market_out[..., t, buy_seed] = (
                     market_out[..., t, buy_seed] + buy_seed_bonus
                 )
@@ -449,12 +472,24 @@ def prefer_farm_invest_actions(
                 market_out[..., t, buy_seed] = (
                     market_out[..., t, buy_seed] - buy_seed_surplus_penalty
                 )
-            for key in ("BUY_ANIMAL", "HIRE", "BUY_LAND"):
+            for key in ("BUY_ANIMAL", "BUY_LAND"):
                 idx = MARKET_ACTIONS[key]
                 market_out[..., t, idx] = (
                     market_out[..., t, idx] - expensive_market_penalty
                 )
-            if shed_count > 0 and t == 0:
+            if is_hire_slot:
+                market_out[..., t, hire_idx] = (
+                    market_out[..., t, hire_idx] + hire_bonus
+                )
+                pass_idx = MARKET_ACTIONS["PASS"]
+                market_out[..., t, pass_idx] = (
+                    market_out[..., t, pass_idx] - hire_bonus * 0.5
+                )
+            else:
+                market_out[..., t, hire_idx] = (
+                    market_out[..., t, hire_idx] - expensive_market_penalty
+                )
+            if sell_first and t == 0:
                 sell = MARKET_ACTIONS["SELL"]
                 market_out[..., t, sell] = market_out[..., t, sell] + sell_bonus
     return farmer_out, market_out

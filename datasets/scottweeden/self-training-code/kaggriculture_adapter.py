@@ -96,244 +96,6 @@ TILE_CLASS: Dict[str, int] = {
 CROP_TO_TILE_CLASS = {crop: TILE_CLASS[crop] for crop in CROPS}
 
 SEED_COSTS = {"WHEAT": 10, "CARROT": 8, "TOMATO": 5, "STRAWBERRY": 3, "MELON": 2}
-LAND_PRICES = [1000, 2000, 4000]
-# Engine: cost = farmHandCostMult * fib(hires_today), fib(0)=1,1,2,3,5,...
-# Four morning hires cost 1+1+2+3 = 7. The old 400 floor hid cheap labour.
-HIRE_FIB_COSTS = (1, 1, 2, 3, 5, 8, 13, 21)
-HIRE_COST = 1
-DAILY_HIRE_TARGET = 4
-HIRE_HOUR_LIMIT = 2
-HIRE_CASH_RESERVE = 80
-TARGET_WHEAT_PLANTS = 16
-SEED_BUY_BATCH = 6
-ANIMAL_MIN_COST = 400
-SHED_CAP = 100
-DEFAULT_FERTILIZER_PRICE = 100
-_HAND_VERBS = frozenset({
-    "PASS", "DIG", "WATER", "PLANT", "HARVEST",
-    "NORTH", "SOUTH", "WEST", "EAST", "DROP", "PICKUP",
-})
-
-# Engine growth table (kaggriculture.py CROPS). Wheat is planted with
-# yield_units=1 immediately, but HARVEST is a no-op until first_yield_day.
-CROP_GROWTH: Dict[str, Dict[str, Any]] = {
-    "WHEAT": {"first_yield_day": 2, "max_yield_day": 4, "ongoing": False, "max_yield": 6},
-    "CARROT": {"first_yield_day": 2, "max_yield_day": 3, "ongoing": False, "max_yield": 4},
-    "TOMATO": {"first_yield_day": 8, "max_yield_day": 8, "ongoing": True, "max_yield": 4},
-    "STRAWBERRY": {"first_yield_day": 10, "max_yield_day": 10, "ongoing": True, "max_yield": 4},
-    "MELON": {"first_yield_day": 10, "max_yield_day": 12, "ongoing": False, "max_yield": 6},
-}
-
-
-def _farm_mapping(farm: Any) -> Dict[str, Any]:
-    if farm is None:
-        return {}
-    if isinstance(farm, dict):
-        return farm
-    try:
-        return dict(farm)
-    except (TypeError, ValueError):
-        return {}
-
-
-def hire_cost_today(hires_today: int) -> int:
-    """Next HIRE coin cost (engine ``_hire_cost`` with mult=1)."""
-    n = max(0, int(hires_today))
-    if n < len(HIRE_FIB_COSTS):
-        return int(HIRE_FIB_COSTS[n])
-    a, b = 1, 1
-    for _ in range(n):
-        a, b = b, a + b
-    return int(a)
-
-
-def farm_labor_state(observation: Dict[str, Any]) -> Dict[str, Any]:
-    """Hour, cash, and crew size for daily HIRE gating."""
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    hands = farm.get("hands") or []
-    return {
-        "hour": int(observation.get("hour", 0) or 0),
-        "day": int(observation.get("day", 0) or 0),
-        "money": float(farm.get("money", 0.0) or 0.0),
-        "hires_today": int(farm.get("hires_today", 0) or 0),
-        "n_hands": len(hands) if isinstance(hands, list) else 0,
-    }
-
-
-def daily_hire_orders_wanted(
-    observation: Dict[str, Any],
-    *,
-    target: int = DAILY_HIRE_TARGET,
-    hour_limit: int = HIRE_HOUR_LIMIT,
-    cash_reserve: int = HIRE_CASH_RESERVE,
-) -> int:
-    """How many HIRE orders to emit this turn (0 unless early + cheap fib)."""
-    labor = farm_labor_state(observation)
-    if int(labor["hour"]) > int(hour_limit):
-        return 0
-    already = int(labor["hires_today"])
-    have = int(labor["n_hands"])
-    cap = int(target)
-    todo = max(0, min(cap - already, cap - have, NUM_HANDS - have))
-    money = float(labor["money"])
-    while todo > 0:
-        cost_sum = sum(hire_cost_today(already + i) for i in range(todo))
-        last_cost = hire_cost_today(already + todo - 1)
-        if last_cost <= 5 and money >= cost_sum + float(cash_reserve):
-            return todo
-        todo -= 1
-    return 0
-
-
-def plant_is_harvestable(tile: Any, day: int) -> bool:
-    """True when the engine will actually collect yield (not a HARVEST no-op)."""
-    if not isinstance(tile, dict) or tile.get("kind") != "PLANT":
-        return False
-    if int(tile.get("yield_units", 0) or 0) <= 0:
-        return False
-    crop = str(tile.get("crop") or "WHEAT")
-    info = CROP_GROWTH.get(crop) or CROP_GROWTH["WHEAT"]
-    planted = int(tile.get("planted_day", 0) or 0)
-    return int(day) - planted >= int(info["first_yield_day"])
-
-
-def plant_is_mature(tile: Any, day: int) -> bool:
-    """True when a one-shot crop has finished its watering bonus window."""
-    if not isinstance(tile, dict) or tile.get("kind") != "PLANT":
-        return False
-    crop = str(tile.get("crop") or "WHEAT")
-    info = CROP_GROWTH.get(crop) or CROP_GROWTH["WHEAT"]
-    planted = int(tile.get("planted_day", 0) or 0)
-    age = int(day) - planted
-    if info.get("ongoing"):
-        return plant_is_harvestable(tile, day)
-    units = int(tile.get("yield_units", 0) or 0)
-    cap = int(info.get("max_yield") or 0)
-    # Good-enough yield: don't wait for the last watering tick if already ≥3.
-    if units >= min(3, cap or 3):
-        return True
-    if cap and units >= cap:
-        return True
-    return age >= int(info["max_yield_day"])
-
-
-def farm_plant_census(observation: Dict[str, Any]) -> Dict[str, int]:
-    """Count plants, seeds, and standing-tile farm state for decode heuristics."""
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    private = observation.get("private") or {}
-    seeds = private.get("seeds") or {}
-    shed = private.get("shed") or {}
-    day = int(observation.get("day", 0) or 0)
-    tiles = farm.get("tiles") or []
-    farmer_pos = farm.get("farmer") or [0, 0]
-    fx = int(farmer_pos[0]) if len(farmer_pos) >= 1 else 0
-    fy = int(farmer_pos[1]) if len(farmer_pos) >= 2 else 0
-    plants = 0
-    harvestable = 0
-    mature = 0
-    standing = None
-    if 0 <= fy < len(tiles) and 0 <= fx < len(tiles[fy]):
-        standing = tiles[fy][fx]
-    for row in tiles:
-        for tile in row:
-            if isinstance(tile, dict) and tile.get("kind") == "PLANT":
-                plants += 1
-                if plant_is_harvestable(tile, day):
-                    harvestable += 1
-                if plant_is_mature(tile, day):
-                    mature += 1
-    seed_count = 0
-    if isinstance(seeds, dict):
-        seed_count = int(sum(int(v or 0) for v in seeds.values()))
-    shed_count = 0
-    if isinstance(shed, dict):
-        shed_count = int(sum(int(v or 0) for v in shed.values()))
-    standing_plant = isinstance(standing, dict) and standing.get("kind") == "PLANT"
-    standing_empty = standing is None
-    watered = bool(standing_plant and standing.get("watered_today", False))
-    return {
-        "plants": plants,
-        "harvestable": harvestable,
-        "mature": mature,
-        "seed_count": seed_count,
-        "shed_count": shed_count,
-        "standing_plant": int(standing_plant),
-        "standing_empty": int(standing_empty),
-        "standing_watered": int(watered),
-        "standing_harvestable": int(plant_is_harvestable(standing, day)),
-        "standing_mature": int(plant_is_mature(standing, day)),
-        "day": day,
-        "farmer_x": fx,
-        "farmer_y": fy,
-    }
-
-
-def empty_neighbor_move_indices(observation: Dict[str, Any]) -> Tuple[int, ...]:
-    """Farmer move verbs that step onto an unlocked empty tile (plant target)."""
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    tiles = farm.get("tiles") or []
-    farmer_pos = farm.get("farmer") or [0, 0]
-    fx = int(farmer_pos[0]) if len(farmer_pos) >= 1 else 0
-    fy = int(farmer_pos[1]) if len(farmer_pos) >= 2 else 0
-    hits = []
-    for dx, dy, idx in ((0, -1, 5), (0, 1, 6), (-1, 0, 7), (1, 0, 8)):
-        nx, ny = fx + dx, fy + dy
-        if ny < 0 or nx < 0 or ny >= len(tiles) or nx >= 10:
-            continue
-        if nx >= len(tiles[ny]):
-            continue
-        tile = tiles[ny][nx]
-        if tile is None:
-            hits.append(idx)
-    return tuple(hits)
-
-
-def _step_toward_move_index(fx: int, fy: int, tx: int, ty: int) -> Optional[int]:
-    """One Manhattan step, horizontal first (same as the reference ladder)."""
-    if fx != tx:
-        return FARMER_ACTIONS["EAST"] if tx > fx else FARMER_ACTIONS["WEST"]
-    if fy != ty:
-        return FARMER_ACTIONS["SOUTH"] if ty > fy else FARMER_ACTIONS["NORTH"]
-    return None
-
-
-def farm_tour_move_index(observation: Dict[str, Any]) -> Optional[int]:
-    """Step toward the nearest unwatered plant, else nearest mature crop."""
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    tiles = farm.get("tiles") or []
-    farmer_pos = farm.get("farmer") or [0, 0]
-    fx = int(farmer_pos[0]) if len(farmer_pos) >= 1 else 0
-    fy = int(farmer_pos[1]) if len(farmer_pos) >= 2 else 0
-    day = int(observation.get("day", 0) or 0)
-    unwatered = []
-    mature = []
-    for y, row in enumerate(tiles):
-        for x, tile in enumerate(row):
-            if not isinstance(tile, dict) or tile.get("kind") != "PLANT":
-                continue
-            if x == fx and y == fy:
-                continue
-            if not tile.get("watered_today", False):
-                unwatered.append((abs(x - fx) + abs(y - fy), y, x))
-            elif plant_is_mature(tile, day) and plant_is_harvestable(tile, day):
-                mature.append((abs(x - fx) + abs(y - fy), y, x))
-    if unwatered:
-        unwatered.sort()
-        _, ty, tx = unwatered[0]
-        return _step_toward_move_index(fx, fy, tx, ty)
-    if mature:
-        mature.sort()
-        _, ty, tx = mature[0]
-        return _step_toward_move_index(fx, fy, tx, ty)
-    return None
 
 
 def _normalize_action_op(raw_op: Any) -> str:
@@ -784,14 +546,11 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
             if tile.get("kind") == "PLANT":
                 if not tile.get("watered_today", False):
                     farmer_mask[2] = True  # WATER
-                # Wheat/carrot start with yield_units=1; the engine still
-                # no-ops HARVEST until first_yield_day. Mask that gap so
-                # decode can water / expand instead of spamming HARVEST.
-                if plant_is_harvestable(tile, int(observation.get("day", 0) or 0)):
+                if tile.get("yield_units", 0) > 0:
                     farmer_mask[4] = True  # HARVEST
-        elif tile is None and any(seeds.get(c, 0) > 0 for c in CROPS):
-            # Engine only accepts PLANT when the standing tile is empty (None).
-            farmer_mask[3] = True  # PLANT
+
+    if any(seeds.get(c, 0) > 0 for c in CROPS):
+        farmer_mask[3] = True  # PLANT
 
     for dx, dy, idx in [(0, -1, 5), (0, 1, 6), (-1, 0, 7), (1, 0, 8)]:
         nx, ny = fx + dx, fy + dy
@@ -804,29 +563,17 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
         if seeds.get(crop, 0) > 0:
             crop_mask[i] = True
 
-    market = observation.get("market", {}) or {}
-    prices = market.get("prices", {}) or {}
-    fert_price = float(prices.get("FERTILIZER", DEFAULT_FERTILIZER_PRICE) or DEFAULT_FERTILIZER_PRICE)
-
     market_mask = np.zeros(NUM_MARKET_ACTIONS, dtype=bool)
-    market_mask[0] = True  # PASS
+    market_mask[0] = True
     for crop in CROPS:
-        if money >= SEED_COSTS.get(crop, 999) and seeds.get(crop, 0) < SHED_CAP:
+        if money >= SEED_COSTS.get(crop, 999):
             market_mask[1] = True  # BUY_SEED
             break
-    # Decoder emits BUY_PRODUCT FERTILIZER; indices 7–9 stay OTHER padding (False).
-    if money >= fert_price and shed.get("FERTILIZER", 0) < SHED_CAP:
-        market_mask[2] = True  # BUY_PRODUCT
     if any(shed.get(c, 0) > 0 for c in CROPS):
         market_mask[4] = True  # SELL
-    if money >= ANIMAL_MIN_COST:
+    if money >= 400:
         market_mask[3] = True  # BUY_ANIMAL
-    if money >= HIRE_COST:
         market_mask[5] = True  # HIRE
-    unlocked = my_farm.get("unlocked_quadrants") or []
-    bought = max(0, len(unlocked) - 1)
-    if bought < len(LAND_PRICES) and money >= LAND_PRICES[bought]:
-        market_mask[6] = True  # BUY_LAND
 
     return {
         "farmer_verb": farmer_mask,

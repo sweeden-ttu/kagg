@@ -7,36 +7,19 @@ formats while enforcing valid action masks.
 
 from __future__ import annotations
 
+import copy
 import random
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-import gymnasium as gym
 import numpy as np
 import torch
-from gymnasium import spaces
 
-from kaggriculture_adapter import (
-    decode_action,
-    encode_observation,
-    encode_tiles,
-    get_action_masks,
-    parse_observation,
-)
+from kaggriculture_adapter import decode_action, encode_observation, encode_tiles, parse_observation
+from kaggriculture_rl.dqn import ActionMasker
 
 
-def _pick_legal(index: int, mask: np.ndarray) -> int:
-    """Return ``index`` if legal, else a random True index (fallback PASS=0)."""
-    mask = np.asarray(mask, dtype=bool)
-    if 0 <= index < len(mask) and bool(mask[index]):
-        return int(index)
-    legal = np.flatnonzero(mask)
-    if legal.size == 0:
-        return 0
-    return int(random.choice(legal.tolist()))
-
-
-class KaggleEnvWrapper(gym.Env):
-    """Gymnasium Env wrapping Kaggle-environments Kaggriculture.
+class KaggleEnvWrapper:
+    """Gymnasium-compatible wrapper for Kaggle-environments.
 
     Converts raw Kaggle observations into normalized tensor dictionaries
     suitable for the DQN agent. Enforces valid action masks and handles
@@ -56,8 +39,6 @@ class KaggleEnvWrapper(gym.Env):
         Number of previous observations to stack (default: 1).
     """
 
-    metadata = {"render_modes": ["human"]}
-
     def __init__(
         self,
         env: Any,
@@ -67,9 +48,7 @@ class KaggleEnvWrapper(gym.Env):
         stack_size: int = 1,
         player_id: int = 0,
         opponent_policy: Optional[Callable[[Dict[str, torch.Tensor]], Dict[str, Any]]] = None,
-        render_mode: Optional[str] = None,
     ):
-        super().__init__()
         self.env = env
         self.device = device
         self.use_masking = use_masking
@@ -77,95 +56,46 @@ class KaggleEnvWrapper(gym.Env):
         self.stack_size = stack_size
         self.player_id = player_id
         self.opponent_policy = opponent_policy
-        self.render_mode = render_mode
         self._last_opponent_obs: Optional[Dict[str, torch.Tensor]] = None
         self._last_raw_obs: Optional[Dict[str, Any]] = None
         self._last_raw_opp_obs: Optional[Dict[str, Any]] = None
 
+        # Action space
         self.n_hands = 6
         self.n_farmer_actions = 15
         self.n_hand_actions = 15
         self.n_market_actions = 10
 
-        self.observation_space = spaces.Dict(
-            {
-                "tiles": spaces.Box(low=0, high=8, shape=(10, 10), dtype=np.int64),
-                "day": spaces.Box(low=0.0, high=30.0, shape=(1,), dtype=np.float32),
-                "hour": spaces.Box(low=0.0, high=72.0, shape=(1,), dtype=np.float32),
-                "player_id": spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32),
-                "farms_p0_money": spaces.Box(
-                    low=0.0, high=1e7, shape=(1,), dtype=np.float32
-                ),
-                "farms_p1_money": spaces.Box(
-                    low=0.0, high=1e7, shape=(1,), dtype=np.float32
-                ),
-                "market_prices": spaces.Box(
-                    low=0.0, high=1e5, shape=(5,), dtype=np.float32
-                ),
-                "market_inventory": spaces.Box(
-                    low=0.0, high=1e6, shape=(5,), dtype=np.float32
-                ),
-                "seeds": spaces.Box(low=0.0, high=500.0, shape=(5,), dtype=np.float32),
-                "shed": spaces.Box(low=0.0, high=1e4, shape=(5,), dtype=np.float32),
-                "inventories": spaces.Box(
-                    low=0.0, high=100.0, shape=(30,), dtype=np.float32
-                ),
-            }
-        )
-        self.action_space = spaces.Dict(
-            {
-                "farmer": spaces.Discrete(self.n_farmer_actions),
-                "hands": spaces.MultiDiscrete(
-                    [self.n_hand_actions] * self.n_hands
-                ),
-                "market": spaces.Discrete(self.n_market_actions),
-            }
-        )
-
+        # Stack history
         self.obs_history: List[Optional[Dict[str, torch.Tensor]]] = []
         for _ in range(stack_size - 1):
             self.obs_history.append(None)
 
+        # Episode tracking
         self.current_episode = 0
         self.total_episodes = 0
         self.current_reward = 0
 
-    @classmethod
-    def make(
-        cls,
-        opponent: str = "random",
-        device: str = "cpu",
-        use_masking: bool = True,
-        clip_reward: bool = False,
-        player_id: int = 0,
-        debug: bool = False,
-        **kwargs: Any,
-    ) -> "KaggleEnvWrapper":
-        """Build a wrapper around ``kaggle_environments.make("kaggriculture")``."""
-        from kaggle_environments import make as kaggle_make
-
-        env = kaggle_make("kaggriculture", debug=debug)
-        # Opponent is selected per-step via opponent_policy / random; train mode
-        # still needs a two-agent env. Keep the raw Environment for reset/step.
-        _ = opponent  # reserved for future fixed-agent wiring
-        return cls(
-            env,
-            device=device,
-            use_masking=use_masking,
-            clip_reward=clip_reward,
-            player_id=player_id,
-            **kwargs,
-        )
-
     def reset(
         self,
-        *,
         seed: Optional[int] = None,
         options: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[Dict[str, torch.Tensor], Dict[str, Any]]:
-        """Reset the environment. Returns ``(obs, info)`` (Gymnasium API)."""
-        super().reset(seed=seed)
-        if seed is not None and hasattr(self.env, "seed"):
+    ) -> Dict[str, torch.Tensor]:
+        """Reset the environment.
+
+        Parameters
+        ----------
+        seed : int or None
+            Random seed for reproducibility.
+        options : dict
+            Additional reset options (ignored).
+
+        Returns
+        -------
+        obs : dict
+            Tensor-friendly observation dict.
+        """
+        if seed is not None:
             self.env.seed(seed)
 
         result = self.env.reset()
@@ -188,14 +118,35 @@ class KaggleEnvWrapper(gym.Env):
         self.total_episodes += 1
         self.current_reward = 0
 
-        return obs, {}
+        return obs
 
     def step(self, action: Dict[str, Any]) -> Tuple[
         Optional[Dict[str, torch.Tensor]], float, bool, bool, Dict[str, Any]
     ]:
-        """Execute an action and return a Gymnasium 5-tuple transition."""
+        """Execute an action and return transition.
+
+        Parameters
+        ----------
+        action : dict
+            Action with keys "farmer", "hands", "market".
+
+        Returns
+        -------
+        next_obs : dict or None
+            Tensor-friendly next observation (``None`` when the episode ended).
+        reward : float
+            Episode reward.
+        terminated : bool
+            Whether the episode ended (success or failure).
+        truncated : bool
+            Whether the episode ended (timeout).
+        info : dict
+            Additional information.
+        """
+        # Apply masking if enabled
         if self.use_masking:
-            action = self._enforce_valid_actions(action)
+            current_obs = self.obs_history[-1] if self.obs_history else None
+            action = self._enforce_valid_actions(action, current_obs)
 
         opponent_action = self._opponent_action()
         actions: List[Optional[Dict[str, Any]]] = [None, None]
@@ -211,6 +162,7 @@ class KaggleEnvWrapper(gym.Env):
         reward = float(agent_state.get("reward") or 0)
         info: Dict[str, Any] = dict(agent_state.get("info") or {})
 
+        # Handle done signal
         status = agent_state.get("status")
         if status == "ACTIVE":
             terminated = False
@@ -229,11 +181,13 @@ class KaggleEnvWrapper(gym.Env):
             truncated = False
             done = False
 
+        # Clip reward if enabled
         if self.clip_reward:
             reward = max(-10.0, min(10.0, reward))
 
         self.current_reward += reward
 
+        # Get next observation
         if done:
             next_obs = None
             self._last_opponent_obs = None
@@ -249,13 +203,20 @@ class KaggleEnvWrapper(gym.Env):
                 opponent_state, player_id=1 - self.player_id
             )
             self.obs_history.append(next_obs)
+            # Maintain stack size
             if len(self.obs_history) > self.stack_size:
                 self.obs_history.pop(0)
 
         return next_obs, reward, terminated, truncated, info
 
     def get_action_space_info(self) -> Dict[str, int]:
-        """Return action space dimensions."""
+        """Return action space dimensions.
+
+        Returns
+        -------
+        info : dict
+            Dictionary with action space dimensions.
+        """
         return {
             "n_hands": self.n_hands,
             "n_farmer_actions": self.n_farmer_actions,
@@ -316,35 +277,116 @@ class KaggleEnvWrapper(gym.Env):
     def _convert_observation(
         self, agent_result: Dict, player_id: int = 0
     ) -> Dict[str, torch.Tensor]:
-        """Convert raw Kaggle observation to tensor dict."""
+        """Convert raw Kaggle observation to tensor dict.
+
+        Parameters
+        ----------
+        agent_result : dict
+            Raw observation from Kaggle environment.
+        player_id : int
+            Player ID to extract observation for.
+
+        Returns
+        -------
+        obs : dict
+            Tensor-friendly observation dict.
+        """
         obs = agent_result.get("observation", agent_result)
-        return encode_observation(obs, player_id, device=str(self.device))
+        farms = obs.get("farms", [])
+        private = obs.get("private", {})
+        market = obs.get("market", {})
 
-    def _enforce_valid_actions(self, action: Dict) -> Dict:
-        """Enforce valid action masks using nested ``_last_raw_obs``."""
-        if not self.use_masking:
+        if len(farms) > player_id:
+            farm = farms[player_id]
+        else:
+            farm = {}
+
+        raw_tiles = farm.get("tiles", [[None] * 10 for _ in range(10)])
+        tiles = self._encode_tiles(raw_tiles)
+        obs_tensors = encode_observation(obs, player_id, device=str(self.device))
+        return obs_tensors
+
+    def _enforce_valid_actions(
+        self, action: Dict, obs: Optional[Dict]
+    ) -> Dict:
+        """Enforce valid action masks.
+
+        Parameters
+        ----------
+        action : dict
+            Proposed action.
+        obs : dict or None
+            Current observation.
+
+        Returns
+        -------
+        action : dict
+            Validated action.
+        """
+        if obs is None or not self.use_masking:
             return action
 
-        raw = self._last_raw_obs
-        if raw is None:
-            return action
+        try:
+            # Create observation dict for ActionMasker
+            obs_dict = {}
+            if "farms_p0_money" in obs:
+                obs_dict["farms"] = [{
+                    "money": obs["farms_p0_money"].item(),
+                    "tiles": [[0] * 10 for _ in range(10)],
+                    "farmer": [0, 0],
+                }]
+            if "seeds" in obs:
+                obs_dict["private"] = {
+                    "seeds": {},
+                    "shed": {},
+                }
 
-        masks = get_action_masks(raw)
-        farmer_mask = masks["farmer_verb"]
-        market_mask = masks["market"]
+            # Get valid masks
+            farmer_mask = ActionMasker.get_valid_farmer_actions(obs_dict)
+            market_mask = ActionMasker.get_valid_market_actions(obs_dict)
 
-        out = dict(action)
-        out["farmer"] = _pick_legal(int(action.get("farmer", 0)), farmer_mask)
-        out["market"] = _pick_legal(int(action.get("market", 0)), market_mask)
+            # Clamp actions to valid range
+            if farmer_mask:
+                action["farmer"] = min(action["farmer"], len(farmer_mask) - 1)
+            if market_mask:
+                action["market"] = min(action["market"], len(market_mask) - 1)
 
-        hands = list(action.get("hands", []))
-        for i in range(len(hands)):
-            hands[i] = min(int(hands[i]), self.n_hand_actions - 1)
-        out["hands"] = hands
-        return out
+            # Clamp hand actions
+            for i in range(len(action.get("hands", []))):
+                action["hands"][i] = min(action["hands"][i], self.n_hand_actions - 1)
 
-    def render(self):
+        except Exception:
+            # If masking fails, return original action
+            pass
+
+        return action
+
+    @property
+    def observation_space(self) -> Dict[str, Any]:
+        """Return observation space specification."""
+        return {
+            "tiles": (10, 10),
+            "day": (1,),
+            "hour": (1,),
+            "player_id": (1,),
+            "farms_p0_money": (1,),
+            "farms_p1_money": (1,),
+            "market_prices": (5,),
+            "market_inventory": (5,),
+            "seeds": (5,),
+            "shed": (5,),
+            "inventories": (30,),
+        }
+
+    @property
+    def action_space(self) -> Dict[str, Any]:
+        """Return action space specification."""
+        return {
+            "farmer": self.n_farmer_actions,
+            "hands": [self.n_hand_actions] * self.n_hands,
+            "market": self.n_market_actions,
+        }
+
+    def render(self, mode="human"):
         """Render the environment (passes through to Kaggle)."""
-        if hasattr(self.env, "render"):
-            return self.env.render(mode=self.render_mode or "human")
-        return None
+        return self.env.render(mode=mode)

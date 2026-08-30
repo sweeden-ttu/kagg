@@ -1,0 +1,44 @@
+{
+  "fallow_finn": {
+    "win_rate": 1.0,
+    "loss_rate": 0.0,
+    "tie_rate": 0.0,
+    "wins": 10,
+    "losses": 0,
+    "ties": 0,
+    "n_episodes": 10,
+    "max_steps": 720,
+    "turns_per_day": 24,
+    "avg_p0_money": 12424.9,
+    "avg_p1_money": 3000.0,
+    "cleared": true
+  },
+  "wheat_walter": {
+    "win_rate": 1.0,
+    "loss_rate": 0.0,
+    "tie_rate": 0.0,
+    "wins": 10,
+    "losses": 0,
+    "ties": 0,
+    "n_episodes": 10,
+    "max_steps": 720,
+    "turns_per_day": 24,
+    "avg_p0_money": 10610.6,
+    "avg_p1_money": 5497.1,
+    "cleared": true
+  },
+  "rotation_rosa": {
+    "win_rate": 0.8,
+    "loss_rate": 0.2,
+    "tie_rate": 0.0,
+    "wins": 8,
+    "losses": 2,
+    "ties": 0,
+    "n_episodes": 10,
+    "max_steps": 720,
+    "turns_per_day": 24,
+    "avg_p0_money": 9949.6,
+    "avg_p1_money": 9664.8,
+    "cleared": true
+  }
+}
