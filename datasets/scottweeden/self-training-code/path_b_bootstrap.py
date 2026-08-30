@@ -12,7 +12,10 @@ import torch
 
 from kaggriculture_adapter import encode_path_b_action, encode_path_b_observation
 from dataset_loader import EPISODE_FILE_PATTERN, KaggleEpisodesLoader
+from datetime import date as date_cls, timedelta
 from episode_catalog import (
+    DEFAULT_END_DATE,
+    DEFAULT_START_DATE,
     dates_in_metadata,
     is_kaggle_runtime,
     pick_next_bootstrap_days,
@@ -365,6 +368,81 @@ def group_episode_files_by_date(
 
 def bootstrap_state_path(experiment_root: Path) -> Path:
     return experiment_root / "metrics" / BOOTSTRAP_STATE_FILENAME
+
+
+def bootstrap_metadata_start_date(
+    bootstrapped_dates: Optional[List[str]],
+    default_start: str = DEFAULT_START_DATE,
+) -> str:
+    """First date to index/download after the last bootstrapped day."""
+    if not bootstrapped_dates:
+        return default_start
+    resume = (date_cls.fromisoformat(max(bootstrapped_dates)) + timedelta(days=1)).isoformat()
+    return max(resume, default_start)
+
+
+def plan_next_bootstrap_days_from_state(
+    bootstrapped_dates: Optional[List[str]],
+    n_days: int,
+    start_date: str = DEFAULT_START_DATE,
+    end_date: str = DEFAULT_END_DATE,
+) -> List[str]:
+    """Next chronological bootstrap days using saved state (no metadata required)."""
+    excluded = set(bootstrapped_dates or [])
+    window_start = bootstrap_metadata_start_date(sorted(excluded), default_start=start_date)
+    available = [d for d in _dates_between(window_start, end_date) if d not in excluded]
+    return available[: max(0, n_days)]
+
+
+def _dates_between(start_date: str, end_date: str) -> List[str]:
+    start = date_cls.fromisoformat(start_date)
+    end = date_cls.fromisoformat(end_date)
+    days: List[str] = []
+    current = start
+    while current <= end:
+        days.append(current.isoformat())
+        current += timedelta(days=1)
+    return days
+
+
+def _bootstrapped_dates_from_config(config_path: Path) -> List[str]:
+    if not config_path.exists():
+        return []
+    with open(config_path, encoding="utf-8") as fh:
+        return list(json.load(fh).get("bootstrapped_dates", []))
+
+
+def merge_bootstrap_state_from_code_dataset(
+    code_src: Path,
+    experiment_dir: Path,
+) -> Dict[str, Any]:
+    """Union bootstrapped_dates from local run + code-dataset training_artifacts."""
+    experiment_dir = Path(experiment_dir)
+    code_src = Path(code_src)
+    local_state = load_bootstrap_state(experiment_dir)
+
+    code_state_path = code_src / "training_artifacts" / "metrics" / BOOTSTRAP_STATE_FILENAME
+    code_state: Dict[str, Any] = {"bootstrapped_dates": []}
+    if code_state_path.exists():
+        with open(code_state_path, encoding="utf-8") as fh:
+            code_state = json.load(fh)
+
+    merged_dates = sorted(
+        set(local_state.get("bootstrapped_dates", []))
+        | set(code_state.get("bootstrapped_dates", []))
+        | set(_bootstrapped_dates_from_config(experiment_dir / "config.json"))
+        | set(_bootstrapped_dates_from_config(code_src / "training_artifacts" / "config.json"))
+    )
+
+    state = dict(local_state)
+    state["bootstrapped_dates"] = merged_dates
+    state["total_transitions"] = max(
+        int(local_state.get("total_transitions", 0)),
+        int(code_state.get("total_transitions", 0)),
+    )
+    if merged_dates or local_state.get("runs") or code_state.get("runs"):
+        save_bootstrap_state(experiment_dir, state)
+    return state
 
 
 def load_bootstrap_state(experiment_root: Path) -> Dict[str, Any]:

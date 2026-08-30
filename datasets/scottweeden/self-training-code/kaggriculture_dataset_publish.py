@@ -241,7 +241,19 @@ def restore_training_artifacts_from_code_dataset(
 
     experiment_dir = Path(experiment_dir)
     restored: List[str] = []
+
+    try:
+        from path_b_bootstrap import merge_bootstrap_state_from_code_dataset
+
+        merged = merge_bootstrap_state_from_code_dataset(code_src, experiment_dir)
+        if merged.get("bootstrapped_dates"):
+            restored.append("metrics/bootstrap_state.json (merged)")
+    except ImportError:
+        logger.warning("path_b_bootstrap unavailable; bootstrap_state merge skipped")
+
     for rel in artifact_rel_paths:
+        if rel == "metrics/bootstrap_state.json":
+            continue
         src = artifacts_root / rel
         if not src.exists():
             continue
