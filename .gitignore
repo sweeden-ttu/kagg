@@ -1,6 +1,11 @@
 # Runtime / Kaggle working artifacts only — tracked dirs are intentional
 datasets/published-champion/
+datasets/kaggle/
 datasets/experiments/
+working/
+**/training_artifacts/checkpoints/
+**/training_artifacts/models/
+*.pt
 __pycache__/
 *.pyc
 .DS_Store

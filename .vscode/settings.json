@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "/Users/sweeden/miniforge3/envs/kagg/bin/python",
+  "python.condaPath": "/Users/sweeden/miniforge3/bin/conda",
+  "python.terminal.activateEnvironment": true,
+  "jupyter.jupyterServerType": "local",
+  "notebook.defaultFormatter": "ms-python.python"
+}

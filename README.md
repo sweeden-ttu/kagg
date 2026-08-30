@@ -1,8 +1,8 @@
-# Kaggriculture — compact training home
+# Kaggriculture — Training home for scottweeden/kaggriculture-self-training
 
 **Repository:** https://github.com/sweeden-ttu/kagg
 
-Production home for the Kaggriculture agent. Replaces the sprawling `challenges/kaggriculture/experiments/` tree with a **fixed file budget** copied from the 20 most recently touched files in the legacy folder (2026-08-29 migration).
+Production home for the Kaggriculture agent.
 
 ---
 
@@ -37,54 +37,69 @@ Production home for the Kaggriculture agent. Replaces the sprawling `challenges/
 │   │   ├── crop_economics.csv
 │   │   ├── price_curves.csv
 │   │   └── season_timeline.csv
-│   ├── published-champion/   ← gitignored — downloaded Kaggle model bundle
+│   ├── scottweeden/self-training-code/   ← gitignored — downloaded Kaggle model bundle
 │   ├── published_eval.json   ← output from run_published_eval.py
 │   └── eval_summary.json     ← output from run_experiments_eval.py
 │
-└── kernels/                  ← reserved for the single training notebook (not migrated yet)
-    └── (empty — add train.ipynb here when training code lands)
+└── kernel1/                  ← reserved for the single training notebook (not migrated yet)
+|    └── (thees contain .ipynb that are operating experiments )
+├── kernel2/                  ← reserved for the single training notebook (not migrated yet)
+     └── (empty — add train.ipynb here when training code lands)
 ```
-
-### Why each directory exists
-
-| Location | Meaning | Why it matters |
-|---|---|---|
-| **Repo root `.py`** | Evaluation + pairing only (4 files) | Head-to-head win rate is the promotion gate; keep eval next to the repo root so Kaggle kernels can import with one path. |
-| **`opponents/`** | Frozen `agent(obs)` policies | Self-play seat 1 and all eval run against **this roster**, not random/heuristic noise. Does **not** count toward the 10-file Python cap. |
-| **`datasets/reference/`** | CSV metadata for the ladder | Tier ordering, expected banks, and precomputed H2H — read-only context for eval and reporting. |
-| **`datasets/` (runtime)** | Downloaded weights, eval JSON | Artifacts land here; large binaries stay gitignored under `published-champion/`. |
-| **`kernels/`** | Exactly one notebook | Kaggle train + publish loop lives here once `train.py` / adapter modules are merged in. |
-
 ---
 
-## Migrated files (top 20 by mtime from `challenges/kaggriculture/`)
+## Development environment
 
-| # | Source | Destination |
+Local work uses a **miniforge** conda env named `kagg` (Python 3.12). Packages are installed with **`uv pip`** inside that env — fast resolver, same wheels as pip.
+
+### Stable-Baselines3 dependency stack
+
+SB3 is **PyTorch-only** — it does **not** use TensorFlow. Install PyTorch first, then SB3.
+
+| Layer | Packages | Role |
 |---|---|---|
-| 1 | `eval_policy.py` | `eval.py` |
-| 2 | `scripts/pair_match.py` | `pair_match.py` |
-| 3 | `scripts/run_experiments_eval.py` | `run_experiments_eval.py` |
-| 4 | `scripts/run_published_eval.py` | `run_published_eval.py` |
-| 5–14 | `agents/opponents/*.py` (10 agents) | `opponents/` |
-| 15–20 | `agents/opponents/*.csv` (6 tables) | `datasets/reference/` |
+| **Deep learning** | `torch`, `torchvision`, `torchaudio` | Neural nets, GPU/MPS backends |
+| **SB3 core** | `gymnasium`, `numpy`, `cloudpickle` | RL env API, arrays, model serialization |
+| **SB3 `[extra]`** | `tensorboard`, `pandas`, `matplotlib`, `tqdm`, `rich`, `psutil`, `opencv-python`, `pillow`, `pygame-ce`, `ale-py` | Logging, plots, progress bars, Atari (optional) |
+| **Kaggriculture** | `kaggle-environments`, `kagglehub` | Simulation + dataset/kernel downloads |
+| **Notebooks** | `jupyter`, `ipykernel` | Local kernel + Kaggle notebook parity |
 
-**Python file count after migration: 14 total** (4 root + 10 opponents). Root trainable cap is **≤ 10** — room for **6 more** training modules (`adapter`, `train`, `replay`, `dqn_sb3`, `main`, …) before the ceiling.
+### One-time setup
+
+```bash
+# Create env (miniforge)
+conda create -n kagg python=3.12 -y
+conda activate kagg
+
+# uv drives all pip installs (pin env when another conda env is active)
+conda install -c conda-forge uv -y
+KAGG_PY="$(conda info --base)/envs/kagg/bin/python"
+uv pip install --python "$KAGG_PY" torch torchvision torchaudio
+uv pip install --python "$KAGG_PY" "stable-baselines3[extra]" kaggle-environments kagglehub jupyter ipykernel
+
+# Register Jupyter kernel for notebooks in this repo
+python -m ipykernel install --user --name kagg --display-name "Python (kagg)"
+```
+
+### Cursor / VS Code
+
+This repo pins the interpreter in `.vscode/settings.json` to:
+
+`/Users/sweeden/miniforge3/envs/kagg/bin/python`
+
+Reload the window after first setup so notebooks and the integrated terminal pick up the `kagg` env automatically.
 
 ---
 
 ## ⛔ Do not add more files
 
-This repository is **frozen at the migrated surface area**. The legacy project grew unbounded (`experiments/*`, duplicate scripts, `.tmp/` copies) and became impossible to audit or upload to Kaggle.
+`experiments/*` should be the only place submissions are generated and submitted from. There should always be one active experiment and that experiment should be documented below this line:
 
-**Rules (non-negotiable after this copy):**
-
-1. **No new `.py` files** unless you **delete or merge** an existing one first (root budget ≤ 10 trainable modules).
-2. **No new notebooks** — only `kernels/train.ipynb` when training lands (replaces nothing until added).
-3. **No new policy/config/model paths** — one `main.py`, one `config.json`, one `model.pth`, one `bootstrap_model.pth`.
-4. **No `experiments/`, `scripts/`, or `.tmp/` trees** — runtime output goes to `datasets/` or Kaggle `/kaggle/working/`.
-5. **Opponent changes** — swap body of an existing `opponents/<name>.py`, do not add tier 10+ files without removing another.
-
-Need something new? **Merge into an existing file** or keep it outside `~/kagg/`.
+**Mappings**
+1. ~/kagg = /kaggle/input
+2. ~/kagg/working = /kaggle/working  & ~/kagg/experiments is player 1
+3. ~/kagg/datasets = /kaggle/input/dataset
+4. ~/kagg/opponents = adversarial opponents is player 2
 
 ---
 
@@ -119,7 +134,6 @@ Promotion = head-to-head win rate vs **every** file in `opponents/`.
                                               main.py + model.pth
 ```
 
-*Training modules (`train.py`, `adapter.py`, …) and `kernels/train.ipynb` are not in this migration — eval + opponent ladder only.*
 
 ---
 
@@ -127,7 +141,7 @@ Promotion = head-to-head win rate vs **every** file in `opponents/`.
 
 ```bash
 # One agent dir vs full ladder
-python pair_match.py --agent-dir datasets/published-champion
+python pair_match.py --agent-dir datasets/scottweeden/self-training-code
 
 # Download Kaggle champion + eval
 python run_published_eval.py --n-episodes 20
