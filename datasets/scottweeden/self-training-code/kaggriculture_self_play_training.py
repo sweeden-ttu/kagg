@@ -35,7 +35,13 @@ try:
         parse_observation,
         resolve_training_device,
     )
-    from eval_policy import evaluate_win_rate, random_baseline_policy, save_eval_report
+    from eval_policy import (
+        evaluate_ladder,
+        evaluate_win_rate,
+        random_baseline_policy,
+        resolve_opponents_dir,
+        save_eval_report,
+    )
     from path_b_bootstrap import (
         bootstrap_path_b_replay_buffer,
         incremental_daily_bootstrap_bc,
@@ -44,9 +50,11 @@ try:
         stream_bootstrap_bc_pretrain,
     )
     print("Successfully imported Kaggriculture Path B components.")
-except ImportError:
-    print("Warning: Direct import failed. Writing self-contained fallbacks or checking paths.")
-    raise
+except ImportError as exc:
+    raise ImportError(
+        "Failed to import Path B training modules. Ensure kaggriculture_adapter.py, "
+        "kaggriculture_path_b_rebuild.py, path_b_bootstrap.py, and eval_policy.py are on PYTHONPATH."
+    ) from exc
 
 # =============================================================================
 # 1. ENVIRONMENT (Kaggle or mock fallback)
@@ -753,13 +761,19 @@ def train_self_play(total_episodes: int = 15,
                     code_src: Optional[str] = None,
                     bootstrap_mode: str = "streaming",
                     bootstrap_days_per_run: int = 3,
-                    publish_code_dataset: bool = False):
+                    publish_code_dataset: bool = False,
+                    opponents_dir: Optional[str] = None,
+                    ladder_eval_episodes: int = 0,
+                    ladder_win_rate_target: float = 0.5,
+                    min_self_play_episodes: int = 0):
     """
     Coordinates self-play game loops, reward shaping, experience replay storage,
     and DDQN model optimization.
 
     When ``resume`` is set, training continues from the last completed episode
     up to ``total_episodes`` (cumulative target, not additional episodes).
+    If resume already meets ``total_episodes``, ``min_self_play_episodes`` extends
+    the target so at least that many new self-play episodes still run.
     """
     resuming = resume is not None
     if resuming:
@@ -802,6 +816,10 @@ def train_self_play(total_episodes: int = 15,
         "bootstrap_mode": bootstrap_mode,
         "bootstrap_days_per_run": bootstrap_days_per_run,
         "publish_code_dataset": publish_code_dataset,
+        "opponents_dir": opponents_dir,
+        "ladder_eval_episodes": ladder_eval_episodes,
+        "ladder_win_rate_target": ladder_win_rate_target,
+        "min_self_play_episodes": min_self_play_episodes,
         "timestamp": datetime.now().isoformat(),
         "resumed_from": str(resume_file) if resuming else None,
     }
@@ -900,6 +918,18 @@ def train_self_play(total_episodes: int = 15,
     else:
         online_net.eval()
         coordinator.save_checkpoint(online_net, episode=0)
+
+    if start_episode >= total_episodes and min_self_play_episodes > 0:
+        extended = start_episode + min_self_play_episodes
+        logger.info(
+            "Resume at episode %d already meets target %d; extending to %d (+ %d min self-play)",
+            start_episode,
+            total_episodes,
+            extended,
+            min_self_play_episodes,
+        )
+        total_episodes = extended
+        config["total_episodes"] = total_episodes
 
     skip_bootstrap = (
         resuming
@@ -1087,7 +1117,7 @@ def train_self_play(total_episodes: int = 15,
     eps_end = 0.05
     eps_decay_steps = max(1, total_episodes - learning_start_episodes)
 
-    # Initialize mock competitive env
+    # Initialize competitive self-play environment (Kaggle sim or offline mock).
     env = create_competitive_env(
         use_kaggle=use_kaggle_env,
         max_steps=max_episode_steps if use_kaggle_env else min(50, max_episode_steps),
@@ -1353,6 +1383,51 @@ def train_self_play(total_episodes: int = 15,
         except Exception as exc:
             logger.warning("Win-rate eval skipped: %s", exc)
 
+    if ladder_eval_episodes > 0:
+        opp_root = resolve_opponents_dir(opponents_dir)
+        if opp_root is None:
+            logger.warning(
+                "ladder_eval_episodes=%d but opponents/ directory not found (opponents_dir=%r)",
+                ladder_eval_episodes,
+                opponents_dir,
+            )
+        else:
+            try:
+                ladder_report = evaluate_ladder(
+                    _path_b_policy,
+                    opponents_dir=str(opp_root),
+                    n_episodes=ladder_eval_episodes,
+                    max_steps=max_episode_steps,
+                    base_seed=seed + 2000,
+                    win_rate_target=ladder_win_rate_target,
+                )
+                ladder_path = dirs["metrics"] / "ladder_eval.json"
+                with open(ladder_path, "w", encoding="utf-8") as fh:
+                    json.dump(ladder_report, fh, indent=2)
+                logger.info(
+                    "Ladder eval (%d opponents, %d ep each, target %.0f%%): beats_all=%s → %s",
+                    len(ladder_report.get("results", {})),
+                    ladder_eval_episodes,
+                    ladder_win_rate_target * 100,
+                    ladder_report.get("beats_all_opponents"),
+                    ladder_path,
+                )
+                for slug, row in ladder_report.get("results", {}).items():
+                    cleared = row.get("cleared", False)
+                    mark = "PASS" if cleared else "FAIL"
+                    logger.info(
+                        "  [%s] vs %-16s win=%.0f%% (%d/%d) money %.0f vs %.0f",
+                        mark,
+                        slug,
+                        row.get("win_rate", 0) * 100,
+                        row.get("wins", 0),
+                        row.get("n_episodes", 0),
+                        row.get("avg_p0_money", 0),
+                        row.get("avg_p1_money", 0),
+                    )
+            except Exception as exc:
+                logger.warning("Ladder eval skipped: %s", exc)
+
     agent_path = dirs["root"] / "agent.py"
     _export_path_b_agent(agent_path, dirs["root"], code_src=code_src)
     logger.info("Agent export saved to: %s", agent_path)
@@ -1575,6 +1650,30 @@ def main() -> None:
         action="store_true",
         help="After bootstrapping new days, publish model artifacts to code dataset via Kaggle CLI",
     )
+    parser.add_argument(
+        "--opponents-dir",
+        type=str,
+        default=None,
+        help="Reference ladder opponents/ directory for post-training ladder eval",
+    )
+    parser.add_argument(
+        "--ladder-eval-episodes",
+        type=int,
+        default=0,
+        help="Head-to-head episodes per reference opponent after training (0=skip)",
+    )
+    parser.add_argument(
+        "--ladder-win-rate-target",
+        type=float,
+        default=0.5,
+        help="Win rate threshold counted as clearing an opponent in ladder eval",
+    )
+    parser.add_argument(
+        "--min-self-play-episodes",
+        type=int,
+        default=0,
+        help="When resuming past total_episodes, run at least this many additional self-play episodes",
+    )
     args = parser.parse_args()
 
     experiment_dir = args.experiment_dir
@@ -1616,6 +1715,10 @@ def main() -> None:
         bootstrap_mode=args.bootstrap_mode,
         bootstrap_days_per_run=args.bootstrap_days_per_run,
         publish_code_dataset=args.publish_code_dataset,
+        opponents_dir=args.opponents_dir,
+        ladder_eval_episodes=args.ladder_eval_episodes,
+        ladder_win_rate_target=args.ladder_win_rate_target,
+        min_self_play_episodes=args.min_self_play_episodes,
     )
 
 

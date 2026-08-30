@@ -375,12 +375,13 @@ class HierarchicalDoubleDQNLearner:
 
 
 # ==============================================================================
-# SECTION 5: COMPETITIVE ELO-BASED REWARD SHAPING
+# SECTION 5: COMPETITIVE RELATIVE REWARD SHAPING
 # ==============================================================================
 
 class CompetitiveRewardShaper:
     """
-    Translates absolute farm margins into relative ELO competitive metrics.
+    Shapes step rewards with a relative bank-balance term so the agent optimizes
+    margin over the opponent, not absolute coins alone.
     """
     def __init__(self, parser: KaggricultureJSONParser, death_penalty: float = -10.0):
         self.parser = parser

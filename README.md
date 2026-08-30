@@ -178,3 +178,17 @@ Win/loss/tie: higher final bank wins ([Kaggle rubric](https://www.kaggle.com/com
 
 Copied from: `~/kaggle-leaderboard-notebooks/challenges/kaggriculture/`  
 Do not sync experiments or scripts back from legacy without explicit merge into the file budget above.
+
+---
+
+## Notebook TODO (`kaggriculture-self-training/kaggriculture-self-training.ipynb`)
+
+- [ ] Attach/bundle opponents for Kaggle + resolve from code dataset fallback
+- [ ] Add `ladder_eval_episodes: 10` to `medium` preset
+- [ ] Pop `kaggriculture_self_play_training` from `sys.modules`
+- [ ] Preflight `OPPONENTS_DIR.exists()` when ladder > 0
+- [ ] Add `ladder_eval.json` to publish artifacts
+- [ ] Clear stale outputs; fix “~1 min” comment/ETA
+- [ ] Split setup cell (optional but high leverage)
+- [ ] Resume policy — explicit fresh-run flag for dry_run
+

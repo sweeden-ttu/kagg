@@ -136,6 +136,15 @@ def encode_tiles(raw_tiles: Any) -> np.ndarray:
     return grid
 
 
+def observation_step_index(obs: Dict[str, Any]) -> int:
+    """Simulation step index for tape-based opponents (0–719 for a 720-step season)."""
+    if "step" in obs and obs["step"] is not None:
+        return int(obs["step"])
+    day = int(obs.get("day", 1) or 1)
+    hour = int(obs.get("hour", 0) or 0)
+    return max(0, (day - 1) * 24 + hour)
+
+
 def parse_observation(agent_result: Dict[str, Any], player_id: Optional[int] = None) -> Dict[str, Any]:
     """Extract nested observation dict from a Kaggle agent state."""
     obs = agent_result.get("observation", agent_result)
@@ -148,15 +157,17 @@ def parse_observation(agent_result: Dict[str, Any], player_id: Optional[int] = N
                 player_id = 0
         else:
             player_id = int(pid) if pid is not None else 0
-    return {
+    parsed = {
         "player": player_id,
         "day": obs.get("day", 0),
         "hour": obs.get("hour", 0),
+        "step": observation_step_index(obs),
         "farms": obs.get("farms", []),
         "market": obs.get("market", {}),
         "private": obs.get("private", {}),
         "town": obs.get("town", {}),
     }
+    return parsed
 
 
 def encode_observation(

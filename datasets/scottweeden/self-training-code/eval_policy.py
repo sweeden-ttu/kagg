@@ -5,14 +5,122 @@ Compares final bank coins per Rubric.md (win / loss / tie; margin irrelevant).
 
 from __future__ import annotations
 
+import csv
+import importlib.util
 import json
 import logging
 from pathlib import Path
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from kaggriculture_adapter import compare_episode_outcome, decode_action, parse_observation
 
 logger = logging.getLogger(__name__)
+
+
+def _repo_root() -> Path:
+    """Walk up from this module until ``opponents/`` or repo ``eval.py`` is found."""
+    here = Path(__file__).resolve().parent
+    for candidate in (here, *here.parents):
+        if (candidate / "opponents").is_dir() and (candidate / "eval.py").exists():
+            return candidate
+        if (candidate / "opponents").is_dir():
+            return candidate
+    return here.parents[3] if len(here.parents) > 3 else here.parent
+
+
+DEFAULT_OPPONENTS_DIR = _repo_root() / "opponents"
+DEFAULT_OPPONENT_MANIFEST = _repo_root() / "datasets" / "reference" / "agents_manifest.csv"
+
+
+def load_kaggle_agent_policy(agent_path: Path | str) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
+    """Load a Kaggle submission module that exposes ``agent(obs)``."""
+    path = Path(agent_path)
+    module_name = f"kag_opp_{path.stem.replace('-', '_')}"
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load opponent agent: {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if not hasattr(module, "agent"):
+        raise AttributeError(f"{path} has no agent(obs) entry point")
+    return module.agent
+
+
+def resolve_opponents_dir(explicit: Optional[str | Path] = None) -> Optional[Path]:
+    """Locate the reference ladder ``opponents/`` directory."""
+    if explicit:
+        path = Path(explicit)
+        return path if path.is_dir() else None
+    candidates = [
+        Path("/kaggle/input/opponents"),
+        _repo_root() / "opponents",
+        Path("~/kagg/opponents").expanduser(),
+    ]
+    for candidate in candidates:
+        if candidate.is_dir() and any(candidate.glob("*.py")):
+            return candidate.resolve()
+    return None
+
+
+def discover_reference_opponents(
+    opponents_dir: Optional[Path | str] = None,
+) -> List[Tuple[str, Callable[[Dict[str, Any]], Dict[str, Any]]]]:
+    """Return (slug, policy) pairs for the reference ladder, ordered by tier."""
+    root = Path(opponents_dir) if opponents_dir else resolve_opponents_dir()
+    if root is None:
+        raise FileNotFoundError("Reference opponents directory not found")
+    manifest = DEFAULT_OPPONENT_MANIFEST if DEFAULT_OPPONENT_MANIFEST.exists() else root / "agents_manifest.csv"
+    entries: List[Tuple[str, int, Path]] = []
+
+    if manifest.exists():
+        with open(manifest, encoding="utf-8") as fh:
+            for row in csv.DictReader(fh):
+                path = root / row["file"]
+                if path.exists():
+                    entries.append((row["agent_slug"], int(row["tier"]), path))
+        entries.sort(key=lambda item: item[1])
+    else:
+        for path in sorted(root.glob("*.py")):
+            entries.append((path.stem, 0, path))
+
+    return [(slug, load_kaggle_agent_policy(path)) for slug, _, path in entries]
+
+
+def evaluate_ladder(
+    challenger_policy: Callable[[Dict[str, Any]], Dict[str, Any]],
+    *,
+    opponents_dir: Optional[str | Path] = None,
+    n_episodes: int = 10,
+    max_steps: int = 720,
+    base_seed: int = 42,
+    win_rate_target: float = 0.5,
+) -> Dict[str, Any]:
+    """Head-to-head eval vs every reference ladder opponent."""
+    opponents = discover_reference_opponents(opponents_dir)
+    results: Dict[str, Any] = {}
+    beats_all = True
+    for slug, opp_fn in opponents:
+        stats = evaluate_win_rate(
+            challenger_policy,
+            opp_fn,
+            n_episodes=n_episodes,
+            max_steps=max_steps,
+            base_seed=base_seed,
+        )
+        summary = {k: v for k, v in stats.items() if k != "episodes"}
+        if stats["episodes"]:
+            summary["avg_p0_money"] = sum(e["p0_money"] for e in stats["episodes"]) / len(stats["episodes"])
+            summary["avg_p1_money"] = sum(e["p1_money"] for e in stats["episodes"]) / len(stats["episodes"])
+        summary["cleared"] = stats["win_rate"] >= win_rate_target
+        beats_all &= summary["cleared"]
+        results[slug] = summary
+    return {
+        "opponents_dir": str(resolve_opponents_dir(opponents_dir) or opponents_dir or ""),
+        "n_episodes_per_opponent": n_episodes,
+        "win_rate_target": win_rate_target,
+        "beats_all_opponents": beats_all,
+        "results": results,
+    }
 
 
 def _make_kaggle_env(max_steps: int = 720, seed: int = 42):
