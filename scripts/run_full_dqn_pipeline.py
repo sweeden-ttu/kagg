@@ -49,7 +49,7 @@ if __name__ == "__main__":
         buffer_capacity=50_000,
         bootstrap_top_per_day=20,
         bootstrap_passes=1,
-        bc_epochs_per_pass=1,
+        bc_epochs_per_pass=2,
         verbose=True,
         bootstrap_mode="daily_incremental",
         bootstrap_days_per_run=1,

@@ -1,273 +1,132 @@
-# Stable Baselines3 — Overview
+# Kaggriculture training — Overview
 
-## Introduction
+**Path B is the required training path.** Self-play uses the official Kaggle simulator, hierarchical Dueling Double DQN, episode-JSON bootstrap + behavioral cloning, then league eval against `opponents/`. Do not treat Stable-Baselines3 `PPO.learn()` / `evaluate_policy` as how this repo trains or scores win rate.
 
-**Stable Baselines3 (SB3)** is a set of reliable implementations of reinforcement learning algorithms in PyTorch. It is the third major version of the popular Stable Baselines library, rebuilt from the ground up to leverage modern PyTorch capabilities and improve code quality, performance, and usability.
-
-SB3 aims to lower the barrier to entry for experimenting with reinforcement learning (RL) by providing clean, modular, and well-tested implementations of state-of-the-art algorithms.
-
-### Key Features
-
-| Feature | Description |
-|---------|-------------|
-| **PyTorch Backend** | Built natively on PyTorch for flexibility and performance |
-| **Modern RL Algorithms** | PPO, SAC, TD3, DQN, A2C, DDPG, and their variants |
-| **Gymnasium Support** | Full compatibility with the Gymnasium API (successor to OpenAI Gym) |
-| **Vectorized Environments** | Built-in support for parallel environment stepping |
-| **Callbacks System** | Extensible hooks for monitoring, checkpointing, and evaluation |
-| **TensorBoard Integration** | Built-in training metrics logging |
-| **Modular Design** | Clean separation of policy, environment, and training components |
+The optional `kaggriculture_rl.dqn_sb3.DQN` wrapper mimics an SB3-style API around the **legacy flat-branch** `kaggriculture_rl.dqn` stack. The notebook and `train_self_play` do **not** use it.
 
 ---
 
-## Architecture Overview
+## Pipeline
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                      SB3 Architecture                            │
-│                                                                  │
-│  ┌──────────────┐    ┌───────────────┐    ┌──────────────────┐  │
-│  │  Environments │    │  VecEnv       │    │  Training Loop   │  │
-│  │  (Gymnasium)  │───▶│  Wrappers     │───▶│  (on_policy     │  │
-│  └──────────────┘    └───────────────┘    │   /off_policy)   │  │
-│                                           └────────┬─────────┘  │
-│                                                      │           │
-│                                           ┌──────────▼─────────┐ │
-│                                           │    Model (Agent)   │ │
-│                                           │                    │ │
-│  ┌──────────────┐    ┌───────────────┐   │  ┌──────────────┐  │ │
-│  │  Callbacks   │◀───│  ReplayBuffer │   │  │  PolicyNet   │  │ │
-│  │  & Logging   │    └───────────────┘   │  │  (Actor)     │  │ │
-│  └──────────────┘                        │  └──────────────┘  │ │
-│                                          │  ┌──────────────┐  │ │
-│                                          │  │  ValueNet    │  │ │
-│                                          │  │  (Critic)    │  │ │
-│                                          │  └──────────────┘  │ │
-│                                          └──────────────────┘  │
-└──────────────────────────────────────────────────────────────────┘
+Kaggle episode JSONs          Official kaggle-environments
+(metadata.json + episodes/)   (turnsPerDay=24, 720 steps)
+            │                              │
+            ▼                              ▼
+   path_b_bootstrap.py              KaggleCompetitiveEnv
+   stream BC + seed buffer                 │
+            │                              │
+            └──────────┬───────────────────┘
+                       ▼
+         train_self_play (hierarchical DDQN)
+                       │
+                       ▼
+         eval_policy.evaluate_ladder
+         metrics/ladder_eval.json
+         metrics/win_rate_eval.json
 ```
 
-### Core Components
-
-#### 1. Environments
-SB3 works with any environment implementing the [Gymnasium](https://gymnasium.farama.org/) API:
-
-```python
-import gymnasium as gym
-
-# Create a standard environment
-env = gym.make("CartPole-v1")
-
-# Create a vectorized environment for parallel training
-from stable_baselines3.common.env_util import make_vec_env
-vec_env = make_vec_env("CartPole-v1", n_envs=4)
-```
-
-The Gymnasium API requires:
-- `reset()`: Reset environment to initial state, returns observation and info
-- `step(action)`: Take action, returns (observation, reward, terminated, truncated, info)
-- `observation_space`: `gym.spaces.Space` defining valid observations
-- `action_space`: `gym.spaces.Space` defining valid actions
-
-#### 2. Vectorized Environments (VecEnv)
-VecEnv wraps multiple environments to enable parallel data collection:
-
-```python
-from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.vec_env import SubprocVecEnv, VecFrameStack
-
-# Subprocess-based parallel environments
-vec_env = make_vec_env("MountainCar-v0", n_envs=8, vec_env_cls=SubprocVecEnv)
-
-# Frame stacking wrapper (for visual observations)
-vec_env = VecFrameStack(vec_env, n_stack=4)
-```
-
-#### 3. Models (Agents)
-Each algorithm is a class that wraps the policy network and training loop:
-
-```
-Model
-  ├── Policy (Actor)
-  │     ├── features_extractor (preprocesses observations)
-  │     ├── net_arch (neural network architecture)
-  │     └── action_distribution (maps values to actions)
-  ├── Value Network (Critic)
-  ├── ReplayBuffer (for off-policy algorithms)
-  └── optimizer (learning rate, etc.)
-```
-
-#### 4. The `learn()` Interface
-All models share a unified training interface:
-
-```python
-from stable_baselines3 import PPO
-
-model = PPO("MlpPolicy", "CartPole-v1", verbose=1)
-model.learn(
-    total_timesteps=10000,
-    log_interval=1,
-    callback=my_callback,       # Optional callback for monitoring
-    progress_bar=True,          # Optional progress bar
-)
-```
+| Stage | Module | Role |
+|-------|--------|------|
+| Catalog | `episode_catalog.py`, `dataset_loader.py` | Resolve dated episode JSONs |
+| Bootstrap / BC | `path_b_bootstrap.py` | Stream expert transitions, seed PER buffer |
+| Train | `kaggriculture_self_play_training.train_self_play` | Hierarchical DDQN self-play |
+| Net | `kaggriculture_path_b_rebuild.HierarchicalDQNBranching` | Farmer / crop / 6 hands / market GRU |
+| Features | `kaggriculture_rl.dqn.KaggricultureFeatureExtractor` | CNN tiles + MLP numerics → 512-d latent |
+| Eval | `eval_policy.evaluate_ladder` | Head-to-head vs `opponents/` |
 
 ---
 
-## Actor-Critic Architecture
+## Observation and action
 
-Many SB3 algorithms use the **Actor-Critic** paradigm, which combines policy gradient methods (Actor) with value function estimation (Critic).
+The extractor (`KaggricultureFeatureExtractor`) expects a dict, not a flat vector:
 
-### The Actor-Critic Framework
+- **Tiles:** `(B, 10, 10)` tile IDs → one-hot CNN
+- **Numerics (55-d after concat):** day, hour, player_id, both farms' money, market prices/inventory, seeds, shed, inventories
 
-```
-                    ┌─────────────┐
-  Observation (s) ─▶│  Features   │
-                    │  Extractor  │
-                    └──────┬──────┘
-                           │
-              ┌────────────┴────────────┐
-              ▼                         ▼
-     ┌────────────────┐       ┌────────────────┐
-     │  Actor (Policy) │       │  Critic (Value)│
-     │  π(a|s; θ)     │       │  V(s; φ)      │
-     └────────┬───────┘       └────────┬───────┘
-              │                        │
-              ▼                        ▼
-         Action (a)             Value Estimate
-                                   │
-                                   ▼
-                         ┌─────────────────┐
-                         │   Advantage     │
-                         │   A(s,a) =      │
-                         │   Q(s,a) - V(s) │
-                         └─────────────────┘
-```
+The Path B policy (`HierarchicalDQNBranching`) outputs **branched** Q-heads, not one flat Discrete:
 
-- **Actor**: Learns the policy — the probability distribution over actions given states
-- **Critic**: Learns the value function — how good a state (or state-action pair) is
-- **Advantage**: Tells us whether an action is better or worse than average
+| Branch | Outputs | Notes |
+|--------|---------|--------|
+| Farmer verb | 15 | Primary farm action |
+| Crop parameter | 5 | Conditioned on the verb |
+| Hands | 6 × 15 | One head per hand |
+| Market | up to 10 orders | Autoregressive GRU decoder |
 
-### Policy Networks
-
-SB3 uses different network architectures depending on the observation space:
-
-| Network Type | Observation Space | Use Case |
-|-------------|-------------------|----------|
-| `MlpPolicy` | `Box`, `Discrete`, `MultiDiscrete` | Tabular/low-dimensional observations |
-| `CNNPolicy` | `Box` with image-like shape | Pixel observations (e.g., Atari) |
-| Custom | Any | Extract custom features from complex observations |
-
-### Value Networks
-
-For algorithms that use a value function (PPO, SAC, A2C), the critic estimates:
-
-- **State Value V(s)**: Expected return from state s
-- **State-Action Value Q(s, a)**: Expected return from taking action a in state s
+A flat encoding of the same space is on the order of \(15 \times 15^6 \times 10\) — branching keeps ~122 Q-outputs on the legacy stack, plus the hierarchical crop/market heads on Path B.
 
 ---
 
-## The Learn Interface
-
-All SB3 models expose the `learn()` method:
+## The learn path (Path B)
 
 ```python
-model.learn(
-    total_timesteps: int,           # Number of training steps
-    reset_num_timesteps: bool = True,  # Reset step counter
-    tb_log_name: str = None,        # TensorBoard log name
-    progress_bar: bool = False,     # Show progress bar
-    callback: BaseCallback = None,  # Callbacks to run
-    log_interval: int = None,       # Logging interval
+from kaggriculture_self_play_training import train_self_play
+from eval_policy import evaluate_ladder
+
+train_self_play(
+    use_kaggle_env=True,
+    bootstrap_mode="daily_incremental",
+    bootstrap_episodes=None,  # all catalog days; 0 skips bootstrap
+    metadata_path="working/kaggle_episodes/metadata.json",
+    data_dir="working/kaggle_episodes",
+    bootstrap_days_per_run=3,
+    bc_epochs_per_pass=2,
+    bc_epochs=15,
+    bootstrap_passes=1,
+    opponents_dir="opponents",
+    n_eval_episodes=10,
 )
 ```
 
-### Complete Training Example
+CLI defaults match that call (`--no-use-kaggle-env` to refuse the official simulator). Resume from `checkpoints/training_state_latest.pt` via `--resume <experiment_dir>`.
+
+Win rate is **not** mean gym reward:
 
 ```python
-import gymnasium as gym
-from stable_baselines3 import PPO
-from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.callbacks import EvalCallback, CheckpointCallback
-from stable_baselines3.common.evaluation import evaluate_policy
+from eval_policy import evaluate_ladder, win_rate_eval_from_ladder
 
-# 1. Create environments
-train_env = make_vec_env("LunarLander-v2", n_envs=8)
-eval_env = gym.make("LunarLander-v2")
-
-# 2. Create model
-model = PPO(
-    "MlpPolicy",
-    train_env,
-    verbose=1,
-    n_steps=2048,
-    batch_size=64,
-    n_epochs=10,
-    gamma=0.99,
-    learning_rate=3e-4,
-    clip_range=0.2,
+ladder = evaluate_ladder(
+    challenger_policy,
+    opponents_dir="opponents",
+    n_episodes=10,
+    max_steps=720,
+    turns_per_day=24,  # competition / reference-agent parity
+    win_rate_target=0.75,
 )
-
-# 3. Set up callbacks
-checkpoint_callback = CheckpointCallback(
-    save_freq=10000,
-    save_path="./logs/",
-    name_prefix="ppo_lunarlander",
-)
-
-eval_callback = EvalCallback(
-    eval_env,
-    best_model_save_path="./logs/best/",
-    log_path="./logs/eval/",
-    eval_freq=5000,
-    n_eval_episodes=5,
-    deterministic=True,
-)
-
-# 4. Train
-model.learn(
-    total_timesteps=100000,
-    callback=[checkpoint_callback, eval_callback],
-)
-
-# 5. Evaluate
-mean_reward, std_reward = evaluate_policy(model, eval_env, n_eval_episodes=10)
-print(f"Mean reward: {mean_reward:.2f} ± {std_reward:.2f}")
-
-# 6. Save the trained model
-model.save("ppo_lunarlander_final")
+summary = win_rate_eval_from_ladder(ladder)
+# writes conceptually: metrics/ladder_eval.json + metrics/win_rate_eval.json
 ```
 
----
-
-## Algorithm Selection Guide
-
-| Scenario | Recommended Algorithm |
-|----------|----------------------|
-| Discrete actions, sample-efficient | SAC, PPO |
-| Continuous control | SAC, TD3, PPO |
-| Fast training, less sample efficient | PPO |
-| Best sample efficiency (continuous) | SAC |
-| Best sample efficiency (discrete) | DQN with Prioritized Replay |
-| Multi-agent or complex rewards | PPO |
-
-> **PPO** is the default recommendation for most use cases due to its balance of sample efficiency, stability, and ease of tuning. See [02-algorithms.md](02-algorithms.md) for detailed algorithm comparisons.
+`stable_baselines3.common.evaluation.evaluate_policy` against a single-agent gym env pairs you with a random or heuristic opponent. That is **not** competition-aligned.
 
 ---
 
-## Related Documentation
+## Dueling Double Q (what Path B actually trains)
 
-- [Algorithm Reference](02-algorithms.md) — Detailed breakdown of all algorithms
-- [API Reference](03-api-reference.md) — Complete API documentation
-- [Training Guide](04-training-guide.md) — Production training patterns
-- [RL + CV Integration](../integration/01-rl-cv-integration.md) — Combining with keras-retinanet
+Path B is **value-based, off-policy**, not PPO actor-critic:
+
+- **Double Q:** online net selects \(\arg\max_a Q_{\text{online}}(s', a)\); target net evaluates it
+- **Dueling:** \(Q = V(s) + \sum_{\text{branch}} [A_b - \mathrm{mean}(A_b)]\)
+- **PER:** `PrioritizedReplayBuffer` in `kaggriculture_self_play_training.py` — 50% bootstrap / 50% self-play partitions
+- **ε-greedy** during self-play; BC pretrain is supervised on expert actions
+
+PPO / SAC / A2C remain useful as *algorithm theory*. They are not the Kaggriculture trainer. See [02-algorithms.md](02-algorithms.md).
+
+---
+
+## Related documentation
+
+- [Algorithm Reference](02-algorithms.md) — Double/Dueling DQN and Path B heads
+- [API Reference](03-api-reference.md) — `train_self_play`, bootstrap, ladder
+- [Training Guide](04-training-guide.md) — knobs, bootstrap-from-dataset, resume
+- [basedpyright LSP](basedpyright-lsp.md) — typecheck the `kagg` conda env
 
 ---
 
 ## References
 
-- [Stable Baselines3 Documentation](https://stable-baselines3.readthedocs.io/)
-- [PyTorch Documentation](https://pytorch.org/docs/)
-- [Gymnasium Documentation](https://gymnasium.farama.org/)
-- Schulman et al., "Proximal Policy Optimization Algorithms" (2017)
-- Haarnoja et al., "Soft Actor-Critic: Off-Policy Maximum Entropy Deep RL" (2018)
+- [kaggle-environments](https://github.com/Kaggle/kaggle-environments)
+- [Gymnasium](https://gymnasium.farama.org/) (wrappers only; self-play is the Kaggle engine)
+- Hasselt et al., "Deep Reinforcement Learning with Double Q-learning" (2016)
+- Wang et al., "Dueling Network Architectures for Deep Reinforcement Learning" (2016)
+- [Stable Baselines3](https://stable-baselines3.readthedocs.io/) (optional `dqn_sb3` wrapper only)

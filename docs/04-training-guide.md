@@ -2,6 +2,8 @@
 
 This document covers training best practices for stable-baselines3, including hyperparameter tuning strategies, monitoring with TensorBoard, distributed training, checkpointing, deployment patterns, and the bootstrap-from-dataset technique used in the Kaggriculture training pipeline.
 
+**Kaggriculture Path B is the required training path.** Use `kaggriculture_self_play_training.train_self_play` with daily-incremental episode-JSON bootstrap, then league eval via `eval_policy.evaluate_ladder`. The PPO / SAC / Optuna / FastAPI snippets below are generic SB3 reference — they are not how this repo trains or scores win rate. See [Bootstrap-from-Dataset Pattern](#bootstrap-from-dataset-pattern).
+
 ---
 
 ## Table of Contents
@@ -130,32 +132,48 @@ model = SAC(
 )
 ```
 
-### DQN Hyperparameter Guide
+### Path B hyperparameter guide (required)
+
+Tune these on `train_self_play`, not SB3 `DQN(...)`:
+
+```
+Critical
+├── bc_epochs_per_pass (stream BC per day; default 2)
+├── bc_epochs (buffer BC; default 15; skipped if bootstrap_passes > 1)
+├── buffer_capacity + batch_size
+└── learning rate inside HierarchicalDoubleDQNLearner
+
+Important
+├── bootstrap_days_per_run / bootstrap_mode
+├── turns_per_cycle = 24 (ladder parity)
+└── max_episode_steps = 720
+
+Eval (not gym reward)
+└── n_eval_episodes / ladder_eval_episodes vs opponents/
+```
 
 ```python
-from stable_baselines3 import DQN
-from stable_baselines3.common.buffers import PrioritizedReplayBuffer
+from kaggriculture_self_play_training import train_self_play
 
-# ── DQN for Kaggriculture ──────────────────────────────────────────
-model = DQN(
-    "MlpPolicy", env,
-    verbose=1,
-    buffer_size=1_000_000,
-    batch_size=128,
-    gamma=0.99,
-    learning_rate=1e-4,
-    learning_starts=1000,
-    train_freq=4,
-    target_update_interval=1000,
-    epsilon_init=1.0,
-    epsilon_final=0.05,
-    epsilon_decay_steps=50000,
-    use_double_dqn=True,
-    use_dueling=True,
-    replay_buffer_class=PrioritizedReplayBuffer,
-    replay_buffer_kwargs=dict(alpha=0.6, beta=0.4),
+train_self_play(
+    use_kaggle_env=True,
+    bootstrap_mode="daily_incremental",
+    bootstrap_episodes=None,
+    metadata_path="working/kaggle_episodes/metadata.json",
+    data_dir="working/kaggle_episodes",
+    bc_epochs_per_pass=2,
+    bc_epochs=15,
+    batch_size=32,
+    buffer_capacity=50_000,
+    max_episode_steps=720,
+    turns_per_cycle=24,
+    n_eval_episodes=10,
 )
 ```
+
+### SB3 DQN (legacy wrapper only)
+
+`kaggriculture_rl.dqn_sb3.DQN` is optional and unused by Path B. Do not treat the following as the training entry point.
 
 ### Using Optuna for Automated Tuning
 
@@ -360,7 +378,20 @@ from ray.rllib.env.wrappers.sb3 import SB3EnvWrapper
 
 ## Checkpointing & Resuming
 
-### Automatic Checkpointing
+### Path B (required)
+
+`train_self_play` writes `checkpoints/training_state_latest.pt` (full state) and `config.json` (`last_completed_episode`). `--total-episodes` is cumulative.
+
+```bash
+python kaggriculture_self_play_training.py \
+  --resume experiments/my_run \
+  --total-episodes 40 \
+  --min-self-play-episodes 5
+```
+
+`daily_incremental` still runs bootstrap on resume (new calendar days). Other modes skip bootstrap on a full resume when the buffer is already populated.
+
+### SB3 Automatic Checkpointing (not Path B)
 
 ```python
 from stable_baselines3.common.callbacks import CheckpointCallback
@@ -463,10 +494,10 @@ traced_policy.save("policy_torchscript.pt")
 # For cross-platform deployment
 import onnx
 
-dummy_input = model.policy.observation_space.sample()[None]
+sample_input = model.policy.observation_space.sample()[None]
 torch.onnx.export(
     model.policy,
-    dummy_input,
+    sample_input,
     "policy.onnx",
     input_names=["observation"],
     output_names=["action"],
@@ -537,235 +568,100 @@ CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
 
 The Kaggriculture training pipeline uses a **bootstrap-from-dataset** pattern to initialize training with real data from a dataset. This dramatically speeds up convergence by providing the agent with meaningful initial behavior, rather than starting from random exploration.
 
+Path B does **not** load a CSV into an SB3 `ReplayBuffer`. It streams Kaggle episode JSONs through behavioral cloning, seeds the hierarchical replay buffer, then runs self-play. The entry point is `kaggriculture_self_play_training.train_self_play`; the loaders live in `path_b_bootstrap.py`.
+
 ### The Problem
 
 Standard RL starts with **random exploration**:
 ```
-Step 0-1000:   Random actions → Most transitions are random
+Step 0-1000:    Random actions → most transitions are noise
 Step 1000-10000: Gradually learns from experience
-Step 10000+:  Converges to reasonable policy
+Step 10000+:    Converges to a reasonable policy
 ```
 
-With bootstrap, we start with **informed exploration**:
+With bootstrap, we start with **informed behavior**:
 ```
-Step 0-1000:   Dataset transitions already in replay buffer
-Step 1000-5000: Learns from dataset + new experience (fast convergence)
-Step 5000+:    Fine-tunes policy with online data
+Day stream:     BC over expert episode JSONs (log: BC stream epoch N/M)
+Buffer BC:      Extra epochs on the seeded replay buffer (when bootstrap_passes ≤ 1)
+Self-play:      DQN on mixed expert + online transitions
+Ladder:         Win rate vs opponents/ — not a single-agent gym eval
 ```
 
-### Implementation
+### How Path B bootstraps
+
+1. Resolve episode files from `metadata.json` + `working/kaggle_episodes/` (or the Kaggle dataset).
+2. Stream transitions through `run_bc_pretrain_over_episode_files` — one shuffle through that day's JSONs per stream epoch. `--bc-epochs-per-pass` (default **2**) is this loop; `epoch 1/2 step 8200` means ~8200 optimizer steps in the first pass, not a tiny update.
+3. Seed the replay buffer from the same files (`seed_buffer_from_episode_files`).
+4. Record progress in `metrics/bootstrap_state.json` (`bootstrapped_dates`, `total_transitions`, `runs`) so later runs skip days already done.
+5. If `bc_epochs > 0` and `bootstrap_passes ≤ 1`, run `run_bc_pretrain` on the buffer (default **15** epochs). Streaming with `bootstrap_passes > 1` skips this stage and uses per-pass stream epochs only.
+6. Self-play DQN, then league eval via `eval_policy.evaluate_ladder`.
+
+### Modes
+
+| `bootstrap_mode` | When | Behavior |
+|------------------|------|----------|
+| `daily_incremental` | Notebook / typical local runs | Next `bootstrap_days_per_run` chronological days not in `bootstrap_state.json`; stream BC each day (`bc_epochs_per_pass` epochs/day) |
+| streaming (`bootstrap_passes > 1`) | Multi-pass corpus | One full calendar day per pass via `stream_bootstrap_bc_pretrain` |
+| buffer fill | `bootstrap_passes ≤ 1` and mode is not daily | `bootstrap_path_b_replay_buffer` then buffer BC (`bc_epochs`) |
+
+### Knobs
+
+```text
+--bootstrap-mode daily_incremental
+--bootstrap-days-per-run 3
+--bc-epochs-per-pass 2    # stream epochs per day (BC stream epoch N/M)
+--bc-epochs 15            # buffer BC after bootstrap; skipped if bootstrap_passes > 1
+--bc-steps-per-epoch      # cap SGD steps per stream/buffer epoch (None = all)
+--metadata-path working/kaggle_episodes/metadata.json
+```
 
 ```python
-import numpy as np
-from stable_baselines3 import DQN
-from stable_baselines3.common.buffers import ReplayBuffer
-import gymnasium as gym
+from kaggriculture_self_play_training import train_self_play
 
-
-def bootstrap_replay_buffer(buffer: ReplayBuffer, dataset_path: str):
-    """
-    Initialize the replay buffer with transitions from a dataset.
-
-    Args:
-        buffer: The SB3 replay buffer to populate
-        dataset_path: Path to a CSV/JSON dataset with columns:
-            ['state', 'action', 'reward', 'next_state', 'terminated']
-
-    Returns:
-        Number of transitions added to the buffer
-    """
-    import pandas as pd
-
-    # Load dataset
-    df = pd.read_csv(dataset_path)
-
-    # Convert string representations to arrays
-    def parse_array(s):
-        return np.array(eval(s))  # Or use np.fromstring for numeric strings
-
-    count = 0
-    for _, row in df.iterrows():
-        state = parse_array(row["state"])
-        next_state = parse_array(row["next_state"])
-        action = int(row["action"])
-        reward = float(row["reward"])
-        terminated = bool(row["terminated"])
-
-        buffer.add(
-            obs=state,
-            next_obs=next_state,
-            action=action,
-            reward=reward,
-            terminal=terminated,
-        )
-        count += 1
-
-    print(f"Bootstrapped {count} transitions into replay buffer")
-    return count
-
-
-# ── Kaggriculture Bootstrap Pipeline ────────────────────────────────
-
-# 1. Create environment and model
-env = gym.make("Kaggriculture-v0")
-eval_env = gym.make("Kaggriculture-v0")
-
-model = DQN(
-    "MlpPolicy",
-    env,
-    verbose=1,
-    buffer_size=1_000_000,
-    batch_size=128,
-    gamma=0.99,
-    learning_rate=1e-4,
-    replay_buffer_class=None,  # Start with standard buffer
-    use_double_dqn=True,
-    use_dueling=True,
+train_self_play(
+    use_kaggle_env=True,
+    bootstrap_mode="daily_incremental",
+    bootstrap_episodes=None,
+    metadata_path="working/kaggle_episodes/metadata.json",
+    data_dir="working/kaggle_episodes",
+    bootstrap_days_per_run=3,
+    bc_epochs_per_pass=2,
+    bc_epochs=15,
+    bootstrap_passes=1,
 )
-
-# 2. Bootstrap from dataset
-bootstrap_replay_buffer(
-    model.replay_buffer,
-    "/data/kaggriculture_dataset.csv",
-)
-
-# 3. Resume training with real experience
-model.learn(
-    total_timesteps=200_000,
-    progress_bar=True,
-)
-
-# 4. The model now has ~50k-100k real transitions to learn from
-#    before needing to explore randomly
 ```
 
-### Bootstrap with Offline-to-Online Curriculum
+> **Kaggriculture note:** Do **not** use `stable_baselines3.common.evaluation.evaluate_policy` against a single-agent gym env as the win-rate signal. That env typically pairs you with a random (or heuristic) opponent and is *not* competition-aligned. Post-training win rate is the reference ladder under `opponents/` via `eval_policy.evaluate_ladder` (`metrics/ladder_eval.json` and `metrics/win_rate_eval.json`).
 
-```python
-import numpy as np
-from stable_baselines3 import DQN
-from stable_baselines3.common.buffers import PrioritizedReplayBuffer
+### Dataset on disk
 
+Bootstrap reads **Kaggle episode JSON** plus a catalog, not flat `(s, a, r, s')` CSV rows:
 
-class BootstrappedDQNLearner:
-    """
-    Training pipeline that bootstraps from offline data,
-    then gradually transitions to online learning with a curriculum.
-    """
-
-    def __init__(self, env, eval_env, dataset_path, model_kwargs=None):
-        self.env = env
-        self.eval_env = eval_env
-        self.dataset_path = dataset_path
-
-        kwargs = model_kwargs or {}
-        kwargs["replay_buffer_class"] = PrioritizedReplayBuffer
-        kwargs["replay_buffer_kwargs"] = dict(alpha=0.6, beta=0.4)
-        kwargs["use_double_dqn"] = True
-        kwargs["use_dueling"] = True
-
-        self.model = DQN("MlpPolicy", env, **kwargs)
-        self.replay_buffer = self.model.replay_buffer
-
-    def bootstrap(self, dataset_path):
-        """Load dataset into replay buffer."""
-        import pandas as pd
-        df = pd.read_csv(dataset_path)
-
-        for _, row in df.iterrows():
-            self.replay_buffer.add(
-                obs=np.array(eval(row["state"])),
-                next_obs=np.array(eval(row["next_state"])),
-                action=int(row["action"]),
-                reward=float(row["reward"]),
-                terminal=bool(row["terminated"]),
-            )
-
-        n_samples = len(df)
-        print(f"Bootstrapped {n_samples} transitions")
-        print(f"Buffer utilization: {n_samples / self.replay_buffer.buffer_size:.1%}")
-
-    def train_offline(self, timesteps=50000):
-        """Phase 1: Train purely on bootstrapped data."""
-        print("Phase 1: Offline training on dataset...")
-        self.model.replay_buffer._max_length = len(self.replay_buffer)
-        self.model.learn(total_timesteps=timesteps)
-        print("Phase 1 complete.")
-
-    def train_online(self, timesteps=200000):
-        """Phase 2: Continue training with online experience."""
-        print("Phase 2: Online training with online experience...")
-        self.model.replay_buffer._max_length = self.replay_buffer.buffer_size
-        self.model.learn(total_timesteps=timesteps)
-        print("Phase 2 complete.")
-
-    def evaluate(self, challenger_policy, opponents_dir="opponents", n_episodes=20):
-        """League eval vs ``opponents/`` — never SB3 ``evaluate_policy`` vs env/random.
-
-        Path B writes:
-          - ``metrics/ladder_eval.json`` — per-opponent head-to-head rows
-          - ``metrics/win_rate_eval.json`` — thin aggregate (win/tie/loss, cleared, beats_all)
-        """
-        from eval_policy import evaluate_ladder, win_rate_eval_from_ladder
-
-        ladder = evaluate_ladder(
-            challenger_policy,
-            opponents_dir=opponents_dir,
-            n_episodes=n_episodes,
-            win_rate_target=0.75,
-        )
-        summary = win_rate_eval_from_ladder(ladder)
-        print(
-            f"League win rate: {summary['win_rate']:.1%} "
-            f"({summary['wins']}/{summary['n_episodes']} ep) "
-            f"cleared={summary['opponents_cleared']}/{summary['n_opponents']} "
-            f"beats_all={summary['beats_all_opponents']}"
-        )
-        return ladder, summary
-
-
-# Usage
-learner = BootstrappedDQNLearner(
-    env=gym.make("Kaggriculture-v0"),
-    eval_env=gym.make("Kaggriculture-v0"),  # online collection only; not used for win-rate
-    dataset_path="/data/kaggriculture_train.csv",
-    model_kwargs=dict(
-        buffer_size=1_000_000,
-        batch_size=128,
-        learning_rate=1e-4,
-    ),
-)
-
-learner.bootstrap("/data/kaggriculture_train.csv")
-learner.train_offline(timesteps=50000)
-learner.train_online(timesteps=200000)
-# Export a callable policy from the trained net, then:
-# learner.evaluate(challenger_policy, opponents_dir="opponents", n_episodes=10)
-```
-
-> **Kaggriculture note:** Do **not** use `stable_baselines3.common.evaluation.evaluate_policy` against a single-agent gym env as the win-rate signal. That env typically pairs you with a random (or heuristic) opponent and is *not* competition-aligned. Post-training win rate is the reference ladder under `opponents/` via `eval_policy.evaluate_ladder`.
-
-### Dataset Formats Supported
-
-```python
-# CSV format
-# state,next_state,action,reward,terminated
-# "[1.0,2.0,3.0]","[1.1,2.1,3.1]",0,1.0,False
-# "[1.1,2.1,3.1]","[1.2,2.2,3.2]",0,1.0,False
-
-# JSON lines format
-# {"state": [1.0, 2.0, 3.0], "next_state": [1.1, 2.1, 3.1], "action": 0, "reward": 1.0, "terminated": false}
-# {"state": [1.1, 2.1, 3.1], "next_state": [1.2, 2.2, 3.2], "action": 0, "reward": 1.0, "terminated": false}
-
-# NumPy format
-# np.savez("/data/episodes.npz", states=states, actions=actions, rewards=rewards, terminated=terminated)
+```text
+working/kaggle_episodes/
+  metadata.json          # episode index (dates, scores, paths)
+  episodes/*.json        # raw kaggle_environments logs
+experiment/metrics/
+  bootstrap_state.json   # days already streamed
+  bc_pretrain.json       # stream + buffer BC losses
 ```
 
 ---
 
 ## Common Training Issues
 
-### Issue 1: Training is Unstable (High Variance)
+### Path B
+
+| Symptom | Check |
+|---------|--------|
+| `BC stream epoch 1/1` | `bc_epochs_per_pass` is 1; default is **2** |
+| Bootstrap skipped | `bootstrap_episodes=0` turns bootstrap off; use `None` |
+| `use_kaggle_env` RuntimeError | Official simulator required (`True` / omit `--no-use-kaggle-env`) |
+| Ladder money ~3000 vs 3000 | Pass-spawn deadlock or ε=1 wipe; see `TODO.md` — still use `evaluate_ladder`, not gym reward |
+| Ladder unfair vs reference agents | `turns_per_cycle` must be **24** |
+| Resume did no new self-play | Raise `--total-episodes` or `--min-self-play-episodes` |
+
+### Issue 1: Training is Unstable (High Variance) — SB3/PPO reference
 
 ```
 Symptoms:
@@ -850,5 +746,6 @@ model = PPO("MlpPolicy", env,
 - [Overview](01-overview.md) — Core concepts and architecture
 - [Algorithm Reference](02-algorithms.md) — Algorithm details and comparisons
 - [API Reference](03-api-reference.md) — Complete API documentation
+- [basedpyright LSP](basedpyright-lsp.md) — Typecheck the `kagg` conda env
 - [RL + CV Integration](../integration/01-rl-cv-integration.md) — Combining with keras-retinanet
 - [Setup Guide](../setup/01-installation.md) — Installation and environment setup

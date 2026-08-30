@@ -37,7 +37,6 @@ Usage (mimicking SB3 API):
 
 from __future__ import annotations
 
-import json
 import os
 import time
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -389,10 +388,6 @@ class DQN:
             ),
             max_grad_norm=self.max_grad_norm,
         )
-        # #region agent log
-        with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
-            _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H2,H3","location":"dqn_sb3.py:_init_model","message":"learner init types","data":{"decay_steps":self.learner.epsilon_decay_steps,"decay_steps_type":type(self.learner.epsilon_decay_steps).__name__,"has_max_grad_norm":hasattr(self.learner,"max_grad_norm"),"max_grad_norm":getattr(self.learner,"max_grad_norm",None)},"timestamp":int(time.time()*1000)})+"\n")
-        # #endregion
         self.learner.optimizer = self.optimizer_class(
             self.online_network.parameters(),
             lr=self.learning_rate,
@@ -497,10 +492,6 @@ class DQN:
                 obs = self.env.reset()
 
             obs, done, result = self.learner.act_and_train(self.env, obs)
-            # #region agent log
-            with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
-                _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H4","location":"dqn_sb3.py:learn","message":"act_and_train unpack types","data":{"obs_type":type(obs).__name__,"done_type":type(done).__name__,"result_type":type(result).__name__,"result_is_dict":isinstance(result,dict)},"timestamp":int(time.time()*1000)})+"\n")
-            # #endregion
 
             # ── Logging ───────────────────────────────────────
             if result is not None and timestep % log_interval == 0:
@@ -693,10 +684,6 @@ class DQN:
         state : tuple or None
             Hidden state (unchanged).
         """
-        # #region agent log
-        with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
-            _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H1","location":"dqn_sb3.py:predict","message":"predict state default","data":{"state_is_none":state is None,"state_type":type(state).__name__},"timestamp":int(time.time()*1000)})+"\n")
-        # #endregion
         with torch.no_grad():
             if deterministic:
                 action = self.online_network.get_action(
@@ -765,10 +752,6 @@ class DQN:
         exclude_from_env : bool
             Deprecated.
         """
-        # #region agent log
-        with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
-            _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H1","location":"dqn_sb3.py:save","message":"save exclusion default","data":{"exclusion_is_none":exclusion is None,"exclusion_type":type(exclusion).__name__},"timestamp":int(time.time()*1000)})+"\n")
-        # #endregion
         torch.save(
             {
                 "policy_dict": self.online_network.state_dict(),

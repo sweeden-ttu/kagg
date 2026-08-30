@@ -1,6 +1,8 @@
-# Stable Baselines3 — Algorithm Reference
+# Algorithm Reference
 
-This document provides detailed references for all reinforcement learning algorithms available in stable-baselines3, including their mathematical foundations, key hyperparameters, and practical guidance on when to use each.
+**Kaggriculture Path B trains hierarchical Dueling Double DQN** (`HierarchicalDQNBranching` + `HierarchicalDoubleDQNLearner` in `kaggriculture_path_b_rebuild.py`). It is not PPO, SAC, or stock SB3 `DQN`. The SB3 sections below are algorithm theory and optional `kaggriculture_rl.dqn_sb3` context.
+
+Path B eval is `eval_policy.evaluate_ladder` vs `opponents/`, not SB3 `evaluate_policy`.
 
 ---
 
@@ -249,11 +251,10 @@ model = PPO(
 | `normalize_advantage` | True | Normalize advantages during training |
 
 ### When to Use PPO
-- ✅ Almost any problem — it's the default for a reason
+- ✅ Generic SB3 experiments — **not** Kaggriculture Path B
 - ✅ Both discrete and continuous action spaces
-- ✅ When training stability is important
-- ✅ When you want good performance out of the box
 - ⚠️ Requires more samples than off-policy methods
+- ❌ Do not swap Path B self-play for `PPO.learn` + gym `evaluate_policy`
 
 ---
 
@@ -484,99 +485,51 @@ model = DDPG(
 
 ---
 
-## Special Algorithm: DQN for Kaggriculture Project
+## Path B: Hierarchical Dueling Double DQN (Kaggriculture)
 
-The Kaggriculture project uses a **customized DQN** architecture designed for a **branching action space** with **Dueling networks** and **Prioritized Experience Replay**.
-
-### Kaggriculture DQN Architecture
+This is what `train_self_play` trains. Observations go through `KaggricultureFeatureExtractor` (CNN on a 10×10 tile grid + MLP on 55 numeric features → 512-d latent). The policy is `HierarchicalDQNBranching`:
 
 ```
-                    Observation (s)
-                           │
-                    ┌──────┴──────┐
-                    │  Shared     │
-                    │  CNN/MLP    │
-                    │  Layers     │
-                    └──────┬──────┘
-                   ┌───────┴───────┐
-                   ▼               ▼
-            ┌────────────┐  ┌─────────────────┐
-            │  Value Head │  │  Advantage Head  │
-            │   V(s)      │  │  A(s, a₁..aₙ)  │
-            └──────┬─────┘  └──────┬──────────┘
-                   │               │
-                   └───────┬───────┘
-                           ▼
-                    ┌──────────────┐
-                    │  Branching   │
-                    │  Action      │
-                    │  Selection   │
-                    │              │
-                    │  Stage 1:    │
-                    │  Choose      │
-                    │  Group       │
-                    │  (e.g., crop │
-                    │  type)       │
-                    │              │
-                    │  Stage 2:    │
-                    │  Choose      │
-                    │  Action      │
-                    │  within      │
-                    │  group       │
-                    └──────────────┘
+Observation dict (tiles + numerics)
+        │
+        ▼
+KaggricultureFeatureExtractor  →  latent (B, 512)
+        │
+        ▼
+Shared dense (BatchNorm + ReLU)
+        │
+   ┌────┴─────────────────────────────┐
+   ▼                                  ▼
+V(s)                           Advantage branches
+                               ├── farmer verb (15)
+                               ├── crop parameter (5), conditioned on verb
+                               ├── hands: 6 independent heads × 15
+                               └── market: GRU, up to 10 sequential orders
 ```
 
-### Branching Action Space Design
+Double Q-learning (same as §2): the **online** net selects next actions; the **target** net evaluates them. Dueling aggregation is per branch: \(Q_b = V + A_b - \mathrm{mean}(A_b)\).
 
-Branching action spaces decompose a large discrete action space into a hierarchy of decisions:
+A flat Discrete over the same space is intractable (\(15 \times 15^6 \times 10\)). Branching keeps one Q-head family per decision.
 
-```
-Standard DQN:
-  Actions: 0, 1, 2, ..., 999  (1000 actions)
-  Q-table: V(s) × 1000
+### Training loop (not SB3 `DQN.learn`)
 
-Branching DQN:
-  Stage 1: Choose crop type (0-4, 5 options)
-  Stage 2: Choose treatment within crop (0-199, 200 options)
-  Effective: 5 × 200 = 1000 actions
-  Q-table: V(s) × 5 × 200  (structured, more learnable)
-```
+1. **Bootstrap / BC** — `path_b_bootstrap.run_bc_pretrain_over_episode_files` (stream epochs = `bc_epochs_per_pass`, default 2), then optional buffer BC (`bc_epochs=15` when `bootstrap_passes ≤ 1`).
+2. **Self-play** — `KaggleCompetitiveEnv` (`use_kaggle_env=True`), PER buffer 50% expert / 50% online.
+3. **Ladder** — `evaluate_ladder` at `turns_per_day=24`.
 
-### Key SB3 Components Used
+### Knobs used in Path B
 
-```python
-from stable_baselines3 import DQN
-from stable_baselines3.common.buffers import PrioritizedReplayBuffer
+| Knob | Typical | Where |
+|------|---------|--------|
+| `batch_size` | 32 | `train_self_play` |
+| `buffer_capacity` | 10_000 default; 50k–600k in notebook presets | PER |
+| `bc_epochs_per_pass` | 2 | Stream BC per day |
+| `bc_epochs` | 15 | Buffer BC after bootstrap |
+| `max_episode_steps` | 720 | 30 × 24 competition day |
+| `turns_per_cycle` | 24 | Must match reference agents for ladder |
+| `learning_start_episodes` | 2 | Self-play SGD starts after this many episodes |
 
-model = DQN(
-    "MlpPolicy",
-    env,
-    use_double_dqn=True,       # Double DQN to reduce overestimation
-    use_dueling=True,          # Dueling architecture
-    replay_buffer_class=PrioritizedReplayBuffer,  # Prioritized replay
-    replay_buffer_kwargs=dict(
-        alpha=0.6,             # Prioritization exponent
-        beta=0.4,              # Importance sampling exponent
-    ),
-    epsilon_init=1.0,
-    epsilon_final=0.05,
-    epsilon_decay_steps=50000,
-    verbose=1,
-)
-```
-
-### Hyperparameters for Kaggriculture
-
-| Hyperparameter | Kaggriculture Value | Rationale |
-|---------------|--------------------|-----------|
-| `buffer_size` | 1_000_000 | Large buffer for off-policy reuse |
-| `batch_size` | 128 | Balance between variance and speed |
-| `gamma` | 0.99 | Standard long-term return |
-| `learning_rate` | 1e-4 | Conservative for value networks |
-| `train_freq` | 4 | Balance data collection and training |
-| `target_update_interval` | 1000 | Stable target updates |
-| `replay_buffer_kwargs.alpha` | 0.6 | Prioritization strength |
-| `replay_buffer_kwargs.beta` | 0.4 | IS correction strength |
+The optional `kaggriculture_rl.dqn.DuelingDoubleDQNBranching` stack is the **legacy flat-branch** net (farmer 15 + 6×15 hands + market 10, 122 Q-outputs). Path B’s hierarchical net is the one `train_self_play` instantiates.
 
 ---
 

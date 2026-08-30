@@ -34,10 +34,8 @@ Usage
 from __future__ import annotations
 
 import collections
-import json
 import random
-import time
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, TypedDict, Union
 
 import numpy as np
 import torch
@@ -177,6 +175,13 @@ class KaggricultureFeatureExtractor(nn.Module):
 # 2. Dueling Double DQN with Action Branching
 # ─────────────────────────────────────────────────────────────
 
+class BranchingQOutput(TypedDict):
+    farmer_q: torch.Tensor
+    hand_q: List[torch.Tensor]
+    market_q: torch.Tensor
+    value: torch.Tensor
+
+
 class DuelingDoubleDQNBranching(nn.Module):
     """Dueling Double DQN with separate action heads.
 
@@ -261,7 +266,7 @@ class DuelingDoubleDQNBranching(nn.Module):
 
     # ── Forward Pass ───────────────────────────────────────────
 
-    def forward(self, observations: Dict[str, Any]) -> Dict[str, torch.Tensor]:
+    def forward(self, observations: Dict[str, Any]) -> BranchingQOutput:
         """Forward pass returning Q-values for every branch.
 
         Returns a dict:
@@ -357,7 +362,7 @@ class DuelingDoubleDQNBranching(nn.Module):
     def get_q_values(
         self,
         observations: Dict[str, Any],
-    ) -> Dict[str, torch.Tensor]:
+    ) -> BranchingQOutput:
         """Return raw Q-values (for debugging / logging)."""
         return self.forward(observations)
 
@@ -403,12 +408,6 @@ _STATE_SPECS: Dict[str, Tuple[Tuple[int, ...], np.dtype[Any]]] = {
     "shed": ((5,), np.dtype(np.float32)),
     "inventories": ((30,), np.dtype(np.float32)),
 }
-# #region agent log
-with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
-    _tiles_dt = _STATE_SPECS["tiles"][1]
-    _day_dt = _STATE_SPECS["day"][1]
-    _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H1","location":"dqn.py:_STATE_SPECS","message":"dtype values vs np.dtype","data":{"tiles_type":type(_tiles_dt).__name__,"tiles_is_dtype_instance":isinstance(_tiles_dt,np.dtype),"tiles_np_dtype":str(np.dtype(_tiles_dt)),"day_type":type(_day_dt).__name__,"day_is_dtype_instance":isinstance(_day_dt,np.dtype),"n_specs":len(_STATE_SPECS)},"timestamp":int(time.time()*1000)})+"\n")
-# #endregion
 
 
 def _state_to_numpy(state: Dict[str, Any]) -> Dict[str, np.ndarray]:

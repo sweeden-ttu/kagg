@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import logging
-import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
@@ -900,10 +899,6 @@ def stream_bootstrap_bc_pretrain(
     )
     if experiment_root:
         prior_transitions = _int_state_field(state, "total_transitions")
-        # #region agent log
-        with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
-            _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H1","location":"path_b_bootstrap.py:update_total_transitions","message":"coerce total_transitions before int add","data":{"prior":prior_transitions,"delta":total_transitions,"raw_type":type(state.get("total_transitions",0)).__name__,"raw_is_list":isinstance(state.get("total_transitions"),list)},"timestamp":int(time.time()*1000)})+"\n")
-        # #endregion
         state["total_transitions"] = prior_transitions + total_transitions
         runs = state.setdefault("runs", [])
         if not isinstance(runs, list):
@@ -1002,7 +997,7 @@ def incremental_daily_bootstrap_bc(
     metadata_path: str,
     experiment_root: Path,
     days_per_run: int = 3,
-    bc_epochs_per_day: int = 1,
+    bc_epochs_per_day: int = 2,
     bc_batch_size: int = 64,
     bc_steps_per_epoch: Optional[int] = None,
     max_market_orders: int = 10,

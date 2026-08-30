@@ -733,14 +733,14 @@ def train_self_play(total_episodes: int = 15,
                     experiment_dir: str = "experiments/self_play",
                     seed: int = 42,
                     device_name: str = "auto",
-                    use_kaggle_env: bool = False,
+                    use_kaggle_env: bool = True,
                     max_episode_steps: int = 720,
                     turns_per_cycle: int = 24,
                     n_eval_episodes: int = 10,
                     resume: Optional[str] = None,
-                    bootstrap_episodes: Optional[int] = 0,
+                    bootstrap_episodes: Optional[int] = None,
                     bootstrap_transitions: Optional[int] = 50_000,
-                    data_dir: str = "./data/kaggle_episodes",
+                    data_dir: str = "working/kaggle_episodes",
                     download_bootstrap: bool = False,
                     bc_epochs: int = 15,
                     bc_batch_size: int = 64,
@@ -752,7 +752,7 @@ def train_self_play(total_episodes: int = 15,
                     bc_epochs_per_pass: int = 2,
                     verbose: bool = False,
                     code_src: Optional[str] = None,
-                    bootstrap_mode: str = "streaming",
+                    bootstrap_mode: str = "daily_incremental",
                     bootstrap_days_per_run: int = 3,
                     publish_code_dataset: bool = False,
                     opponents_dir: Optional[str] = None,
@@ -1713,7 +1713,12 @@ def main() -> None:
         choices=["auto", "cpu", "cuda", "mps", "mlx"],
         default="auto",
     )
-    parser.add_argument("--use-kaggle-env", action="store_true")
+    parser.add_argument(
+        "--use-kaggle-env",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Use the official Kaggle simulator (default: on). Pass --no-use-kaggle-env to refuse.",
+    )
     parser.add_argument("--max-episode-steps", type=int, default=720)
     parser.add_argument(
         "--turns-per-cycle",
@@ -1736,8 +1741,8 @@ def main() -> None:
     parser.add_argument(
         "--bootstrap-episodes",
         type=int,
-        default=0,
-        help="Load up to N Kaggle episode JSONs into replay buffer before self-play (0=off)",
+        default=None,
+        help="Cap episode JSONs during bootstrap (omit=all catalog; 0=skip bootstrap)",
     )
     parser.add_argument(
         "--bootstrap-transitions",
@@ -1748,7 +1753,7 @@ def main() -> None:
     parser.add_argument(
         "--data-dir",
         type=str,
-        default="./data/kaggle_episodes",
+        default="working/kaggle_episodes",
         help="Directory containing episodes/*.json for bootstrap",
     )
     parser.add_argument(
@@ -1826,10 +1831,10 @@ def main() -> None:
         "--bootstrap-mode",
         type=str,
         choices=["streaming", "daily_incremental"],
-        default="streaming",
+        default="daily_incremental",
         help=(
-            "Bootstrap strategy: streaming multi-pass corpus walk, or daily_incremental "
-            "(all episodes from N random unseen days per run, persisted in bootstrap_state.json)"
+            "Bootstrap strategy: daily_incremental (next chronological unseen days, "
+            "persisted in bootstrap_state.json) or streaming (one calendar day per pass)"
         ),
     )
     parser.add_argument(
@@ -1853,7 +1858,10 @@ def main() -> None:
         "--ladder-eval-episodes",
         type=int,
         default=0,
-        help="Head-to-head episodes per reference opponent after training (0=skip)",
+        help=(
+            "Head-to-head episodes per reference opponent after training. "
+            "0 uses --n-eval-episodes (does not skip league eval)"
+        ),
     )
     parser.add_argument(
         "--ladder-win-rate-target",
