@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-08-30T12:31:39.977514+00:00",
+  "lifetime": {
+    "runs_completed": 0,
+    "bootstrap_days": 0,
+    "bootstrap_episodes": 0,
+    "bootstrap_transitions": 0,
+    "bootstrap_bc_steps": 0,
+    "self_play_episodes": 0,
+    "self_play_steps": 0,
+    "gradient_updates": 0,
+    "cumulative_raw_reward": 0.0,
+    "cumulative_shaped_reward": 0.0,
+    "cumulative_loss": 0.0,
+    "win_rate_eval_runs": 0,
+    "win_rate_eval_wins": 0,
+    "win_rate_eval_episodes": 0,
+    "ladder_eval_runs": 0,
+    "ladder_eval_wins": 0,
+    "ladder_eval_losses": 0,
+    "ladder_eval_ties": 0,
+    "ladder_eval_episodes": 0,
+    "ladder_opponents_cleared_best": 0
+  },
+  "corpus_trends": {
+    "by_date": {
+      "2026-08-15": {
+        "episode_count": 697,
+        "avg_score_mean": 3026.5300721305593,
+        "min_score_mean": 2998.797230956958,
+        "sum_score_mean": 6053.060144261119,
+        "score_margin_mean": 27.732841173601166,
+        "size_bytes_total": 21462110197,
+        "size_bytes_mean": 30792123.668579627
+      },
+      "2026-08-16": {
+        "episode_count": 699,
+        "avg_score_mean": 2987.1080068941346,
+        "min_score_mean": 2960.4211421659516,
+        "sum_score_mean": 5974.216013771102,
+        "score_margin_mean": 26.68686472818312,
+        "size_bytes_total": 21472964135,
+        "size_bytes_mean": 30719548.118741058
+      }
+    },
+    "cumulative": {
+      "days_indexed": 2,
+      "episodes_indexed": 1396,
+      "total_size_bytes": 42935074332,
+      "avg_score_sum": 4197479.957094,
+      "min_score_sum": 4159496.048351,
+      "sum_score_sum": 8394959.914176,
+      "score_margin_sum": 37983.908743000015
+    }
+  },
+  "run_history": [],
+  "self_play_episodes": [],
+  "eval_history": []
+}

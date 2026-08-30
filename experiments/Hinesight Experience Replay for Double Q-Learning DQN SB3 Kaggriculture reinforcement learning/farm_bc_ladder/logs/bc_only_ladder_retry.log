@@ -1,0 +1,58 @@
+Successfully imported Kaggriculture Path B components.
+=== BC-only farm-weighted + competition ladder (no self-play) ===
+2026-08-30 07:31:39,161 [INFO] kaggriculture_self_play_training: Experiment directory: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder
+2026-08-30 07:31:39,166 [DEBUG] kaggriculture_self_play_training: Verbose debug logging enabled
+2026-08-30 07:31:39,166 [DEBUG] kaggriculture_self_play_training: Training config: {
+  "experiment_dir": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder",
+  "seed": 42,
+  "device": "auto",
+  "total_episodes": 0,
+  "learning_start_episodes": 0,
+  "batch_size": 32,
+  "checkpoint_interval": 5,
+  "use_kaggle_env": true,
+  "kinematic_phase_a": 3,
+  "kinematic_phase_b": 4,
+  "kinematic_phase_c": 6,
+  "turns_per_cycle": 24,
+  "cycles_per_episode": 30,
+  "max_episode_steps": 720,
+  "n_eval_episodes": 10,
+  "bootstrap_episodes": null,
+  "bootstrap_transitions": 50000,
+  "data_dir": "/Users/sweeden/kagg/working/kaggle_episodes",
+  "download_bootstrap": false,
+  "bc_epochs": 25,
+  "bc_batch_size": 64,
+  "bc_steps_per_epoch": 300,
+  "buffer_capacity": 50000,
+  "metadata_path": "/Users/sweeden/kagg/working/kaggle_episodes/metadata.json",
+  "bootstrap_top_per_day": 40,
+  "bootstrap_passes": 1,
+  "bc_epochs_per_pass": 2,
+  "verbose": true,
+  "code_src": "/Users/sweeden/kagg/datasets/scottweeden/self-training-code",
+  "bootstrap_mode": "daily_incremental",
+  "bootstrap_days_per_run": 1,
+  "publish_code_dataset": false,
+  "opponents_dir": "/Users/sweeden/kagg/opponents",
+  "ladder_eval_episodes": 10,
+  "ladder_win_rate_target": 0.5,
+  "min_self_play_episodes": 0,
+  "timestamp": "2026-08-30T07:31:39.160972",
+  "resumed_from": null
+}
+2026-08-30 07:31:39,210 [INFO] kaggriculture_self_play_training: Self-play pipeline running on device: mps
+2026-08-30 07:31:39,290 [DEBUG] kaggriculture_self_play_training: Model init: HierarchicalDQNBranching params=1716765 (1.72M) buffer_capacity=50000
+2026-08-30 07:31:39,933 [INFO] kaggriculture_self_play_training: Reward phase gates: {'mode': 'kinematic_invest_liquidate_mix', 'season_days': 30, 'hours_per_day': 24, 'invest_liquidate_start': [0.25, 0.75], 'invest_liquidate_end': [0.75, 0.25], 'mix_bonus_scale': 0.8, 'schedule_affinity': 0.25, 'turns_per_day_ref': 24}
+[Self-Play] Saved agent checkpoint to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/checkpoints/checkpoint_ep_0.pt
+[Self-Play] Opponent pool size: 1
+2026-08-30 07:31:39,970 [DEBUG] kaggriculture_self_play_training: Bootstrap phase: mode=daily_incremental episodes=None passes=1 transitions=50000 metadata=/Users/sweeden/kagg/working/kaggle_episodes/metadata.json
+2026-08-30 07:31:39,972 [INFO] path_b_bootstrap: Incremental daily bootstrap: adding 1 day(s) ['2026-08-15'] (0/2 dates already done)
+2026-08-30 07:31:39,974 [WARNING] path_b_bootstrap: No episode files resolved for date 2026-08-15
+2026-08-30 07:31:39,974 [INFO] path_b_bootstrap: Bootstrap state saved: 0 days bootstrapped → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/metrics/bootstrap_state.json
+2026-08-30 07:31:39,974 [INFO] kaggriculture_self_play_training: Replay buffer size after bootstrap: 0
+2026-08-30 07:31:39,977 [WARNING] kaggriculture_self_play_training: BC pretrain requested but replay buffer is empty; skipping BC
+2026-08-30 07:31:40,085 [INFO] kaggriculture_self_play_training: Already completed 0 episodes (target 0). Running export/eval only.
+2026-08-30 07:31:41,117 [DEBUG] kaggriculture_self_play_training: Self-play env: KaggleCompetitiveEnv max_steps=720 turns_per_cycle=24 use_kaggle=True
+2026-08-30 07:31:41,152 [INFO] kaggriculture_self_play_training: Final model saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder/models/model.pth

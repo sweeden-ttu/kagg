@@ -1,8 +1,26 @@
 {
   "experiment_dir": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder",
   "plots_dir": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots",
-  "plots_written": [],
-  "ok": false,
-  "n_self_play_episodes": 0,
-  "last_episode": 0
+  "plots_written": [
+    "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_training_loss.png",
+    "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_epsilon_decay.png",
+    "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_buffer_size.png",
+    "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_eval_rewards.png",
+    "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_final_rewards.png",
+    "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_self_play_episodes.png",
+    "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_win_rate_eval.png"
+  ],
+  "ok": true,
+  "n_self_play_episodes": 36,
+  "last_episode": 36,
+  "shaped_reward_mean": -393.5597198481513,
+  "shaped_reward_final": -4127.195495140355,
+  "avg_loss_mean": 105.66343045242051,
+  "avg_loss_final": 558.3788804013142,
+  "league_win_rate": 0.0,
+  "opponents_cleared": 0,
+  "beats_all_opponents": false,
+  "ladder_beats_all": false,
+  "ladder_opponents_cleared": 0,
+  "ladder_n_opponents": 10
 }

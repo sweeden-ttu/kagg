@@ -1139,3 +1139,160 @@ Successfully imported Kaggriculture Path B components.
 2026-08-30 07:00:10,785 [DEBUG] kaggriculture_self_play_training: Ep 32 step 3 DQN update: loss=231.94986 batch=32 priorities_updated=32
 2026-08-30 07:00:19,214 [DEBUG] kaggriculture_self_play_training: Ep 32 step 100 DQN update: loss=398.27319 batch=32 priorities_updated=32
 2026-08-30 07:00:19,244 [DEBUG] kaggriculture_self_play_training: Ep 32 step 100: verb=7 crop=0 raw_r=0.000 shaped_r=2.231 done=False buffer=47390 learn=True
+2026-08-30 07:00:28,688 [DEBUG] kaggriculture_self_play_training: Ep 32 step 200 DQN update: loss=277.95248 batch=32 priorities_updated=32
+2026-08-30 07:00:28,711 [DEBUG] kaggriculture_self_play_training: Ep 32 step 200: verb=3 crop=0 raw_r=0.000 shaped_r=-0.006 done=False buffer=47490 learn=True
+2026-08-30 07:00:37,807 [DEBUG] kaggriculture_self_play_training: Ep 32 step 300 DQN update: loss=446.18988 batch=32 priorities_updated=32
+2026-08-30 07:00:37,831 [DEBUG] kaggriculture_self_play_training: Ep 32 step 300: verb=3 crop=0 raw_r=0.000 shaped_r=-0.043 done=False buffer=47590 learn=True
+2026-08-30 07:00:46,720 [DEBUG] kaggriculture_self_play_training: Ep 32 step 400 DQN update: loss=270.19882 batch=32 priorities_updated=32
+2026-08-30 07:00:46,757 [DEBUG] kaggriculture_self_play_training: Ep 32 step 400: verb=3 crop=0 raw_r=0.000 shaped_r=-0.151 done=False buffer=47690 learn=True
+2026-08-30 07:00:55,943 [DEBUG] kaggriculture_self_play_training: Ep 32 step 500 DQN update: loss=276.02051 batch=32 priorities_updated=32
+2026-08-30 07:00:55,972 [DEBUG] kaggriculture_self_play_training: Ep 32 step 500: verb=3 crop=0 raw_r=0.000 shaped_r=-0.152 done=False buffer=47790 learn=True
+2026-08-30 07:01:06,193 [DEBUG] kaggriculture_self_play_training: Ep 32 step 600 DQN update: loss=266.13065 batch=32 priorities_updated=32
+2026-08-30 07:01:06,219 [DEBUG] kaggriculture_self_play_training: Ep 32 step 600: verb=2 crop=0 raw_r=0.000 shaped_r=0.049 done=False buffer=47890 learn=True
+2026-08-30 07:01:16,329 [DEBUG] kaggriculture_self_play_training: Ep 32 step 700 DQN update: loss=164.38133 batch=32 priorities_updated=32
+2026-08-30 07:01:16,351 [DEBUG] kaggriculture_self_play_training: Ep 32 step 700: verb=4 crop=0 raw_r=0.000 shaped_r=0.136 done=False buffer=47990 learn=True
+2026-08-30 07:01:18,203 [INFO] kaggriculture_self_play_training: Episode 32/36 | Epsilon: 0.041 | Buffer Size: 48008 | Raw Reward: -28.69 | Shaped Reward: 353.48 | Avg Loss: 228.07551
+2026-08-30 07:01:22,070 [DEBUG] kaggriculture_self_play_training: === Episode 33/36 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/checkpoints/checkpoint_ep_12.pt | eps=0.038 | buffer=48008 ===
+2026-08-30 07:01:22,090 [DEBUG] kaggriculture_self_play_training: Ep 33 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 07:01:22,154 [DEBUG] kaggriculture_self_play_training: Ep 33 step 0: verb=5 crop=0 raw_r=-0.100 shaped_r=-0.825 done=False buffer=48009 learn=True
+2026-08-30 07:01:22,299 [DEBUG] kaggriculture_self_play_training: Ep 33 step 1 DQN update: loss=195.94174 batch=32 priorities_updated=32
+2026-08-30 07:01:22,299 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=413.55615 td_max=1922.73828)
+2026-08-30 07:01:22,330 [DEBUG] kaggriculture_self_play_training: Ep 33 step 1: verb=5 crop=0 raw_r=0.000 shaped_r=-0.544 done=False buffer=48010 learn=True
+2026-08-30 07:01:22,408 [DEBUG] kaggriculture_self_play_training: Ep 33 step 2 DQN update: loss=104.94391 batch=32 priorities_updated=32
+2026-08-30 07:01:22,434 [DEBUG] kaggriculture_self_play_training: Ep 33 step 2: verb=5 crop=0 raw_r=0.000 shaped_r=-0.503 done=False buffer=48011 learn=True
+2026-08-30 07:01:22,511 [DEBUG] kaggriculture_self_play_training: Ep 33 step 3 DQN update: loss=60.98257 batch=32 priorities_updated=32
+2026-08-30 07:01:31,462 [DEBUG] kaggriculture_self_play_training: Ep 33 step 100 DQN update: loss=516.81537 batch=32 priorities_updated=32
+2026-08-30 07:01:31,485 [DEBUG] kaggriculture_self_play_training: Ep 33 step 100: verb=7 crop=0 raw_r=0.000 shaped_r=0.716 done=False buffer=48109 learn=True
+2026-08-30 07:01:40,515 [DEBUG] kaggriculture_self_play_training: Ep 33 step 200 DQN update: loss=213.69073 batch=32 priorities_updated=32
+2026-08-30 07:01:40,539 [DEBUG] kaggriculture_self_play_training: Ep 33 step 200: verb=6 crop=0 raw_r=0.000 shaped_r=3.496 done=False buffer=48209 learn=True
+2026-08-30 07:01:49,200 [DEBUG] kaggriculture_self_play_training: Ep 33 step 300 DQN update: loss=356.42554 batch=32 priorities_updated=32
+2026-08-30 07:01:49,221 [DEBUG] kaggriculture_self_play_training: Ep 33 step 300: verb=4 crop=0 raw_r=0.000 shaped_r=3.474 done=False buffer=48309 learn=True
+2026-08-30 07:01:57,917 [DEBUG] kaggriculture_self_play_training: Ep 33 step 400 DQN update: loss=196.07141 batch=32 priorities_updated=32
+2026-08-30 07:01:57,939 [DEBUG] kaggriculture_self_play_training: Ep 33 step 400: verb=3 crop=0 raw_r=0.000 shaped_r=1.649 done=False buffer=48409 learn=True
+2026-08-30 07:02:06,684 [DEBUG] kaggriculture_self_play_training: Ep 33 step 500 DQN update: loss=1248.05273 batch=32 priorities_updated=32
+2026-08-30 07:02:06,710 [DEBUG] kaggriculture_self_play_training: Ep 33 step 500: verb=4 crop=0 raw_r=0.000 shaped_r=0.122 done=False buffer=48509 learn=True
+2026-08-30 07:02:15,262 [DEBUG] kaggriculture_self_play_training: Ep 33 step 600 DQN update: loss=169.48174 batch=32 priorities_updated=32
+2026-08-30 07:02:15,283 [DEBUG] kaggriculture_self_play_training: Ep 33 step 600: verb=2 crop=0 raw_r=0.000 shaped_r=0.560 done=False buffer=48609 learn=True
+2026-08-30 07:02:23,645 [DEBUG] kaggriculture_self_play_training: Ep 33 step 700 DQN update: loss=218.43726 batch=32 priorities_updated=32
+2026-08-30 07:02:23,667 [DEBUG] kaggriculture_self_play_training: Ep 33 step 700: verb=4 crop=0 raw_r=0.000 shaped_r=0.676 done=False buffer=48709 learn=True
+2026-08-30 07:02:25,276 [INFO] kaggriculture_self_play_training: Episode 33/36 | Epsilon: 0.038 | Buffer Size: 48727 | Raw Reward: -24.97 | Shaped Reward: 1121.26 | Avg Loss: 326.13393
+2026-08-30 07:02:29,550 [DEBUG] kaggriculture_self_play_training: === Episode 34/36 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/checkpoints/checkpoint_ep_18.pt | eps=0.035 | buffer=48727 ===
+2026-08-30 07:02:29,566 [DEBUG] kaggriculture_self_play_training: Ep 34 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 07:02:29,614 [DEBUG] kaggriculture_self_play_training: Ep 34 step 0: verb=5 crop=0 raw_r=0.000 shaped_r=-0.725 done=False buffer=48728 learn=True
+2026-08-30 07:02:29,711 [DEBUG] kaggriculture_self_play_training: Ep 34 step 1 DQN update: loss=362.78110 batch=32 priorities_updated=32
+2026-08-30 07:02:29,711 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=1203.64575 td_max=15910.36719)
+2026-08-30 07:02:29,735 [DEBUG] kaggriculture_self_play_training: Ep 34 step 1: verb=5 crop=0 raw_r=0.000 shaped_r=0.286 done=False buffer=48729 learn=True
+2026-08-30 07:02:29,802 [DEBUG] kaggriculture_self_play_training: Ep 34 step 2 DQN update: loss=245.53772 batch=32 priorities_updated=32
+2026-08-30 07:02:29,824 [DEBUG] kaggriculture_self_play_training: Ep 34 step 2: verb=5 crop=0 raw_r=0.000 shaped_r=5.166 done=False buffer=48730 learn=True
+2026-08-30 07:02:29,892 [DEBUG] kaggriculture_self_play_training: Ep 34 step 3 DQN update: loss=323.35577 batch=32 priorities_updated=32
+2026-08-30 07:02:38,279 [DEBUG] kaggriculture_self_play_training: Ep 34 step 100 DQN update: loss=513.52295 batch=32 priorities_updated=32
+2026-08-30 07:02:38,302 [DEBUG] kaggriculture_self_play_training: Ep 34 step 100: verb=7 crop=0 raw_r=0.000 shaped_r=2.199 done=False buffer=48828 learn=True
+2026-08-30 07:02:47,071 [DEBUG] kaggriculture_self_play_training: Ep 34 step 200 DQN update: loss=838.86609 batch=32 priorities_updated=32
+2026-08-30 07:02:47,093 [DEBUG] kaggriculture_self_play_training: Ep 34 step 200: verb=6 crop=0 raw_r=0.000 shaped_r=1.776 done=False buffer=48928 learn=True
+2026-08-30 07:02:55,686 [DEBUG] kaggriculture_self_play_training: Ep 34 step 300 DQN update: loss=493.93286 batch=32 priorities_updated=32
+2026-08-30 07:02:55,709 [DEBUG] kaggriculture_self_play_training: Ep 34 step 300: verb=3 crop=0 raw_r=0.000 shaped_r=-0.834 done=False buffer=49028 learn=True
+2026-08-30 07:03:05,149 [DEBUG] kaggriculture_self_play_training: Ep 34 step 400 DQN update: loss=468.83939 batch=32 priorities_updated=32
+2026-08-30 07:03:05,170 [DEBUG] kaggriculture_self_play_training: Ep 34 step 400: verb=4 crop=0 raw_r=0.000 shaped_r=-0.652 done=False buffer=49128 learn=True
+2026-08-30 07:03:14,761 [DEBUG] kaggriculture_self_play_training: Ep 34 step 500 DQN update: loss=374.83557 batch=32 priorities_updated=32
+2026-08-30 07:03:14,786 [DEBUG] kaggriculture_self_play_training: Ep 34 step 500: verb=4 crop=0 raw_r=0.000 shaped_r=-0.853 done=False buffer=49228 learn=True
+2026-08-30 07:03:25,021 [DEBUG] kaggriculture_self_play_training: Ep 34 step 600 DQN update: loss=328.67554 batch=32 priorities_updated=32
+2026-08-30 07:03:25,047 [DEBUG] kaggriculture_self_play_training: Ep 34 step 600: verb=3 crop=0 raw_r=0.000 shaped_r=-0.186 done=False buffer=49328 learn=True
+2026-08-30 07:03:34,344 [DEBUG] kaggriculture_self_play_training: Ep 34 step 700 DQN update: loss=752.06787 batch=32 priorities_updated=32
+2026-08-30 07:03:34,370 [DEBUG] kaggriculture_self_play_training: Ep 34 step 700: verb=3 crop=0 raw_r=0.000 shaped_r=-0.234 done=False buffer=49428 learn=True
+2026-08-30 07:03:36,328 [INFO] kaggriculture_self_play_training: Episode 34/36 | Epsilon: 0.035 | Buffer Size: 49446 | Raw Reward: -28.46 | Shaped Reward: 239.91 | Avg Loss: 383.82745
+2026-08-30 07:03:40,383 [DEBUG] kaggriculture_self_play_training: === Episode 35/36 | opponent=online-self | eps=0.033 | buffer=49446 ===
+2026-08-30 07:03:40,401 [DEBUG] kaggriculture_self_play_training: Ep 35 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 07:03:40,449 [DEBUG] kaggriculture_self_play_training: Ep 35 step 0: verb=5 crop=0 raw_r=-0.100 shaped_r=-0.825 done=False buffer=49447 learn=True
+2026-08-30 07:03:40,559 [DEBUG] kaggriculture_self_play_training: Ep 35 step 1 DQN update: loss=553.08850 batch=32 priorities_updated=32
+2026-08-30 07:03:40,560 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=848.06763 td_max=5406.55664)
+2026-08-30 07:03:40,586 [DEBUG] kaggriculture_self_play_training: Ep 35 step 1: verb=5 crop=0 raw_r=0.000 shaped_r=-0.744 done=False buffer=49448 learn=True
+2026-08-30 07:03:40,653 [DEBUG] kaggriculture_self_play_training: Ep 35 step 2 DQN update: loss=439.09100 batch=32 priorities_updated=32
+2026-08-30 07:03:40,674 [DEBUG] kaggriculture_self_play_training: Ep 35 step 2: verb=5 crop=0 raw_r=0.000 shaped_r=-0.743 done=False buffer=49449 learn=True
+2026-08-30 07:03:40,738 [DEBUG] kaggriculture_self_play_training: Ep 35 step 3 DQN update: loss=398.85489 batch=32 priorities_updated=32
+2026-08-30 07:03:48,972 [DEBUG] kaggriculture_self_play_training: Ep 35 step 100 DQN update: loss=461.25095 batch=32 priorities_updated=32
+2026-08-30 07:03:48,995 [DEBUG] kaggriculture_self_play_training: Ep 35 step 100: verb=5 crop=0 raw_r=0.000 shaped_r=-0.528 done=False buffer=49547 learn=True
+2026-08-30 07:03:57,809 [DEBUG] kaggriculture_self_play_training: Ep 35 step 200 DQN update: loss=252.62878 batch=32 priorities_updated=32
+2026-08-30 07:03:57,832 [DEBUG] kaggriculture_self_play_training: Ep 35 step 200: verb=6 crop=0 raw_r=0.000 shaped_r=-0.100 done=False buffer=49647 learn=True
+2026-08-30 07:04:07,001 [DEBUG] kaggriculture_self_play_training: Ep 35 step 300 DQN update: loss=242.27629 batch=32 priorities_updated=32
+2026-08-30 07:04:07,026 [DEBUG] kaggriculture_self_play_training: Ep 35 step 300: verb=4 crop=0 raw_r=0.000 shaped_r=0.171 done=False buffer=49747 learn=True
+2026-08-30 07:04:16,385 [DEBUG] kaggriculture_self_play_training: Ep 35 step 400 DQN update: loss=289.24973 batch=32 priorities_updated=32
+2026-08-30 07:04:16,410 [DEBUG] kaggriculture_self_play_training: Ep 35 step 400: verb=4 crop=0 raw_r=0.000 shaped_r=-0.819 done=False buffer=49847 learn=True
+2026-08-30 07:04:25,420 [DEBUG] kaggriculture_self_play_training: Ep 35 step 500 DQN update: loss=246.16290 batch=32 priorities_updated=32
+2026-08-30 07:04:25,443 [DEBUG] kaggriculture_self_play_training: Ep 35 step 500: verb=3 crop=0 raw_r=0.000 shaped_r=-1.095 done=False buffer=49947 learn=True
+2026-08-30 07:04:34,880 [DEBUG] kaggriculture_self_play_training: Ep 35 step 600 DQN update: loss=318.84964 batch=32 priorities_updated=32
+2026-08-30 07:04:34,905 [DEBUG] kaggriculture_self_play_training: Ep 35 step 600: verb=3 crop=0 raw_r=0.000 shaped_r=-1.008 done=False buffer=50000 learn=True
+2026-08-30 07:04:45,102 [DEBUG] kaggriculture_self_play_training: Ep 35 step 700 DQN update: loss=362.94006 batch=32 priorities_updated=32
+2026-08-30 07:04:45,134 [DEBUG] kaggriculture_self_play_training: Ep 35 step 700: verb=3 crop=0 raw_r=0.000 shaped_r=-5.084 done=False buffer=50000 learn=True
+2026-08-30 07:04:47,113 [INFO] kaggriculture_self_play_training: Episode 35/36 | Epsilon: 0.033 | Buffer Size: 50000 | Raw Reward: -25.79 | Shaped Reward: -590.20 | Avg Loss: 455.14256
+2026-08-30 07:04:51,814 [DEBUG] kaggriculture_self_play_training: === Episode 36/36 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/checkpoints/checkpoint_ep_24.pt | eps=0.030 | buffer=50000 ===
+2026-08-30 07:04:51,831 [DEBUG] kaggriculture_self_play_training: Ep 36 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 07:04:51,892 [DEBUG] kaggriculture_self_play_training: Ep 36 step 0: verb=7 crop=0 raw_r=-0.100 shaped_r=-0.825 done=False buffer=50000 learn=True
+2026-08-30 07:04:52,011 [DEBUG] kaggriculture_self_play_training: Ep 36 step 1 DQN update: loss=499.84933 batch=32 priorities_updated=32
+2026-08-30 07:04:52,012 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=2411.43872 td_max=28143.93750)
+2026-08-30 07:04:52,036 [DEBUG] kaggriculture_self_play_training: Ep 36 step 1: verb=7 crop=0 raw_r=0.000 shaped_r=-0.006 done=False buffer=50000 learn=True
+2026-08-30 07:04:52,113 [DEBUG] kaggriculture_self_play_training: Ep 36 step 2 DQN update: loss=396.58215 batch=32 priorities_updated=32
+2026-08-30 07:04:52,137 [DEBUG] kaggriculture_self_play_training: Ep 36 step 2: verb=7 crop=0 raw_r=0.000 shaped_r=-0.006 done=False buffer=50000 learn=True
+2026-08-30 07:04:52,208 [DEBUG] kaggriculture_self_play_training: Ep 36 step 3 DQN update: loss=637.00854 batch=32 priorities_updated=32
+2026-08-30 07:05:00,684 [DEBUG] kaggriculture_self_play_training: Ep 36 step 100 DQN update: loss=309.16266 batch=32 priorities_updated=32
+2026-08-30 07:05:00,707 [DEBUG] kaggriculture_self_play_training: Ep 36 step 100: verb=5 crop=0 raw_r=0.000 shaped_r=-5.736 done=False buffer=50000 learn=True
+2026-08-30 07:05:09,236 [DEBUG] kaggriculture_self_play_training: Ep 36 step 200 DQN update: loss=520.42615 batch=32 priorities_updated=32
+2026-08-30 07:05:09,257 [DEBUG] kaggriculture_self_play_training: Ep 36 step 200: verb=3 crop=0 raw_r=0.000 shaped_r=-6.014 done=False buffer=50000 learn=True
+2026-08-30 07:05:17,618 [DEBUG] kaggriculture_self_play_training: Ep 36 step 300 DQN update: loss=263.23660 batch=32 priorities_updated=32
+2026-08-30 07:05:17,641 [DEBUG] kaggriculture_self_play_training: Ep 36 step 300: verb=3 crop=0 raw_r=0.000 shaped_r=-6.010 done=False buffer=50000 learn=True
+2026-08-30 07:05:26,635 [DEBUG] kaggriculture_self_play_training: Ep 36 step 400 DQN update: loss=242.33722 batch=32 priorities_updated=32
+2026-08-30 07:05:26,661 [DEBUG] kaggriculture_self_play_training: Ep 36 step 400: verb=3 crop=0 raw_r=0.000 shaped_r=-6.018 done=False buffer=50000 learn=True
+2026-08-30 07:05:36,445 [DEBUG] kaggriculture_self_play_training: Ep 36 step 500 DQN update: loss=614.20148 batch=32 priorities_updated=32
+2026-08-30 07:05:36,477 [DEBUG] kaggriculture_self_play_training: Ep 36 step 500: verb=3 crop=0 raw_r=0.000 shaped_r=-5.976 done=False buffer=50000 learn=True
+2026-08-30 07:05:46,364 [DEBUG] kaggriculture_self_play_training: Ep 36 step 600 DQN update: loss=369.81860 batch=32 priorities_updated=32
+2026-08-30 07:05:46,386 [DEBUG] kaggriculture_self_play_training: Ep 36 step 600: verb=3 crop=0 raw_r=0.000 shaped_r=-5.905 done=False buffer=50000 learn=True
+2026-08-30 07:05:55,919 [DEBUG] kaggriculture_self_play_training: Ep 36 step 700 DQN update: loss=544.30505 batch=32 priorities_updated=32
+2026-08-30 07:05:55,943 [DEBUG] kaggriculture_self_play_training: Ep 36 step 700: verb=3 crop=0 raw_r=0.000 shaped_r=-5.877 done=False buffer=50000 learn=True
+2026-08-30 07:05:57,716 [INFO] kaggriculture_self_play_training: Episode 36/36 | Epsilon: 0.030 | Buffer Size: 50000 | Raw Reward: -29.67 | Shaped Reward: -4127.20 | Avg Loss: 558.37888
+[Self-Play] Saved agent checkpoint to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/checkpoints/checkpoint_ep_36.pt
+[Self-Play] Opponent pool size: 7
+2026-08-30 07:06:01,674 [INFO] kaggriculture_self_play_training: Final model saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/models/model.pth
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training: League win-rate summary: 0.00 (0/100 ep), cleared=0/10, beats_all=False
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training: Ladder eval (10 opponents, 10 ep each, target 50%): beats_all=False → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/metrics/ladder_eval.json
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training:   [FAIL] vs fallow_finn      win=0% (0/10) money 2967 vs 3000
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training:   [FAIL] vs wheat_walter     win=0% (0/10) money 2964 vs 6602
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training:   [FAIL] vs rotation_rosa    win=0% (0/10) money 2972 vs 12363
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training:   [FAIL] vs homestead_hana   win=0% (0/10) money 2970 vs 15332
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training:   [FAIL] vs melon_mateo      win=0% (0/10) money 2970 vs 25049
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training:   [FAIL] vs rancher_rita     win=0% (0/10) money 2960 vs 41716
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training:   [FAIL] vs broker_bea       win=0% (0/10) money 2957 vs 46271
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training:   [FAIL] vs ledger_lena      win=0% (0/10) money 2957 vs 45500
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training:   [FAIL] vs slotter_silas    win=0% (0/10) money 2957 vs 44554
+2026-08-30 07:20:21,806 [INFO] kaggriculture_self_play_training:   [FAIL] vs closer_cleo      win=0% (0/10) money 2960 vs 17856
+2026-08-30 07:20:21,808 [INFO] kaggriculture_self_play_training: Agent export saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/agent.py
+2026-08-30 07:20:21,809 [INFO] kaggriculture_self_play_training: Episode metrics saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/metrics/episode_metrics.json
+2026-08-30 07:20:21,810 [INFO] kaggriculture_self_play_training: Cumulative training progress saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/metrics/training_progress.json
+2026-08-30 07:20:22,141 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_training_loss.png
+2026-08-30 07:20:22,206 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_epsilon_decay.png
+2026-08-30 07:20:22,308 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_buffer_size.png
+2026-08-30 07:20:22,381 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_eval_rewards.png
+2026-08-30 07:20:22,473 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_final_rewards.png
+2026-08-30 07:20:22,570 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_self_play_episodes.png
+2026-08-30 07:20:22,606 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_win_rate_eval.png
+2026-08-30 07:20:22,606 [INFO] visualize: Run stats/plots updated: 7 PNGs → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots
+2026-08-30 07:20:22,606 [INFO] kaggriculture_self_play_training: Trend plots updated (7 files) → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots
+2026-08-30 07:20:22,607 [INFO] kaggriculture_self_play_training: --- SELF-PLAY TRAINING LOOP COMPLETED ---
+2026-08-30 07:20:22,768 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_training_loss.png
+2026-08-30 07:20:22,823 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_epsilon_decay.png
+2026-08-30 07:20:22,884 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_buffer_size.png
+2026-08-30 07:20:22,949 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_eval_rewards.png
+2026-08-30 07:20:23,047 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_final_rewards.png
+2026-08-30 07:20:23,143 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_self_play_episodes.png
+2026-08-30 07:20:23,180 [INFO] visualize: Updated plot: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots/run_win_rate_eval.png
+2026-08-30 07:20:23,180 [INFO] visualize: Run stats/plots updated: 7 PNGs → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots
+Ladder cleared=0/10 beats_all=False
+  fallow_finn: win=0% money 2967 vs 3000 cleared=False
+  wheat_walter: win=0% money 2964 vs 6602 cleared=False
+  rotation_rosa: win=0% money 2972 vs 12363 cleared=False
+  homestead_hana: win=0% money 2970 vs 15332 cleared=False
+  melon_mateo: win=0% money 2970 vs 25049 cleared=False
+  rancher_rita: win=0% money 2960 vs 41716 cleared=False
+  broker_bea: win=0% money 2957 vs 46271 cleared=False
+  ledger_lena: win=0% money 2957 vs 45500 cleared=False
+  slotter_silas: win=0% money 2957 vs 44554 cleared=False
+  closer_cleo: win=0% money 2960 vs 17856 cleared=False
+Plots: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots

@@ -1,11 +1,11 @@
 {
-  "experiment_dir": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder",
+  "experiment_dir": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_only_ladder",
   "seed": 42,
   "device": "auto",
-  "total_episodes": 36,
-  "learning_start_episodes": 2,
+  "total_episodes": 0,
+  "learning_start_episodes": 0,
   "batch_size": 32,
-  "checkpoint_interval": 6,
+  "checkpoint_interval": 5,
   "use_kaggle_env": true,
   "kinematic_phase_a": 3,
   "kinematic_phase_b": 4,
@@ -18,14 +18,14 @@
   "bootstrap_transitions": 50000,
   "data_dir": "/Users/sweeden/kagg/working/kaggle_episodes",
   "download_bootstrap": false,
-  "bc_epochs": 0,
+  "bc_epochs": 25,
   "bc_batch_size": 64,
-  "bc_steps_per_epoch": 0,
+  "bc_steps_per_epoch": 300,
   "buffer_capacity": 50000,
   "metadata_path": "/Users/sweeden/kagg/working/kaggle_episodes/metadata.json",
   "bootstrap_top_per_day": 40,
   "bootstrap_passes": 1,
-  "bc_epochs_per_pass": 0,
+  "bc_epochs_per_pass": 2,
   "verbose": true,
   "code_src": "/Users/sweeden/kagg/datasets/scottweeden/self-training-code",
   "bootstrap_mode": "daily_incremental",
@@ -34,9 +34,9 @@
   "opponents_dir": "/Users/sweeden/kagg/opponents",
   "ladder_eval_episodes": 10,
   "ladder_win_rate_target": 0.5,
-  "min_self_play_episodes": 36,
-  "timestamp": "2026-08-30T06:25:51.957220",
-  "resumed_from": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/checkpoints/training_state_latest.pt",
+  "min_self_play_episodes": 0,
+  "timestamp": "2026-08-30T07:31:39.160972",
+  "resumed_from": null,
   "reward_phase_gates": {
     "mode": "kinematic_invest_liquidate_mix",
     "season_days": 30,
@@ -53,13 +53,10 @@
     "schedule_affinity": 0.25,
     "turns_per_day_ref": 24
   },
-  "last_completed_episode": 36,
   "bootstrap_days_this_run": [
-    "2026-08-16"
+    "2026-08-15"
   ],
-  "bootstrapped_dates": [
-    "2026-08-15",
-    "2026-08-16"
-  ],
-  "bootstrap_transitions_loaded": 0
+  "bootstrapped_dates": [],
+  "bootstrap_transitions_loaded": 0,
+  "last_completed_episode": 0
 }
