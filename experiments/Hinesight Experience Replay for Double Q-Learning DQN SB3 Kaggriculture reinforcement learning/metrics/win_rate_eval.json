@@ -2,9 +2,10 @@
   "win_rate": 1.0,
   "loss_rate": 0.0,
   "tie_rate": 0.0,
-  "wins": 1,
+  "wins": 10,
   "losses": 0,
   "ties": 0,
-  "n_episodes": 1,
-  "max_steps": 50
+  "n_episodes": 10,
+  "max_steps": 720,
+  "turns_per_day": 72
 }

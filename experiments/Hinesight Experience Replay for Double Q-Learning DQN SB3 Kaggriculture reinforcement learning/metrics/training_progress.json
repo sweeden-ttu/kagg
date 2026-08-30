@@ -1,12 +1,61 @@
 {
-  "totals": {
-    "episodes": 16,
-    "cumulative_raw_reward": -478.8000000000002,
-    "cumulative_shaped_reward": -4040.607999999991,
-    "gradient_updates": 10066,
-    "cumulative_loss": 187773.9995933771
+  "schema_version": 1,
+  "updated_at": "2026-08-30T10:05:52.556263+00:00",
+  "lifetime": {
+    "runs_completed": 0,
+    "bootstrap_days": 0,
+    "bootstrap_episodes": 0,
+    "bootstrap_transitions": 0,
+    "bootstrap_bc_steps": 0,
+    "self_play_episodes": 0,
+    "self_play_steps": 0,
+    "gradient_updates": 0,
+    "cumulative_raw_reward": 0.0,
+    "cumulative_shaped_reward": 0.0,
+    "cumulative_loss": 0.0,
+    "win_rate_eval_runs": 1,
+    "win_rate_eval_wins": 10,
+    "win_rate_eval_episodes": 10,
+    "ladder_eval_runs": 0,
+    "ladder_eval_wins": 0,
+    "ladder_eval_losses": 0,
+    "ladder_eval_ties": 0,
+    "ladder_eval_episodes": 0,
+    "ladder_opponents_cleared_best": 0
   },
-  "episodes": [
+  "corpus_trends": {
+    "by_date": {
+      "2026-08-15": {
+        "episode_count": 697,
+        "avg_score_mean": 3026.5300721305593,
+        "min_score_mean": 2998.797230956958,
+        "sum_score_mean": 6053.060144261119,
+        "score_margin_mean": 27.732841173601166,
+        "size_bytes_total": 21462110197,
+        "size_bytes_mean": 30792123.668579627
+      },
+      "2026-08-16": {
+        "episode_count": 699,
+        "avg_score_mean": 2987.1080068941346,
+        "min_score_mean": 2960.4211421659516,
+        "sum_score_mean": 5974.216013771102,
+        "score_margin_mean": 26.68686472818312,
+        "size_bytes_total": 21472964135,
+        "size_bytes_mean": 30719548.118741058
+      }
+    },
+    "cumulative": {
+      "days_indexed": 2,
+      "episodes_indexed": 1396,
+      "total_size_bytes": 42935074332,
+      "avg_score_sum": 4197479.957094,
+      "min_score_sum": 4159496.048351,
+      "sum_score_sum": 8394959.914176,
+      "score_margin_sum": 37983.908743000015
+    }
+  },
+  "run_history": [],
+  "self_play_episodes": [
     {
       "episode": 1,
       "epsilon": 1.0,
@@ -22,7 +71,9 @@
       "cumulative_raw_reward": -29.98000000000001,
       "cumulative_shaped_reward": -88.49599999999917,
       "cumulative_loss": 0.0,
-      "cumulative_gradient_updates": 0
+      "cumulative_gradient_updates": 0,
+      "lifetime_episode": 1,
+      "recorded_at": "2026-08-30T09:53:27.205004+00:00"
     },
     {
       "episode": 2,
@@ -39,7 +90,9 @@
       "cumulative_raw_reward": -59.89000000000003,
       "cumulative_shaped_reward": -168.84399999999795,
       "cumulative_loss": 0.0,
-      "cumulative_gradient_updates": 0
+      "cumulative_gradient_updates": 0,
+      "lifetime_episode": 2,
+      "recorded_at": "2026-08-30T09:53:36.380173+00:00"
     },
     {
       "episode": 3,
@@ -56,7 +109,9 @@
       "cumulative_raw_reward": -89.88000000000004,
       "cumulative_shaped_reward": -249.01399999999995,
       "cumulative_loss": 6520.572803854942,
-      "cumulative_gradient_updates": 719
+      "cumulative_gradient_updates": 719,
+      "lifetime_episode": 3,
+      "recorded_at": "2026-08-30T09:54:18.647555+00:00"
     },
     {
       "episode": 4,
@@ -73,7 +128,9 @@
       "cumulative_raw_reward": -119.81000000000004,
       "cumulative_shaped_reward": -287.0439999999988,
       "cumulative_loss": 10550.128395318985,
-      "cumulative_gradient_updates": 1438
+      "cumulative_gradient_updates": 1438,
+      "lifetime_episode": 4,
+      "recorded_at": "2026-08-30T09:55:01.595272+00:00"
     },
     {
       "episode": 5,
@@ -90,7 +147,9 @@
       "cumulative_raw_reward": -149.74000000000004,
       "cumulative_shaped_reward": -374.14399999999847,
       "cumulative_loss": 15374.268156647682,
-      "cumulative_gradient_updates": 2157
+      "cumulative_gradient_updates": 2157,
+      "lifetime_episode": 5,
+      "recorded_at": "2026-08-30T09:55:45.008797+00:00"
     },
     {
       "episode": 6,
@@ -107,7 +166,9 @@
       "cumulative_raw_reward": -179.73000000000005,
       "cumulative_shaped_reward": -461.2819999999994,
       "cumulative_loss": 21026.466098189354,
-      "cumulative_gradient_updates": 2876
+      "cumulative_gradient_updates": 2876,
+      "lifetime_episode": 6,
+      "recorded_at": "2026-08-30T09:56:29.202825+00:00"
     },
     {
       "episode": 7,
@@ -124,7 +185,9 @@
       "cumulative_raw_reward": -209.73000000000008,
       "cumulative_shaped_reward": -556.1659999999999,
       "cumulative_loss": 27628.50662124157,
-      "cumulative_gradient_updates": 3595
+      "cumulative_gradient_updates": 3595,
+      "lifetime_episode": 7,
+      "recorded_at": "2026-08-30T09:57:13.742192+00:00"
     },
     {
       "episode": 8,
@@ -141,7 +204,9 @@
       "cumulative_raw_reward": -239.6600000000001,
       "cumulative_shaped_reward": -599.935999999999,
       "cumulative_loss": 35775.13861620426,
-      "cumulative_gradient_updates": 4314
+      "cumulative_gradient_updates": 4314,
+      "lifetime_episode": 8,
+      "recorded_at": "2026-08-30T09:57:59.228126+00:00"
     },
     {
       "episode": 9,
@@ -158,7 +223,9 @@
       "cumulative_raw_reward": -269.6200000000001,
       "cumulative_shaped_reward": -651.5159999999987,
       "cumulative_loss": 45574.61525928974,
-      "cumulative_gradient_updates": 5033
+      "cumulative_gradient_updates": 5033,
+      "lifetime_episode": 9,
+      "recorded_at": "2026-08-30T09:58:45.508362+00:00"
     },
     {
       "episode": 10,
@@ -175,7 +242,9 @@
       "cumulative_raw_reward": -299.5500000000001,
       "cumulative_shaped_reward": -1054.678,
       "cumulative_loss": 57520.410465836525,
-      "cumulative_gradient_updates": 5752
+      "cumulative_gradient_updates": 5752,
+      "lifetime_episode": 10,
+      "recorded_at": "2026-08-30T09:59:32.760284+00:00"
     },
     {
       "episode": 11,
@@ -192,7 +261,9 @@
       "cumulative_raw_reward": -329.47000000000014,
       "cumulative_shaped_reward": -1095.9879999999998,
       "cumulative_loss": 71357.31352007389,
-      "cumulative_gradient_updates": 6471
+      "cumulative_gradient_updates": 6471,
+      "lifetime_episode": 11,
+      "recorded_at": "2026-08-30T10:00:20.287613+00:00"
     },
     {
       "episode": 12,
@@ -209,7 +280,9 @@
       "cumulative_raw_reward": -359.38000000000017,
       "cumulative_shaped_reward": -1153.333999999998,
       "cumulative_loss": 87580.54107820988,
-      "cumulative_gradient_updates": 7190
+      "cumulative_gradient_updates": 7190,
+      "lifetime_episode": 12,
+      "recorded_at": "2026-08-30T10:01:07.967272+00:00"
     },
     {
       "episode": 13,
@@ -226,7 +299,9 @@
       "cumulative_raw_reward": -389.33000000000015,
       "cumulative_shaped_reward": -1345.3679999999983,
       "cumulative_loss": 106602.53891527653,
-      "cumulative_gradient_updates": 7909
+      "cumulative_gradient_updates": 7909,
+      "lifetime_episode": 13,
+      "recorded_at": "2026-08-30T10:01:56.287755+00:00"
     },
     {
       "episode": 14,
@@ -243,7 +318,9 @@
       "cumulative_raw_reward": -419.25000000000017,
       "cumulative_shaped_reward": -1768.9080000000015,
       "cumulative_loss": 129333.57002794743,
-      "cumulative_gradient_updates": 8628
+      "cumulative_gradient_updates": 8628,
+      "lifetime_episode": 14,
+      "recorded_at": "2026-08-30T10:02:44.740257+00:00"
     },
     {
       "episode": 15,
@@ -260,7 +337,9 @@
       "cumulative_raw_reward": -449.2300000000002,
       "cumulative_shaped_reward": -1810.5380000000023,
       "cumulative_loss": 155589.9291292429,
-      "cumulative_gradient_updates": 9347
+      "cumulative_gradient_updates": 9347,
+      "lifetime_episode": 15,
+      "recorded_at": "2026-08-30T10:03:34.916654+00:00"
     },
     {
       "episode": 16,
@@ -277,7 +356,25 @@
       "cumulative_raw_reward": -478.8000000000002,
       "cumulative_shaped_reward": -4040.607999999991,
       "cumulative_loss": 187773.9995933771,
-      "cumulative_gradient_updates": 10066
+      "cumulative_gradient_updates": 10066,
+      "lifetime_episode": 16,
+      "recorded_at": "2026-08-30T10:04:27.117229+00:00"
+    }
+  ],
+  "eval_history": [
+    {
+      "kind": "win_rate",
+      "recorded_at": "2026-08-30T10:05:52.556225+00:00",
+      "run_id": "20260830T095123Z",
+      "win_rate": 1.0,
+      "loss_rate": 0.0,
+      "tie_rate": 0.0,
+      "wins": 10,
+      "losses": 0,
+      "ties": 0,
+      "n_episodes": 10,
+      "max_steps": 720,
+      "turns_per_day": 72
     }
   ]
 }

@@ -30,7 +30,9 @@ try:
         apply_hierarchical_masks
     )
     from kaggriculture_adapter import (
+        COMPETITION_TURNS_PER_DAY,
         CROPS,
+        EPISODE_STEPS,
         decode_path_b_action,
         parse_observation,
         resolve_training_device,
@@ -291,14 +293,25 @@ class PrioritizedReplayBuffer:
         return self._batch_from_samples(samples, weights)
 
     def update_priorities(self, indices: np.ndarray, priorities: np.ndarray) -> None:
-        for idx, prio in zip(indices, priorities):
-            if isinstance(idx, (list, tuple)) and len(idx) == 2:
+        indices = np.asarray(indices)
+        priorities = np.asarray(priorities)
+        if indices.size == 0 or priorities.size == 0:
+            return
+        if indices.ndim == 1 and indices.dtype == object:
+            rows = list(indices)
+        elif indices.ndim == 2 and indices.shape[-1] == 2:
+            rows = indices
+        else:
+            return
+        for idx, prio in zip(rows, priorities.reshape(-1)):
+            try:
                 source_flag, local_idx = int(idx[0]), int(idx[1])
-            else:
+            except (TypeError, IndexError, ValueError):
                 continue
             source = SOURCE_BOOTSTRAP if source_flag == 0 else SOURCE_SELFPLAY
-            _, _, prios, _ = self._partition(source)
-            if 0 <= local_idx < len(prios):
+            buf, _, prios, _ = self._partition(source)
+            n = len(buf)
+            if 0 <= local_idx < n:
                 prios[local_idx] = max(float(prio), 1e-6)
 
     @property
@@ -716,7 +729,7 @@ def train_self_play(total_episodes: int = 15,
                     bootstrap_transitions: Optional[int] = 50_000,
                     data_dir: str = "./data/kaggle_episodes",
                     download_bootstrap: bool = False,
-                    bc_epochs: int = 0,
+                    bc_epochs: int = 15,
                     bc_batch_size: int = 64,
                     bc_steps_per_epoch: Optional[int] = None,
                     buffer_capacity: int = 10_000,
@@ -1337,6 +1350,14 @@ def train_self_play(total_episodes: int = 15,
                 with torch.no_grad():
                     td_errors = per_sample_loss.cpu().numpy() + 1e-6
                     buffer.update_priorities(indices, td_errors)
+                    if ep_gradient_updates == 1:
+                        logger.info(
+                            "PER: TD-error priority reweighting applied "
+                            "(n=%d td_mean=%.5f td_max=%.5f)",
+                            len(indices),
+                            float(np.mean(td_errors)),
+                            float(np.max(td_errors)),
+                        )
 
         # Performance Monitoring
         avg_loss = np.mean(loss_history) if loss_history else 0.0
@@ -1439,9 +1460,10 @@ def train_self_play(total_episodes: int = 15,
                     opponents_dir=str(opp_root),
                     code_src=code_src,
                     n_episodes=ladder_eval_episodes,
-                    max_steps=max_episode_steps,
+                    max_steps=EPISODE_STEPS,
                     base_seed=seed + 2000,
                     win_rate_target=ladder_win_rate_target,
+                    turns_per_day=COMPETITION_TURNS_PER_DAY,
                 )
                 ladder_path = dirs["metrics"] / "ladder_eval.json"
                 with open(ladder_path, "w", encoding="utf-8") as fh:
@@ -1634,7 +1656,7 @@ def main() -> None:
     parser.add_argument(
         "--bc-epochs",
         type=int,
-        default=0,
+        default=15,
         help="Behavioral cloning pretrain epochs on bootstrapped buffer (0=skip)",
     )
     parser.add_argument(

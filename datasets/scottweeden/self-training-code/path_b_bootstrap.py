@@ -961,6 +961,69 @@ def incremental_daily_bootstrap_bc(
         )
 
     if not new_days:
+        buffer_len = len(buffer) if hasattr(buffer, "__len__") else 0
+        if buffer_len == 0 and bootstrapped:
+            reseed_days = bootstrapped[-max(1, days_per_run) :]
+            logger.info(
+                "Incremental daily bootstrap: all %d indexed dates already done; "
+                "reseeding empty buffer from %s",
+                len(bootstrapped),
+                reseed_days,
+            )
+            episodes_dir = None if is_kaggle_runtime() else Path(metadata_path).parent / "episodes"
+            all_losses: List[float] = []
+            total_transitions = 0
+            per_day_buffer_cap = buffer_seed_per_day
+            if per_day_buffer_cap is None and hasattr(buffer, "capacity"):
+                per_day_buffer_cap = max(1, buffer.capacity // max(1, len(reseed_days)))
+            for day in reseed_days:
+                if top_per_day is not None and top_per_day > 0:
+                    day_meta = {
+                        "episodes": [
+                            ep for ep in metadata.get("episodes", []) if str(ep.get("date")) == day
+                        ]
+                    }
+                    day_files = resolve_episode_paths_from_metadata(
+                        day_meta,
+                        top_per_day=top_per_day,
+                        max_episodes=top_per_day,
+                        local_episodes_dir=episodes_dir,
+                    )
+                else:
+                    day_files = resolve_episode_paths_for_dates(
+                        metadata, [day], local_episodes_dir=episodes_dir
+                    )
+                if not day_files:
+                    logger.warning("No episode files resolved for reseed date %s", day)
+                    continue
+                day_losses, day_transitions = run_bc_pretrain_over_episode_files(
+                    learner,
+                    device,
+                    day_files,
+                    epochs=bc_epochs_per_day,
+                    batch_size=bc_batch_size,
+                    max_steps_per_epoch=bc_steps_per_epoch,
+                    max_market_orders=max_market_orders,
+                    random_seed=random_seed + hash(day) % 10_000,
+                    verbose=verbose,
+                )
+                all_losses.extend(day_losses)
+                total_transitions += day_transitions
+                seed_buffer_from_episode_files(
+                    buffer,
+                    day_files,
+                    max_transitions=per_day_buffer_cap,
+                    max_market_orders=max_market_orders,
+                    clear_buffer=False,
+                )
+            return {
+                "epoch_losses": all_losses,
+                "new_days": [],
+                "reseeded_days": reseed_days,
+                "bootstrapped_dates": bootstrapped,
+                "total_transitions_loaded": total_transitions,
+                "bootstrap_mode": "daily_incremental",
+            }
         logger.info(
             "Incremental daily bootstrap: all %d indexed dates already bootstrapped",
             len(bootstrapped),

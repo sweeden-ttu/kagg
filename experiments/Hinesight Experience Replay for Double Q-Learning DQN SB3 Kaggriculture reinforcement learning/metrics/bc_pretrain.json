@@ -1,10 +1,10 @@
 {
-  "epochs": 1,
+  "epochs": 15,
   "batch_size": 64,
-  "bc_steps_per_epoch": 50,
-  "buffer_size": 50000,
+  "bc_steps_per_epoch": 200,
+  "buffer_size": 11504,
   "buffer_capacity": 50000,
-  "bootstrap_transitions": 4314,
+  "bootstrap_transitions": 11504,
   "metadata_path": "/Users/sweeden/kagg/working/kaggle_episodes/metadata.json",
   "bootstrap_passes": 1,
   "bc_epochs_per_pass": 1,
@@ -32,9 +32,10 @@
   ],
   "stream_stats": {
     "epoch_losses": [
-      1.903324098587036
+      1.301000781898392
     ],
-    "new_days": [
+    "new_days": [],
+    "reseeded_days": [
       "2026-08-16"
     ],
     "bootstrapped_dates": [
@@ -57,24 +58,26 @@
       "2026-08-15",
       "2026-08-16"
     ],
-    "total_transitions_loaded": 4314,
-    "day_stats": [
-      {
-        "date": "2026-08-16",
-        "episodes": 363,
-        "transitions": 4314,
-        "buffer_seeded": 50000,
-        "bc_epoch_losses": [
-          1.903324098587036
-        ],
-        "bc_final_loss": 1.903324098587036
-      }
-    ],
-    "bootstrap_mode": "daily_incremental",
-    "bootstrap_state_path": "/Users/sweeden/kagg/working/run/metrics/bootstrap_state.json"
+    "total_transitions_loaded": 11504,
+    "bootstrap_mode": "daily_incremental"
   },
   "epoch_losses": [
-    1.903324098587036
+    0.7914269037086871,
+    0.6736454803850398,
+    0.6184533538099107,
+    0.5693324644472346,
+    0.5241568521414389,
+    0.4815552203015908,
+    0.4411119142724149,
+    0.4071232713134595,
+    0.37167696246887716,
+    0.3444597135043011,
+    0.3136327896870714,
+    0.29366034569021043,
+    0.27520916814910634,
+    0.25657237017287887,
+    0.24276682235009178
   ],
-  "final_loss": 1.903324098587036
+  "final_loss": 0.24276682235009178,
+  "cumulative_bc_loss": 6.604783632402313
 }

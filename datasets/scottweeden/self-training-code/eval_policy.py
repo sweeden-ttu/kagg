@@ -92,7 +92,7 @@ def discover_reference_opponents(
     opponents_dir: Optional[Path | str] = None,
 ) -> List[Tuple[str, Callable[[Dict[str, Any]], Dict[str, Any]]]]:
     """Return (slug, policy) pairs for the reference ladder, ordered by tier."""
-    root = Path(opponents_dir) if opponents_dir else resolve_opponents_dir(code_src=code_src)
+    root = Path(opponents_dir) if opponents_dir else resolve_opponents_dir()
     if root is None:
         raise FileNotFoundError("Reference opponents directory not found")
     manifest = DEFAULT_OPPONENT_MANIFEST if DEFAULT_OPPONENT_MANIFEST.exists() else root / "agents_manifest.csv"

@@ -2,7 +2,7 @@
   "experiment_dir": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning",
   "seed": 42,
   "device": "auto",
-  "total_episodes": 12,
+  "total_episodes": 16,
   "learning_start_episodes": 2,
   "batch_size": 32,
   "checkpoint_interval": 5,
@@ -23,7 +23,7 @@
   "bc_steps_per_epoch": 200,
   "buffer_capacity": 50000,
   "metadata_path": "/Users/sweeden/kagg/working/kaggle_episodes/metadata.json",
-  "bootstrap_top_per_day": null,
+  "bootstrap_top_per_day": 20,
   "bootstrap_passes": 1,
   "bc_epochs_per_pass": 1,
   "verbose": true,
@@ -35,10 +35,8 @@
   "ladder_eval_episodes": 10,
   "ladder_win_rate_target": 0.5,
   "min_self_play_episodes": 0,
-  "timestamp": "2026-08-30T00:00:00.000000",
+  "timestamp": "2026-08-30T04:51:23.111285",
   "resumed_from": null,
-  "bootstrap_days_this_run": [],
-  "bootstrapped_dates": [],
-  "bootstrap_transitions_loaded": 0,
-  "last_completed_episode": 0
+  "bootstrap_transitions_loaded": 11504,
+  "last_completed_episode": 16
 }
