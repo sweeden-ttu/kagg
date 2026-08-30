@@ -135,9 +135,9 @@ These paths overlap because of **GitHub checkout**, **Kaggle kernel pull**, and 
 | **RL subpackage** | `datasets/.../kaggriculture_rl/` | `working/kaggriculture_rl/` | `dqn_sb3.py` and `ImitationLearning.ipynb` may differ between copies |
 | **Training artifacts** | `datasets/.../training_artifacts/` | `working/run/` | checkpoints, metrics, `agent.py`, plots — diverge after local runs |
 | **Adapter copies in run** | `datasets/.../kaggriculture_adapter.py` (read-only source) | `working/run/kaggriculture_adapter.py`, `working/run/kaggriculture_path_b_rebuild.py` | Extra copies written during agent export |
-| **Episode cache** | `datasets/kaggle/kaggriculture-episodes-*` | `working/kaggle_episodes/` | metadata merge cache (not a 1:1 hash mirror) |
+| **Episode cache** | — | `working/kaggle_episodes/` | metadata + optional `episodes/*.json`; official daily datasets stay on Kaggle input mounts |
 
-**Not duplicated:** `opponents/`, `scripts/`, root CLIs (`eval.py`, etc.), `datasets/reference/`.
+**Not duplicated:** `opponents/`, `scripts/`, root CLIs (`eval.py`, etc.), `datasets/reference/`. Do **not** mirror `kaggle/kaggriculture-episodes-*` under `datasets/kaggle/`.
 
 ```mermaid
 flowchart LR
@@ -147,11 +147,11 @@ flowchart LR
   end
   subgraph kaggle [Kaggle retrieve]
     KP["working/scottweeden-kaggriculture-self-training/"]
-    DS[datasets/kaggle/...]
   end
   subgraph runtime [Notebook runtime]
     WK[working/*.py]
     RUN[working/run/]
+    EP[working/kaggle_episodes/]
   end
   KT -->|"kernels pull §0"| KP
   KP -->|"auto-promote"| KT
@@ -179,7 +179,7 @@ python scripts/sync_manifest.py sync --direction github-to-kaggle --dry-run
 python scripts/sync_manifest.py sync --direction github-to-kaggle --force github   # resolve conflicts
 ```
 
-Bulk episode JSONs under `datasets/kaggle/kaggriculture-episodes-*` are not hash-tracked (too large). §0 does **not** call the manifest CLI — run `scan` manually after promote or sync.
+Episode JSONs under `working/kaggle_episodes/` are not hash-tracked. §0 does **not** call the manifest CLI — run `scan` manually after promote or sync.
 
 ---
 

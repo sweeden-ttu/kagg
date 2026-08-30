@@ -29,14 +29,15 @@ DEFAULT_END_DATE = (date_cls.today() - timedelta(days=1)).isoformat()
 
 # Kaggle notebook mount layouts (both observed in the wild):
 #   /kaggle/input/kaggriculture-episodes-2026-08-27/{id}.json   ← flat (current)
-#   /kaggle/input/datasets/kaggle/kaggriculture-episodes-...    ← nested (legacy/docs)
-# Local dev mirror (when /kaggle/input is absent):
-#   ~/kagg/datasets/kaggle/kaggriculture-episodes-YYYY-MM-DD/{id}.json
+#   /kaggle/input/datasets/kaggle/kaggriculture-episodes-...    ← nested Kaggle input
+# Local cache (never download full daily datasets into datasets/kaggle/):
+#   ~/kagg/working/kaggle_episodes/episodes/{id}.json
 KAGGLE_INPUT_ROOT = Path("/kaggle/input")
 KAGGLE_DATASETS_ROOT = KAGGLE_INPUT_ROOT / "datasets/kaggle"
 DAILY_DATASET_PREFIX = "kaggriculture-episodes-"
 # Mounted daily episode JSONs: /kaggle/input/kaggriculture-episodes-YYYY-MM-DD/{id}.json
 KAGGLE_EPISODES_MOUNT_TEMPLATE = "/kaggle/input/kaggriculture-episodes-{date}"
+WORKING_EPISODES_ROOT = Path("~/kagg/working/kaggle_episodes").expanduser()
 
 _LOCAL_DATASETS_ROOT: Optional[Path] = None
 
@@ -46,19 +47,20 @@ def is_kaggle_runtime() -> bool:
 
 
 def configure_local_datasets_root(root: str | Path) -> Path:
-    """Set offline episode dataset root (e.g. ~/kagg/datasets/kaggle)."""
+    """Set an optional extra root for already-extracted daily episode dirs."""
     global _LOCAL_DATASETS_ROOT
     _LOCAL_DATASETS_ROOT = Path(root).expanduser().resolve()
     return _LOCAL_DATASETS_ROOT
 
 
-def local_kaggle_datasets_root() -> Path:
+def local_kaggle_datasets_root() -> Optional[Path]:
+    """Optional extra root for extracted daily dirs. Never defaults to datasets/kaggle."""
     if _LOCAL_DATASETS_ROOT is not None:
         return _LOCAL_DATASETS_ROOT
     env_root = os.environ.get("KAGGLE_LOCAL_DATASETS_ROOT")
     if env_root:
         return Path(env_root).expanduser().resolve()
-    return Path("~/kagg/datasets/kaggle").expanduser().resolve()
+    return None
 
 
 def _daily_slug(date: str) -> str:
@@ -80,36 +82,28 @@ def _daily_dataset_has_episodes(path: Path) -> bool:
     return path.is_dir() and any(path.glob("*.json"))
 
 
-def _run_kaggle_dataset_download(dataset_slug: str, dest_dir: Path) -> None:
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    cmd = [
-        "kaggle", "datasets", "download",
-        f"kaggle/{dataset_slug}",
-        "-p", str(dest_dir),
-        "--unzip", "-q",
-    ]
-    logger.info("Downloading kaggle/%s -> %s", dataset_slug, dest_dir)
-    subprocess.run(cmd, check=True)
-
-
 def ensure_daily_episode_dataset(
     date: str,
     local_root: Optional[str | Path] = None,
 ) -> Path:
-    """Ensure a daily episode dataset exists (Kaggle mount or local CLI download)."""
+    """Return an existing daily episode dir (Kaggle mount or configured local root).
+
+    Does not download full daily datasets.
+    """
     existing = kaggle_daily_dataset_dir(date)
     if _daily_dataset_has_episodes(existing):
         return existing
 
     root = Path(local_root).expanduser().resolve() if local_root else local_kaggle_datasets_root()
-    dest = root / _daily_slug(date)
-    if _daily_dataset_has_episodes(dest):
-        return dest
+    if root is not None:
+        dest = root / _daily_slug(date)
+        if _daily_dataset_has_episodes(dest):
+            return dest
 
-    _run_kaggle_dataset_download(_daily_slug(date), dest)
-    if not _daily_dataset_has_episodes(dest):
-        raise FileNotFoundError(f"No episode JSONs found after download: {dest}")
-    return dest
+    raise FileNotFoundError(
+        f"No episode JSONs for {date}. Attach kaggle/{_daily_slug(date)} on Kaggle, "
+        f"or put copies under {WORKING_EPISODES_ROOT / 'episodes'}."
+    )
 
 
 def ensure_episode_datasets_for_range(
@@ -117,7 +111,7 @@ def ensure_episode_datasets_for_range(
     end_date: str,
     local_root: Optional[str | Path] = None,
 ) -> List[Path]:
-    """Download any missing daily episode datasets in [start_date, end_date]."""
+    """Return existing daily episode dirs in [start_date, end_date]. Does not download."""
     if is_kaggle_runtime():
         return [kaggle_daily_dataset_dir(d) for d in _dates_between(start_date, end_date)]
     return [
@@ -127,24 +121,29 @@ def ensure_episode_datasets_for_range(
 
 
 def ensure_kaggle_index_dataset(local_root: Optional[str | Path] = None) -> Path:
-    """Ensure kaggriculture-episodes-index is available locally or on Kaggle input."""
+    """Return an existing kaggriculture-episodes-index dir. Does not download."""
     existing = kaggle_index_dataset_dir()
     if (existing / "manifest.csv").exists():
         return existing
 
     root = Path(local_root).expanduser().resolve() if local_root else local_kaggle_datasets_root()
-    dest = root / "kaggriculture-episodes-index"
-    if (dest / "manifest.csv").exists():
-        return dest
+    if root is not None:
+        dest = root / "kaggriculture-episodes-index"
+        if (dest / "manifest.csv").exists():
+            return dest
 
-    _run_kaggle_dataset_download("kaggriculture-episodes-index", dest)
-    if not (dest / "manifest.csv").exists():
-        raise FileNotFoundError(f"Missing index manifest after download: {dest / 'manifest.csv'}")
-    return dest
+    working_manifest = WORKING_EPISODES_ROOT / "manifest.csv"
+    if working_manifest.exists():
+        return WORKING_EPISODES_ROOT
+
+    raise FileNotFoundError(
+        "Missing kaggriculture-episodes-index/manifest.csv. Attach the index dataset "
+        f"on Kaggle, or place manifest.csv under {WORKING_EPISODES_ROOT}."
+    )
 
 
 def kaggle_daily_dataset_dir(date: str) -> Path:
-    """Return daily dataset dir (Kaggle mount or local ~/kagg/datasets/kaggle mirror)."""
+    """Return daily dataset dir on a Kaggle mount, or a local working-cache path."""
     slug = _daily_slug(date)
     if KAGGLE_INPUT_ROOT.is_dir():
         flat = KAGGLE_INPUT_ROOT / slug
@@ -155,10 +154,13 @@ def kaggle_daily_dataset_dir(date: str) -> Path:
             return nested
         return flat
 
-    local = local_kaggle_datasets_root() / slug
-    if local.is_dir():
-        return local
-    return local
+    local = local_kaggle_datasets_root()
+    if local is not None:
+        candidate = local / slug
+        if candidate.is_dir():
+            return candidate
+        return candidate
+    return WORKING_EPISODES_ROOT.resolve() / slug
 
 
 def kaggle_index_dataset_dir() -> Path:
@@ -170,12 +172,18 @@ def kaggle_index_dataset_dir() -> Path:
         ):
             if candidate.is_dir():
                 return candidate
-        return KAGGLE_DATASETS_ROOT / slug
+        return KAGGLE_INPUT_ROOT / slug
 
-    local = local_kaggle_datasets_root() / slug
-    if local.is_dir():
-        return local
-    return local
+    local = local_kaggle_datasets_root()
+    if local is not None:
+        candidate = local / slug
+        if candidate.is_dir():
+            return candidate
+        return candidate
+    working = WORKING_EPISODES_ROOT.resolve()
+    if (working / "manifest.csv").exists():
+        return working
+    return working
 
 
 def kaggle_episode_path(date: str, episode_id: str) -> Path:
