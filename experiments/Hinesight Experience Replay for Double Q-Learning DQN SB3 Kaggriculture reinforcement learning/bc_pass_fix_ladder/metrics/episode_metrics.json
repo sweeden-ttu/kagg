@@ -1,0 +1,10 @@
+{
+  "totals": {
+    "episodes": 0,
+    "cumulative_raw_reward": 0.0,
+    "cumulative_shaped_reward": 0.0,
+    "gradient_updates": 0,
+    "cumulative_loss": 0.0
+  },
+  "episodes": []
+}

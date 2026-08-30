@@ -1,5 +1,9 @@
 #!/usr/bin/env python
-"""Full kinematic self-play run: bootstrap + BC + 16×720 episodes + competition ladder."""
+"""Full self-play run: bootstrap + BC + 16×720 episodes + competition ladder.
+
+Default self-play uses turnsPerDay=24 (competition / opponents ladder parity).
+Pass turns_per_cycle=72 for the optional kinematic 3×4×6 profile.
+"""
 
 from __future__ import annotations
 
@@ -18,6 +22,7 @@ EXP = ROOT / (
 sys.path.insert(0, str(CODE_SRC))
 
 from kaggriculture_self_play_training import train_self_play  # noqa: E402
+from visualize import update_experiment_plots  # noqa: E402
 
 if __name__ == "__main__":
     train_self_play(
@@ -30,7 +35,7 @@ if __name__ == "__main__":
         learning_start_episodes=2,
         batch_size=32,
         checkpoint_interval=5,
-        turns_per_cycle=72,
+        turns_per_cycle=24,
         max_episode_steps=720,
         n_eval_episodes=10,
         bootstrap_episodes=None,
@@ -51,7 +56,12 @@ if __name__ == "__main__":
         publish_code_dataset=False,
         opponents_dir=str(ROOT / "opponents"),
         ladder_eval_episodes=10,
-        ladder_win_rate_target=0.5,
+        ladder_win_rate_target=0.75,
         min_self_play_episodes=0,
         resume=None,
+    )
+    summary = update_experiment_plots(EXP)
+    print(
+        f"Plots updated: {len(summary.get('plots_written') or [])} → "
+        f"{summary.get('plots_dir')}"
     )

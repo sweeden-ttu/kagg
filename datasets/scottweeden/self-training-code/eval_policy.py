@@ -122,7 +122,7 @@ def evaluate_ladder(
     n_episodes: int = 10,
     max_steps: int = 720,
     base_seed: int = 42,
-    win_rate_target: float = 0.5,
+    win_rate_target: float = 0.75,
     turns_per_day: int = 24,
 ) -> Dict[str, Any]:
     """Head-to-head eval vs every reference ladder opponent.

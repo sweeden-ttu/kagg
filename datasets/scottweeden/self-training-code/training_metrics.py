@@ -6,7 +6,7 @@ import json
 import statistics
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Sequence
 
 SCHEMA_VERSION = 1
 PROGRESS_FILENAME = "training_progress.json"
@@ -163,7 +163,7 @@ def merge_corpus_trends(
     trends["cumulative"] = cumulative
 
 
-def _sum_episode_metrics(episodes: List[Mapping[str, Any]]) -> Dict[str, Any]:
+def _sum_episode_metrics(episodes: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
     if not episodes:
         return {
             "episodes": 0,

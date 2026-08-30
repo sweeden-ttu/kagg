@@ -27,7 +27,9 @@ try:
         HierarchicalActionMasker,
         HierarchicalDoubleDQNLearner,
         CompetitiveRewardShaper,
-        apply_hierarchical_masks
+        apply_hierarchical_masks,
+        break_pass_spawn_deadlock,
+        prefer_farm_invest_actions,
     )
     from kaggriculture_adapter import (
         COMPETITION_TURNS_PER_DAY,
@@ -63,6 +65,8 @@ except ImportError as exc:
         "kaggriculture_path_b_rebuild.py, path_b_bootstrap.py, and eval_policy.py are on PYTHONPATH."
     ) from exc
 
+logger = logging.getLogger(__name__)
+
 # =============================================================================
 # 1. ENVIRONMENT (official kaggle-environments only)
 # =============================================================================
@@ -88,7 +92,7 @@ class KaggleCompetitiveEnv:
         self,
         max_steps: int = 720,
         seed: int = 42,
-        turns_per_cycle: int = 72,
+        turns_per_cycle: int = 24,
     ):
         import kaggle_environments
         self.max_steps = max_steps
@@ -140,7 +144,7 @@ def create_competitive_env(
     use_kaggle: bool = True,
     max_steps: int = 720,
     seed: int = 42,
-    turns_per_cycle: int = 72,
+    turns_per_cycle: int = 24,
 ):
     if not use_kaggle:
         raise RuntimeError(
@@ -430,6 +434,8 @@ class SelfPlayCoordinator:
         self.checkpoint_dir = str(checkpoint_dir)
         os.makedirs(self.checkpoint_dir, exist_ok=True)
         self.opponent_pool = []
+        # Round-robin cursor for deterministic historical / online selection.
+        self._opponent_select_i = 0
 
     def restore_opponent_pool(self, paths: Optional[List[str]] = None) -> None:
         """Rebuild opponent pool from saved paths or checkpoint directory."""
@@ -452,24 +458,30 @@ class SelfPlayCoordinator:
         print(f"[Self-Play] Opponent pool size: {len(self.opponent_pool)}")
         return path
 
-    def select_opponent(self) -> str:
-        """
-        Returns path to a random historical checkpoint, or None to play against
-        the active network weights (pure self-play).
+    def select_opponent(self) -> Optional[str]:
+        """Pick the next opponent checkpoint deterministically.
+
+        Schedule (repeats): four historical round-robin picks, then one online
+        (``None`` = current weights). Empty pool always returns ``None``.
         """
         if not self.opponent_pool:
             return None
-        # 80% chance to select historical, 20% to select active network
-        if random.random() < 0.8:
-            return random.choice(self.opponent_pool)
-        return None
+        step = self._opponent_select_i
+        self._opponent_select_i = step + 1
+        # Fixed 4:1 historical:online (replaces former 80%/20% chance).
+        if step % 5 == 4:
+            return None
+        hist_step = step - (step // 5)
+        return self.opponent_pool[hist_step % len(self.opponent_pool)]
 
     def get_agent_policy_fn(self, 
-                            checkpoint_path: str, 
+                            checkpoint_path: Optional[str], 
                             online_net: HierarchicalDQNBranching, 
                             device: torch.device):
         """
         Generates an agent execution policy function mapping observation to action.
+
+        ``checkpoint_path`` may be ``None`` to clone the current online weights.
         """
         parser = KaggricultureJSONParser()
         
@@ -626,6 +638,7 @@ def save_training_state(
         "optimizer": optimizer.state_dict(),
         "buffer": buffer.state_dict(),
         "opponent_pool": list(coordinator.opponent_pool),
+        "opponent_select_i": int(coordinator._opponent_select_i),
         "episode_metrics": episode_metrics,
         "config": config,
         "rng_state": rng_state,
@@ -676,6 +689,7 @@ def load_training_state(
     optimizer.load_state_dict(payload["optimizer"])
     buffer.load_state_dict(payload["buffer"])
     coordinator.restore_opponent_pool(payload.get("opponent_pool"))
+    coordinator._opponent_select_i = int(payload.get("opponent_select_i", 0))
     _restore_rng_state(payload.get("rng_state", {}))
 
     return (
@@ -721,8 +735,8 @@ def train_self_play(total_episodes: int = 15,
                     device_name: str = "auto",
                     use_kaggle_env: bool = False,
                     max_episode_steps: int = 720,
-                    turns_per_cycle: int = 72,
-                    n_eval_episodes: int = 5,
+                    turns_per_cycle: int = 24,
+                    n_eval_episodes: int = 10,
                     resume: Optional[str] = None,
                     bootstrap_episodes: Optional[int] = 0,
                     bootstrap_transitions: Optional[int] = 50_000,
@@ -743,7 +757,7 @@ def train_self_play(total_episodes: int = 15,
                     publish_code_dataset: bool = False,
                     opponents_dir: Optional[str] = None,
                     ladder_eval_episodes: int = 0,
-                    ladder_win_rate_target: float = 0.5,
+                    ladder_win_rate_target: float = 0.75,
                     min_self_play_episodes: int = 0):
     """
     Coordinates self-play game loops, reward shaping, experience replay storage,
@@ -870,6 +884,10 @@ def train_self_play(total_episodes: int = 15,
     )
 
     reward_shaper = CompetitiveRewardShaper(parser)
+    config["reward_phase_gates"] = reward_shaper.phase_gates()
+    logger.info("Reward phase gates: %s", config["reward_phase_gates"])
+    with open(dirs["root"] / "config.json", "w", encoding="utf-8") as fh:
+        json.dump(config, fh, indent=2)
     buffer = PrioritizedReplayBuffer(capacity=buffer_capacity)
     coordinator = SelfPlayCoordinator(checkpoint_dir=str(dirs["checkpoints"]))
 
@@ -1147,9 +1165,24 @@ def train_self_play(total_episodes: int = 15,
         json.dump({**config, "last_completed_episode": start_episode}, fh, indent=2)
 
     # Exploration parameter decay. After BC, keep ε low so random
-    # self-play does not wipe the cloned policy before DQN can refine it.
-    eps_start = 0.25 if bc_loss_history else 1.0
-    eps_end = 0.05
+    # self-play does not wipe the cloned farming policy before DQN can refine it.
+    if not bc_loss_history:
+        bc_metrics_path = dirs["metrics"] / "bc_pretrain.json"
+        if bc_metrics_path.exists():
+            try:
+                with open(bc_metrics_path, encoding="utf-8") as fh:
+                    prior_bc = json.load(fh)
+                prior_losses = prior_bc.get("epoch_losses") or []
+                if prior_losses:
+                    bc_loss_history = list(prior_losses)
+                    logger.info(
+                        "Using prior BC metrics (%d epoch losses) for low-ε self-play",
+                        len(bc_loss_history),
+                    )
+            except (json.JSONDecodeError, OSError) as exc:
+                logger.warning("Could not read prior BC metrics: %s", exc)
+    eps_start = 0.12 if bc_loss_history else 1.0
+    eps_end = 0.03
     eps_decay_steps = max(1, total_episodes - learning_start_episodes)
     if bc_loss_history:
         logger.info(
@@ -1158,7 +1191,7 @@ def train_self_play(total_episodes: int = 15,
             eps_start,
         )
 
-    # Initialize competitive self-play environment (Kaggle sim or offline mock).
+    # Initialize competitive self-play environment (official Kaggle simulator required).
     env = create_competitive_env(
         use_kaggle=use_kaggle_env,
         max_steps=max_episode_steps if use_kaggle_env else min(50, max_episode_steps),
@@ -1205,6 +1238,7 @@ def train_self_play(total_episodes: int = 15,
         # 2. Reset Environment
         obs_p0 = env.reset()
         obs_p1 = env._get_obs(player=1)
+        reward_shaper.reset_episode()
         done = False
         
         ep_shaped_reward = 0.0
@@ -1257,7 +1291,20 @@ def train_self_play(total_episodes: int = 15,
                 with torch.no_grad():
                     q_out = online_net(tiles_t, numeric_t)
                     masked_q = apply_hierarchical_masks(q_out, masks, device)
-                    
+                    masked_q["farmer_verb"] = break_pass_spawn_deadlock(
+                        masked_q["farmer_verb"], masks["farmer_verb"]
+                    )
+                    farm_verb, farm_market = prefer_farm_invest_actions(
+                        masked_q["farmer_verb"],
+                        masks["farmer_verb"],
+                        masked_q["market"],
+                        masks.get("market"),
+                        observation=obs_p0,
+                    )
+                    masked_q["farmer_verb"] = farm_verb
+                    if farm_market is not None:
+                        masked_q["market"] = farm_market
+
                     verb_idx = int(masked_q["farmer_verb"].argmax(dim=-1).item())
                     crop_idx = int(masked_q["crop_parameter"].argmax(dim=-1).item())
                     
@@ -1282,7 +1329,13 @@ def train_self_play(total_episodes: int = 15,
             (next_obs_p0, next_obs_p1), rewards, done, _ = env.step([act_p0, act_p1])
             
             raw_reward_p0 = rewards[0]
-            shaped_reward_p0 = reward_shaper.shape_reward(obs_p0, raw_reward_p0)
+            shaped_reward_p0 = reward_shaper.shape_reward(
+                obs_p0,
+                raw_reward_p0,
+                action_verb=verb_idx,
+                action_market=market_indices,
+                action_hands=hands_indices,
+            )
             
             ep_raw_reward += raw_reward_p0
             ep_shaped_reward += shaped_reward_p0
@@ -1422,6 +1475,19 @@ def train_self_play(total_episodes: int = 15,
         with torch.no_grad():
             q_out = online_net(tiles_t, numeric_t)
             masked_q = apply_hierarchical_masks(q_out, masks, device)
+            masked_q["farmer_verb"] = break_pass_spawn_deadlock(
+                masked_q["farmer_verb"], masks["farmer_verb"]
+            )
+            farm_verb, farm_market = prefer_farm_invest_actions(
+                masked_q["farmer_verb"],
+                masks["farmer_verb"],
+                masked_q["market"],
+                masks.get("market"),
+                observation=obs,
+            )
+            masked_q["farmer_verb"] = farm_verb
+            if farm_market is not None:
+                masked_q["market"] = farm_market
             verb_idx = int(masked_q["farmer_verb"].argmax(dim=-1).item())
             crop_idx = int(masked_q["crop_parameter"].argmax(dim=-1).item())
             hands_indices = [
@@ -1511,6 +1577,19 @@ def train_self_play(total_episodes: int = 15,
     config["last_completed_episode"] = total_episodes
     progress_path = progress.finalize_run(config)
     logger.info("Cumulative training progress saved to: %s", progress_path)
+
+    try:
+        from visualize import update_experiment_plots
+
+        plot_summary = update_experiment_plots(dirs["root"])
+        logger.info(
+            "Trend plots updated (%d files) → %s",
+            len(plot_summary.get("plots_written") or []),
+            plot_summary.get("plots_dir"),
+        )
+    except Exception as exc:
+        logger.warning("Trend plot update skipped: %s", exc)
+
     logger.info("--- SELF-PLAY TRAINING LOOP COMPLETED ---")
 
 
@@ -1559,6 +1638,8 @@ from kaggriculture_path_b_rebuild import (
     HierarchicalDQNBranching,
     HierarchicalActionMasker,
     apply_hierarchical_masks,
+    break_pass_spawn_deadlock,
+    prefer_farm_invest_actions,
 )
 
 
@@ -1581,12 +1662,32 @@ class Agent:
         with torch.no_grad():
             q_out = self.net(tiles_t, numeric_t)
             masked_q = apply_hierarchical_masks(q_out, masks, self.device)
+            masked_q["farmer_verb"] = break_pass_spawn_deadlock(
+                masked_q["farmer_verb"], masks["farmer_verb"]
+            )
+            farm_verb, farm_market = prefer_farm_invest_actions(
+                masked_q["farmer_verb"],
+                masks["farmer_verb"],
+                masked_q["market"],
+                masks.get("market"),
+                observation=agent_obs,
+            )
+            masked_q["farmer_verb"] = farm_verb
+            if farm_market is not None:
+                masked_q["market"] = farm_market
             verb_idx = int(masked_q["farmer_verb"].argmax(dim=-1).item())
             crop_idx = int(masked_q["crop_parameter"].argmax(dim=-1).item())
             hands = [int(masked_q["hands"][i].argmax(dim=-1).item()) for i in range(self.net.num_hands)]
             market_seq = masked_q["market"].argmax(dim=-1).squeeze(0)
             market = [int(market_seq[t].item()) for t in range(self.net.max_market_orders)]
         return decode_path_b_action(verb_idx, crop_idx, hands, market, agent_obs)
+
+
+_AGENT = Agent()
+
+
+def agent(obs, cfg=None):
+    return _AGENT.act(obs)
 '''
     agent_path.write_text(agent_code, encoding="utf-8")
 
@@ -1617,17 +1718,16 @@ def main() -> None:
     parser.add_argument(
         "--turns-per-cycle",
         type=int,
-        default=72,
+        default=24,
         help=(
-            "Kinematic end-of-cycle refresh period (engine turnsPerDay). "
-            "Default 72 = 3×4×6; season is max_episode_steps / turns_per_cycle cycles "
-            "(10×72=720). Competition ladder parity uses 24."
+            "Engine turnsPerDay for self-play. Default 24 = competition / ladder parity "
+            "(30×24=720). Optional kinematic profile: 72 (3×4×6, 10 cycles)."
         ),
     )
     parser.add_argument(
         "--n-eval-episodes",
         type=int,
-        default=5,
+        default=10,
         help=(
             "Episodes per league opponent when --ladder-eval-episodes is 0. "
             "Never runs a random baseline; requires opponents/."
@@ -1758,7 +1858,7 @@ def main() -> None:
     parser.add_argument(
         "--ladder-win-rate-target",
         type=float,
-        default=0.5,
+        default=0.75,
         help="Win rate threshold counted as clearing an opponent in ladder eval",
     )
     parser.add_argument(

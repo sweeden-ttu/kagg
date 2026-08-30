@@ -34,10 +34,13 @@ Usage
 from __future__ import annotations
 
 import collections
+import json
 import random
+import time
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
+import numpy.typing as npt
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -388,7 +391,7 @@ class DuelingDoubleDQNBranching(nn.Module):
 # 3. Replay Buffer
 # ─────────────────────────────────────────────────────────────
 
-_STATE_SPECS: Dict[str, Tuple[Tuple[int, ...], np.dtype]] = {
+_STATE_SPECS: Dict[str, Tuple[Tuple[int, ...], npt.DTypeLike]] = {
     "tiles": ((10, 10), np.int64),
     "day": ((1,), np.float32),
     "hour": ((1,), np.float32),
@@ -401,6 +404,12 @@ _STATE_SPECS: Dict[str, Tuple[Tuple[int, ...], np.dtype]] = {
     "shed": ((5,), np.float32),
     "inventories": ((30,), np.float32),
 }
+# #region agent log
+with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
+    _tiles_dt = _STATE_SPECS["tiles"][1]
+    _day_dt = _STATE_SPECS["day"][1]
+    _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H1","location":"dqn.py:_STATE_SPECS","message":"dtype values vs np.dtype","data":{"tiles_type":type(_tiles_dt).__name__,"tiles_is_dtype_instance":isinstance(_tiles_dt,np.dtype),"tiles_np_dtype":str(np.dtype(_tiles_dt)),"day_type":type(_day_dt).__name__,"day_is_dtype_instance":isinstance(_day_dt,np.dtype),"n_specs":len(_STATE_SPECS)},"timestamp":int(time.time()*1000)})+"\n")
+# #endregion
 
 
 def _state_to_numpy(state: Dict[str, Any]) -> Dict[str, np.ndarray]:
@@ -614,6 +623,7 @@ class DoubleDQNLearner:
         epsilon_final: float = 0.01,
         epsilon_decay_steps: int = 2_000_000,
         epsilon_decay_method: str = "linear",
+        max_grad_norm: float = 0.5,
     ):
         self.online = online_network
         self.target = target_network
@@ -631,6 +641,7 @@ class DoubleDQNLearner:
         self.epsilon_final = epsilon_final
         self.epsilon_decay_steps = epsilon_decay_steps
         self.epsilon_decay_method = epsilon_decay_method
+        self.max_grad_norm = max_grad_norm
 
         self.optimizer = torch.optim.Adam(
             online_network.parameters(),
@@ -676,7 +687,7 @@ class DoubleDQNLearner:
         self,
         env,
         observation: Dict[str, Any],
-    ) -> Optional[Dict[str, float]]:
+    ) -> Tuple[Optional[Dict[str, Any]], bool, Optional[Dict[str, float]]]:
         """One step of interaction + training.
 
         1. Select ε-greedy action
@@ -690,8 +701,9 @@ class DoubleDQNLearner:
             observation: Current observation dict
 
         Returns:
-            Training result dict with "loss" and "td_error", or None
-            if training was skipped.
+            ``(next_obs_or_none, done, result)`` where ``result`` is a
+            training dict with ``loss`` and ``td_error``, or ``None`` if
+            training was skipped.
         """
         action = self.online.get_action(observation, epsilon=self.epsilon)
 
@@ -812,7 +824,9 @@ class DoubleDQNLearner:
         # Backward + optimizer step
         self.optimizer.zero_grad()
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.online.parameters(), max_norm=0.5)
+        torch.nn.utils.clip_grad_norm_(
+            self.online.parameters(), max_norm=self.max_grad_norm
+        )
         self.optimizer.step()
 
         # ── Target network update ──

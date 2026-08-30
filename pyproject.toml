@@ -1,0 +1,86 @@
+[project]
+name = "kagg"
+version = "0.1.0"
+description = "Kaggriculture Path B self-play training (DQN / SB3)"
+readme = "README.md"
+requires-python = ">=3.12"
+# Runtime packages live in conda env `kagg` (not a pip venv).
+# Install / refresh with: conda run -n kagg python -m pip install stable-baselines3 gymnasium kaggle-environments
+
+[tool.basedpyright]
+include = [
+  "kaggriculture-self-training",
+  "datasets/scottweeden/self-training-code",
+  "scripts",
+  "opponents",
+]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "**/checkpoints",
+  "**/.git",
+  "working/kaggle_episodes",
+  "datasets/kaggle",
+  "experiments",
+]
+venvPath = "/Users/sweeden/miniforge3/envs"
+venv = "kagg"
+pythonVersion = "3.12"
+pythonPlatform = "Darwin"
+typeCheckingMode = "basic"
+reportMissingImports = "error"
+reportMissingModuleSource = "warning"
+extraPaths = [
+  "datasets/scottweeden/self-training-code",
+]
+executionEnvironments = [
+  { root = "kaggriculture-self-training", pythonVersion = "3.12", pythonPlatform = "Darwin", extraPaths = [
+    "datasets/scottweeden/self-training-code",
+  ] },
+  { root = "datasets/scottweeden/self-training-code", pythonVersion = "3.12", pythonPlatform = "Darwin", extraPaths = [
+    "datasets/scottweeden/self-training-code",
+  ] },
+  { root = ".", extraPaths = [
+    "datasets/scottweeden/self-training-code",
+  ] },
+]
+
+# Mirror for tools that only read [tool.pyright]. Keep identical to [tool.basedpyright].
+# Note: if pyrightconfig.json exists, it takes precedence over this file for basedpyright.
+[tool.pyright]
+include = [
+  "kaggriculture-self-training",
+  "datasets/scottweeden/self-training-code",
+  "scripts",
+  "opponents",
+]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "**/checkpoints",
+  "**/.git",
+  "working/kaggle_episodes",
+  "datasets/kaggle",
+  "experiments",
+]
+venvPath = "/Users/sweeden/miniforge3/envs"
+venv = "kagg"
+pythonVersion = "3.12"
+pythonPlatform = "Darwin"
+typeCheckingMode = "basic"
+reportMissingImports = "error"
+reportMissingModuleSource = "warning"
+extraPaths = [
+  "datasets/scottweeden/self-training-code",
+]
+executionEnvironments = [
+  { root = "kaggriculture-self-training", pythonVersion = "3.12", pythonPlatform = "Darwin", extraPaths = [
+    "datasets/scottweeden/self-training-code",
+  ] },
+  { root = "datasets/scottweeden/self-training-code", pythonVersion = "3.12", pythonPlatform = "Darwin", extraPaths = [
+    "datasets/scottweeden/self-training-code",
+  ] },
+  { root = ".", extraPaths = [
+    "datasets/scottweeden/self-training-code",
+  ] },
+]

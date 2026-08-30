@@ -2,10 +2,28 @@
   "python.defaultInterpreterPath": "/Users/sweeden/miniforge3/envs/kagg/bin/python",
   "python.condaPath": "/Users/sweeden/miniforge3/bin/conda",
   "python.terminal.activateEnvironment": true,
+  "python.languageServer": "None",
   "jupyter.jupyterServerType": "remote",
   "jupyter.jupyterServerURI": "http://nb.local.com:8888/",
   "jupyter.allowUnauthorizedRemoteConnection": true,
   "jupyter.notebookFileRoot": "${workspaceFolder}",
   "notebook.defaultFormatter": "ms-python.python",
-  "kagg.jupyterServerFallbackURI": "http://ai-rig.local:8888/"
+  "kagg.jupyterServerFallbackURI": "http://ai-rig.local:8888/",
+
+  "cursorpyright.analysis.typeCheckingMode": "basic",
+  "cursorpyright.analysis.diagnosticMode": "workspace",
+  "cursorpyright.analysis.extraPaths": [
+    "${workspaceFolder}/datasets/scottweeden/self-training-code"
+  ],
+  "cursorpyright.analysis.autoImportCompletions": true,
+  "cursorpyright.analysis.useLibraryCodeForTypes": true,
+
+  "basedpyright.analysis.typeCheckingMode": "basic",
+  "basedpyright.analysis.extraPaths": [
+    "${workspaceFolder}/datasets/scottweeden/self-training-code"
+  ],
+
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/datasets/scottweeden/self-training-code"
+  ]
 }

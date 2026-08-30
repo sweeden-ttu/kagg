@@ -37,6 +37,7 @@ Usage (mimicking SB3 API):
 
 from __future__ import annotations
 
+import json
 import os
 import time
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -193,7 +194,7 @@ class DQN:
         # DQN-specific
         learning_rate: float = 1e-4,
         buffer_size: int = 1_000_000,
-        max_buffer_size: int = None,
+        max_buffer_size: Optional[int] = None,
         gamma: float = 0.995,
         target_update_interval: int = 10_000,
         train_freq: int = 4,
@@ -205,18 +206,18 @@ class DQN:
         create_eval_env: bool = False,
         eval_freq: int = 10_000,
         n_eval_episodes: int = 5,
-        eval_log_path: str = None,
+        eval_log_path: Optional[str] = None,
         stats_wrapper: Any = None,
         # SE
-        seed: int = None,
+        seed: Optional[int] = None,
         # TE
         verbose: int = 0,
-        tensorboard_log: str = None,
-        policy_kwargs: dict = None,
+        tensorboard_log: Optional[str] = None,
+        policy_kwargs: Optional[dict] = None,
         exploration_fraction: float = 0.15,
         exploration_initial_eps: float = 1.0,
         exploration_final_eps: float = 0.05,
-        exploration_decay_steps: int = None,
+        exploration_decay_steps: Optional[int] = None,
         # PER
         use_priority_replay: bool = False,
         priority_replay_alpha: float = 0.6,
@@ -231,7 +232,7 @@ class DQN:
         # Deprecated
         n_cpu_envs: int = 1,
         optimizer_class: type = torch.optim.Adam,
-        optimizer_kwargs: dict = None,
+        optimizer_kwargs: Optional[dict] = None,
         optimize_memory_usage: bool = False,
         enable_extra_checks: bool = False,
     ):
@@ -381,14 +382,22 @@ class DQN:
             tau=self.tau,
             epsilon_init=self.exploration_initial_eps,
             epsilon_final=self.exploration_final_eps,
-            epsilon_decay_steps=self.exploration_decay_steps,
+            epsilon_decay_steps=(
+                self.exploration_decay_steps
+                if self.exploration_decay_steps is not None
+                else 2_000_000
+            ),
+            max_grad_norm=self.max_grad_norm,
         )
+        # #region agent log
+        with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
+            _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H2,H3","location":"dqn_sb3.py:_init_model","message":"learner init types","data":{"decay_steps":self.learner.epsilon_decay_steps,"decay_steps_type":type(self.learner.epsilon_decay_steps).__name__,"has_max_grad_norm":hasattr(self.learner,"max_grad_norm"),"max_grad_norm":getattr(self.learner,"max_grad_norm",None)},"timestamp":int(time.time()*1000)})+"\n")
+        # #endregion
         self.learner.optimizer = self.optimizer_class(
             self.online_network.parameters(),
             lr=self.learning_rate,
             **self.optimizer_kwargs,
         )
-        self.learner.max_grad_norm = self.max_grad_norm  # custom attr
 
     def _hard_sync_target(self):
         """Hard-sync target network from online network."""
@@ -418,7 +427,7 @@ class DQN:
         eval_freq: int = -1,
         n_eval_episodes: int = 5,
         tb_log_name: str = "DQN",
-        eval_log_path: str = None,
+        eval_log_path: Optional[str] = None,
         reset_num_timesteps: bool = False,
         progress_bar: bool = False,
     ) -> "DQN":
@@ -488,6 +497,10 @@ class DQN:
                 obs = self.env.reset()
 
             obs, done, result = self.learner.act_and_train(self.env, obs)
+            # #region agent log
+            with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
+                _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H4","location":"dqn_sb3.py:learn","message":"act_and_train unpack types","data":{"obs_type":type(obs).__name__,"done_type":type(done).__name__,"result_type":type(result).__name__,"result_is_dict":isinstance(result,dict)},"timestamp":int(time.time()*1000)})+"\n")
+            # #endregion
 
             # ── Logging ───────────────────────────────────────
             if result is not None and timestep % log_interval == 0:
@@ -658,9 +671,9 @@ class DQN:
     def predict(
         self,
         observation: Dict[str, Any],
-        state: Tuple = None,
+        state: Optional[Tuple] = None,
         deterministic: bool = True,
-    ) -> Tuple[Dict[str, Any], Tuple]:
+    ) -> Tuple[Dict[str, Any], Optional[Tuple]]:
         """Get the action for a given observation.
 
         Parameters
@@ -677,9 +690,13 @@ class DQN:
         -------
         action : dict
             Action dict with keys "farmer", "hands", "market".
-        state : tuple
+        state : tuple or None
             Hidden state (unchanged).
         """
+        # #region agent log
+        with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
+            _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H1","location":"dqn_sb3.py:predict","message":"predict state default","data":{"state_is_none":state is None,"state_type":type(state).__name__},"timestamp":int(time.time()*1000)})+"\n")
+        # #endregion
         with torch.no_grad():
             if deterministic:
                 action = self.online_network.get_action(
@@ -734,7 +751,7 @@ class DQN:
     def save(
         self,
         path: str,
-        exclusion: set = None,
+        exclusion: Optional[set] = None,
         exclude_from_env: bool = False,
     ) -> None:
         """Save the model to disk.
@@ -748,6 +765,10 @@ class DQN:
         exclude_from_env : bool
             Deprecated.
         """
+        # #region agent log
+        with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
+            _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H1","location":"dqn_sb3.py:save","message":"save exclusion default","data":{"exclusion_is_none":exclusion is None,"exclusion_type":type(exclusion).__name__},"timestamp":int(time.time()*1000)})+"\n")
+        # #endregion
         torch.save(
             {
                 "policy_dict": self.online_network.state_dict(),

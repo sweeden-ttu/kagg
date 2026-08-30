@@ -1,0 +1,51 @@
+{
+  "include": [
+    "kaggriculture-self-training",
+    "datasets/scottweeden/self-training-code",
+    "scripts",
+    "opponents"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/checkpoints",
+    "**/.git",
+    "working/kaggle_episodes",
+    "datasets/kaggle",
+    "experiments"
+  ],
+  "venvPath": "/Users/sweeden/miniforge3/envs",
+  "venv": "kagg",
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Darwin",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "error",
+  "reportMissingModuleSource": "warning",
+  "extraPaths": [
+    "datasets/scottweeden/self-training-code"
+  ],
+  "executionEnvironments": [
+    {
+      "root": "kaggriculture-self-training",
+      "pythonVersion": "3.12",
+      "pythonPlatform": "Darwin",
+      "extraPaths": [
+        "datasets/scottweeden/self-training-code"
+      ]
+    },
+    {
+      "root": "datasets/scottweeden/self-training-code",
+      "pythonVersion": "3.12",
+      "pythonPlatform": "Darwin",
+      "extraPaths": [
+        "datasets/scottweeden/self-training-code"
+      ]
+    },
+    {
+      "root": ".",
+      "extraPaths": [
+        "datasets/scottweeden/self-training-code"
+      ]
+    }
+  ]
+}

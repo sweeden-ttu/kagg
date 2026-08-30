@@ -526,7 +526,7 @@ def _assign(obs, policy, me, priv, jobs, animal_count):
     positions = [tuple(me["farmer"])] + [tuple(p) for p in me["hands"]]
     invs = priv["inventories"]
     n = len(positions)
-    ops = [["PASS"] for _ in range(n)]
+    ops: list = [["PASS"] for _ in range(n)]
     busy = [False] * n
     seat = int(obs.get("player", 0) or 0)
     if obs.get("hour", 0) == 0:

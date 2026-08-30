@@ -43,16 +43,20 @@ Engine refresh still fires when `(step + 1) % turnsPerDay == 0`.
 
 ## Consequences
 
-- Engine `day` advances once per **72** steps → **10** engine-days per episode.
-- Crop/animal tables still use day units; crops needing >10 days (e.g. melon peak at day 12) do not complete under this profile. That compression is intentional for kinematic training.
-- **Competition / reference ladder parity** remains `turnsPerDay=24`, `episodeSteps=720` (30×24). Root `eval.py` / ladder scripts keep that default unless explicitly overridden.
+- **Default self-play** uses competition `turnsPerDay=24`, `episodeSteps=720` (30×24) so training matches the reference ladder under `opponents/` and historical BC tapes.
+- Optional kinematic profile: pass `--turns-per-cycle 72` → engine `day` advances once per **72** steps → **10** engine-days per episode. Crop/animal tables still use day units; crops needing >10 days (e.g. melon peak at day 12) do not complete under that profile.
+- **Competition / reference ladder parity** remains `turnsPerDay=24`, `episodeSteps=720` (30×24). Root `eval.py` / ladder scripts keep that default.
 - Historical Kaggle episode tapes were recorded at 24; bootstrap BC must not assume 72 for tape step indices.
 
 ## Out of scope (follow-ups)
 
 - Nested multi-scale rewards at 3 / 4 / 6
-- Opponent ladder retuning for 72-step cycles
+- Opponent ladder retuning for 72-step cycles (only needed if training on the optional kinematic profile)
 - Changing published competition defaults
+
+## Status note (2026-08-30)
+
+Training defaults were switched back to **24** after ladder eval showed 0/100 wins when self-play used 72 against opponents hard-coded for 24-turn days. Kinematic 72 remains available via CLI.
 
 ## Files
 

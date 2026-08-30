@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
@@ -89,6 +90,9 @@ def parse_path_b_episode_transitions(
         return []
 
     transitions: List[Dict[str, Any]] = []
+    shaper = reward_shaper if reward_shaper is not None else _default_reward_shaper()
+    if hasattr(shaper, "reset_episode"):
+        shaper.reset_episode()
 
     for step_idx in range(len(steps) - 1):
         current_turn = steps[step_idx]
@@ -123,8 +127,15 @@ def parse_path_b_episode_transitions(
                 prev_money = float(cur_farms[player_id].get("money", 0.0)) if len(cur_farms) > player_id else 0.0
                 cur_money = float(next_farms[player_id].get("money", 0.0)) if len(next_farms) > player_id else 0.0
                 raw_reward = (cur_money - prev_money) / 100.0
-                shaper = reward_shaper if reward_shaper is not None else _default_reward_shaper()
-                reward = float(shaper.shape_reward(obs_with_player, raw_reward))
+                reward = float(
+                    shaper.shape_reward(
+                        obs_with_player,
+                        raw_reward,
+                        action_verb=int(action["verb"]),
+                        action_market=action["market"],
+                        action_hands=action["hands"],
+                    )
+                )
 
                 status = nxt.get("status", "ACTIVE")
                 done = status in ("DONE", "TIMEOUT", "INVALID")
@@ -174,6 +185,38 @@ def _push_transition(buffer: Any, transition: Dict[str, Any]) -> None:
     buffer.push(**push_kwargs)
 
 
+def _resolve_episode_file_by_id(
+    ep_id: str,
+    *,
+    episodes_dir: Optional[Path],
+    metadata_path: Optional[str],
+) -> Optional[Path]:
+    """Resolve one episode JSON by id (local ``episodes/`` or metadata + catalog)."""
+    ep_key = str(ep_id)
+    if episodes_dir is not None:
+        local_path = episodes_dir / f"{ep_key}.json"
+        if local_path.exists() and local_path.stat().st_size > 0:
+            return local_path
+
+    if metadata_path and Path(metadata_path).exists():
+        with open(metadata_path, encoding="utf-8") as fh:
+            meta = json.load(fh)
+        for row in meta.get("episodes", []):
+            if str(row.get("episode_id")) != ep_key:
+                continue
+            date = row.get("date")
+            if not date:
+                continue
+            resolved = resolve_episode_json_path(
+                str(date),
+                ep_key,
+                local_episodes_dir=episodes_dir,
+            )
+            if resolved is not None:
+                return resolved
+    return None
+
+
 def resolve_bootstrap_episode_files(
     data_dir: str = "./data/kaggle_episodes",
     max_episodes: Optional[int] = 100,
@@ -184,13 +227,17 @@ def resolve_bootstrap_episode_files(
 ) -> List[Path]:
     """Resolve episode JSON paths from metadata or local ``episodes/`` dir."""
     data_path = Path(data_dir)
-    episodes_dir = None if is_kaggle_runtime() else data_path / "episodes"
+    episodes_dir: Optional[Path] = None if is_kaggle_runtime() else data_path / "episodes"
     episode_files: List[Path] = []
 
     if episode_ids:
         for ep_id in episode_ids:
-            fpath = episodes_dir / f"{ep_id}.json"
-            if fpath.exists():
+            fpath = _resolve_episode_file_by_id(
+                str(ep_id),
+                episodes_dir=episodes_dir,
+                metadata_path=metadata_path,
+            )
+            if fpath is not None:
                 episode_files.append(fpath)
     elif metadata_path and Path(metadata_path).exists():
         with open(metadata_path, encoding="utf-8") as fh:
@@ -221,7 +268,7 @@ def resolve_bootstrap_episode_files(
         if download:
             loader.download_if_needed()
         episode_files = loader.get_episode_files()
-        if not episode_files:
+        if not episode_files and episodes_dir is not None:
             episode_files = sorted(
                 fpath
                 for fpath in episodes_dir.glob("*.json")
@@ -485,12 +532,27 @@ def merge_bootstrap_state_from_code_dataset(
     return state
 
 
+def _empty_bootstrap_state() -> Dict[str, Any]:
+    return {"bootstrapped_dates": [], "runs": [], "total_transitions": 0}
+
+
+def _int_state_field(state: Dict[str, Any], key: str, default: int = 0) -> int:
+    raw = state.get(key, default)
+    if isinstance(raw, bool):
+        return default
+    if isinstance(raw, (int, float)):
+        return int(raw)
+    return default
+
+
 def load_bootstrap_state(experiment_root: Path) -> Dict[str, Any]:
     path = bootstrap_state_path(experiment_root)
     if path.exists():
         with open(path, encoding="utf-8") as fh:
-            return json.load(fh)
-    return {"bootstrapped_dates": [], "runs": [], "total_transitions": 0}
+            loaded = json.load(fh)
+        if isinstance(loaded, dict):
+            return loaded
+    return _empty_bootstrap_state()
 
 
 def save_bootstrap_state(experiment_root: Path, state: Dict[str, Any]) -> Path:
@@ -729,7 +791,11 @@ def stream_bootstrap_bc_pretrain(
             "bootstrap_passes": 0,
         }
 
-    state = load_bootstrap_state(experiment_root) if experiment_root else {"bootstrapped_dates": []}
+    state: Dict[str, Any] = (
+        load_bootstrap_state(experiment_root)
+        if experiment_root
+        else _empty_bootstrap_state()
+    )
     bootstrapped = set(state.get("bootstrapped_dates", []))
     pending_days = [(d, files) for d, files in day_groups if d not in bootstrapped]
     if experiment_root:
@@ -833,8 +899,17 @@ def stream_bootstrap_bc_pretrain(
         state.get("bootstrapped_dates", []) if experiment_root else bootstrapped
     )
     if experiment_root:
-        state["total_transitions"] = int(state.get("total_transitions", 0)) + total_transitions
-        state.setdefault("runs", []).append(
+        prior_transitions = _int_state_field(state, "total_transitions")
+        # #region agent log
+        with open("/Users/sweeden/kagg/.cursor/debug-591f43.log", "a") as _df:
+            _df.write(json.dumps({"sessionId":"591f43","runId":"post-fix","hypothesisId":"H1","location":"path_b_bootstrap.py:update_total_transitions","message":"coerce total_transitions before int add","data":{"prior":prior_transitions,"delta":total_transitions,"raw_type":type(state.get("total_transitions",0)).__name__,"raw_is_list":isinstance(state.get("total_transitions"),list)},"timestamp":int(time.time()*1000)})+"\n")
+        # #endregion
+        state["total_transitions"] = prior_transitions + total_transitions
+        runs = state.setdefault("runs", [])
+        if not isinstance(runs, list):
+            runs = []
+            state["runs"] = runs
+        runs.append(
             {
                 "mode": "streaming_by_day",
                 "new_days": [d for d, _ in days_this_run],
@@ -1123,8 +1198,14 @@ def incremental_daily_bootstrap_bc(
         mark_day_bootstrapped(experiment_root, state, day, day_stats=day_record)
 
     bootstrapped = sorted(state.get("bootstrapped_dates", []))
-    state["total_transitions"] = int(state.get("total_transitions", 0)) + total_transitions
-    state.setdefault("runs", []).append(
+    state["total_transitions"] = (
+        _int_state_field(state, "total_transitions") + total_transitions
+    )
+    runs = state.setdefault("runs", [])
+    if not isinstance(runs, list):
+        runs = []
+        state["runs"] = runs
+    runs.append(
         {
             "new_days": [s["date"] for s in run_day_stats],
             "day_stats": run_day_stats,

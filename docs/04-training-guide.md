@@ -712,7 +712,7 @@ class BootstrappedDQNLearner:
             challenger_policy,
             opponents_dir=opponents_dir,
             n_episodes=n_episodes,
-            win_rate_target=0.5,
+            win_rate_target=0.75,
         )
         summary = win_rate_eval_from_ladder(ladder)
         print(

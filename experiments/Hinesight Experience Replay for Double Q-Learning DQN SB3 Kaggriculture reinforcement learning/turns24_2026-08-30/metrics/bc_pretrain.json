@@ -1,0 +1,70 @@
+{
+  "epochs": 15,
+  "batch_size": 64,
+  "bc_steps_per_epoch": 200,
+  "buffer_size": 20132,
+  "buffer_capacity": 50000,
+  "bootstrap_transitions": 12942,
+  "metadata_path": "/Users/sweeden/kagg/working/kaggle_episodes/metadata.json",
+  "bootstrap_passes": 1,
+  "bc_epochs_per_pass": 1,
+  "bootstrap_mode": "daily_incremental",
+  "bootstrap_days_per_run": 1,
+  "bootstrapped_dates": [
+    "2026-08-15"
+  ],
+  "stream_stats": {
+    "epoch_losses": [
+      1.252036529481411
+    ],
+    "new_days": [
+      "2026-08-15"
+    ],
+    "bootstrapped_dates": [
+      "2026-08-15"
+    ],
+    "total_transitions_loaded": 12942,
+    "day_stats": [
+      {
+        "date": "2026-08-15",
+        "episodes": 14,
+        "transitions": 12942,
+        "buffer_seeded": 20132,
+        "bc_epoch_losses": [
+          1.252036529481411
+        ],
+        "bc_final_loss": 1.252036529481411,
+        "corpus_stats": {
+          "episode_count": 697,
+          "avg_score_mean": 3026.5300721305593,
+          "min_score_mean": 2998.797230956958,
+          "sum_score_mean": 6053.060144261119,
+          "score_margin_mean": 27.732841173601166,
+          "size_bytes_total": 21462110197,
+          "size_bytes_mean": 30792123.668579627
+        }
+      }
+    ],
+    "bootstrap_mode": "daily_incremental",
+    "bootstrap_state_path": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/metrics/bootstrap_state.json"
+  },
+  "epoch_losses": [
+    0.7734634691476822,
+    0.6726628541946411,
+    0.6122223189473153,
+    0.5646696218848228,
+    0.5259847089648246,
+    0.48147062078118325,
+    0.44910898253321646,
+    0.41755117192864416,
+    0.39225186958909036,
+    0.3700130295753479,
+    0.3538458681106567,
+    0.33337038859725,
+    0.3162553458660841,
+    0.30685941033065317,
+    0.29219756700098515
+  ],
+  "final_loss": 0.29219756700098515,
+  "cumulative_bc_loss": 6.861927227452397
+}

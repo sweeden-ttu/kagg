@@ -25,14 +25,11 @@ from kaggriculture_adapter import (
     MARKET_ACTIONS,
     encode_action as encode_kaggriculture_action,
     encode_observation as encode_kaggriculture_observation,
-    encode_tiles,
 )
-from kaggle_env_wrapper import KaggleEnvWrapper
 
 # Re-export for backward compatibility
 encode_observation = encode_kaggriculture_observation
 encode_action = encode_kaggriculture_action
-KaggleEnvWrapper._encode_tiles = staticmethod(encode_tiles)
 
 logger = logging.getLogger(__name__)
 

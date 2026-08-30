@@ -18,11 +18,13 @@ EXP = ROOT / (
 sys.path.insert(0, str(CODE_SRC))
 
 from kaggriculture_self_play_training import train_self_play  # noqa: E402
+from visualize import update_experiment_plots  # noqa: E402
 
 if __name__ == "__main__":
+    exp_dir = EXP / "bc_only_ladder"
     # total_episodes=0 → bootstrap + BC + export/eval only (no self-play overwrite)
     train_self_play(
-        experiment_dir=str(EXP / "bc_only_ladder"),
+        experiment_dir=str(exp_dir),
         code_src=str(CODE_SRC),
         use_kaggle_env=True,
         seed=42,
@@ -31,9 +33,9 @@ if __name__ == "__main__":
         learning_start_episodes=0,
         batch_size=32,
         checkpoint_interval=5,
-        turns_per_cycle=72,
+        turns_per_cycle=24,
         max_episode_steps=720,
-        n_eval_episodes=5,
+        n_eval_episodes=10,
         bootstrap_episodes=None,
         data_dir=str(ROOT / "working/kaggle_episodes"),
         metadata_path=str(ROOT / "working/kaggle_episodes/metadata.json"),
@@ -50,7 +52,12 @@ if __name__ == "__main__":
         bootstrap_days_per_run=1,
         publish_code_dataset=False,
         opponents_dir=str(ROOT / "opponents"),
-        ladder_eval_episodes=6,
-        ladder_win_rate_target=0.5,
+        ladder_eval_episodes=10,
+        ladder_win_rate_target=0.75,
         resume=None,
+    )
+    summary = update_experiment_plots(exp_dir)
+    print(
+        f"Plots updated: {len(summary.get('plots_written') or [])} → "
+        f"{summary.get('plots_dir')}"
     )

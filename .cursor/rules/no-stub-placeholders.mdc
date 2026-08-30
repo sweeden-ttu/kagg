@@ -1,0 +1,42 @@
+---
+description: Ban dummy/mock/placeholder/todo stubs unless they raise NotImplementedError
+globs: datasets/scottweeden/self-training-code/**/*.py,scripts/**/*.py
+alwaysApply: false
+---
+
+# No stub placeholders without NotImplementedError
+
+In Path B training code (`datasets/scottweeden/self-training-code/**/*.py`) and `scripts/**/*.py`, these tokens are **banned** in identifiers, comments, and strings:
+
+- `dummy`
+- `mock`
+- `placeholder`
+- `todo`
+
+## Allowed exception
+
+A match is allowed **only** when the same function / class body also raises `NotImplementedError` (an explicit unfinished stub that cannot silently succeed).
+
+```python
+# Allowed
+def export_onnx(...):
+    raise NotImplementedError("ONNX export placeholder")
+
+# Banned — silent or fake stand-in
+def _dummy_transition(...):
+    return zeros(...)
+```
+
+## Required behavior
+
+- Prefer real encoders, real env resets, and production shapes over synthetic stand-ins.
+- Do not leave `TODO` comments that mark missing behavior without a hard `raise NotImplementedError`.
+- Do not name helpers `dummy_*`, `mock_*`, or `*_placeholder` unless they raise.
+
+## Check
+
+```bash
+conda run -n kagg python scripts/check_banned_stubs.py
+```
+
+Exit code `1` = warnings present (banned tokens without `NotImplementedError`).

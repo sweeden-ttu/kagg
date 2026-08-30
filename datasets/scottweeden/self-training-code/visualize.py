@@ -117,6 +117,126 @@ def _hydrate_from_episode_metrics(data: Dict[str, Any]) -> None:
         }
 
 
+RUN_PLOT_NAMES: List[str] = [
+    "training_loss",
+    "epsilon_decay",
+    "buffer_size",
+    "eval_rewards",
+    "final_rewards",
+    "self_play_episodes",
+    "win_rate_eval",
+]
+
+
+def update_experiment_plots(
+    experiment_dir: str | Path,
+    *,
+    output_dir: Optional[str | Path] = None,
+    figure_size: Tuple[int, int] = (12, 8),
+) -> Dict[str, Any]:
+    """Reload metrics and overwrite stable ``plots/run_*.png`` trend images.
+
+    Always writes into ``<experiment_dir>/plots/`` (or ``output_dir``) using fixed
+    filenames so every pipeline run refreshes the same visualization files.
+
+    Returns a small summary dict (also written to ``metrics/run_stats_summary.json``).
+    """
+    exp = Path(experiment_dir).resolve()
+    plot_dir = Path(output_dir).resolve() if output_dir else exp / "plots"
+    metrics_dir = exp / "metrics"
+    metrics_dir.mkdir(parents=True, exist_ok=True)
+    plot_dir.mkdir(parents=True, exist_ok=True)
+
+    summary: Dict[str, Any] = {
+        "experiment_dir": str(exp),
+        "plots_dir": str(plot_dir),
+        "plots_written": [],
+        "ok": False,
+    }
+
+    if not HAS_MATPLOTLIB:
+        summary["error"] = "matplotlib not installed"
+        _write_json(metrics_dir / "run_stats_summary.json", summary)
+        logger.warning("Skipping plot update (matplotlib missing): %s", exp)
+        return summary
+
+    loader = TrainingMetricsLoader([str(exp)])
+    loader.load_all()
+    if not loader.metrics:
+        summary["error"] = "no metrics found"
+        _write_json(metrics_dir / "run_stats_summary.json", summary)
+        logger.warning("Skipping plot update (no metrics): %s", exp)
+        return summary
+
+    exp_name = next(iter(loader.metrics.keys()))
+    data = loader.metrics[exp_name]
+    summary.update(_run_stats_from_metrics(data))
+
+    visualizer = MetricsVisualizer(output_dir=plot_dir, figure_size=figure_size)
+    named_figures = [
+        ("training_loss", visualizer.plot_loss_curves(loader, [exp_name])),
+        ("epsilon_decay", visualizer.plot_epsilon_decay(loader, [exp_name])),
+        ("buffer_size", visualizer.plot_buffer_size(loader, [exp_name])),
+        ("eval_rewards", visualizer.plot_eval_rewards(loader, [exp_name])),
+        ("final_rewards", visualizer.plot_final_reward_distribution(loader, [exp_name])),
+        ("self_play_episodes", visualizer.plot_self_play_episode_metrics(loader, [exp_name])),
+        ("win_rate_eval", visualizer.plot_win_rate_eval(loader, [exp_name])),
+    ]
+    written: List[str] = []
+    for name, fig in named_figures:
+        if fig is None:
+            continue
+        path = plot_dir / f"run_{name}.png"
+        fig.savefig(path, dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        written.append(str(path))
+        logger.info("Updated plot: %s", path)
+
+    summary["plots_written"] = written
+    summary["ok"] = bool(written)
+    _write_json(metrics_dir / "run_stats_summary.json", summary)
+    logger.info(
+        "Run stats/plots updated: %d PNGs → %s",
+        len(written),
+        plot_dir,
+    )
+    return summary
+
+
+def _write_json(path: Path, payload: Dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2)
+
+
+def _run_stats_from_metrics(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Compact trend snapshot for ``run_stats_summary.json``."""
+    episodes = data.get("episode_metrics") or []
+    wr = data.get("win_rate_eval") or {}
+    ladder = data.get("ladder_eval") or {}
+    shaped = [float(e.get("shaped_reward", 0.0)) for e in episodes]
+    losses = [float(e.get("avg_loss", 0.0)) for e in episodes]
+    out: Dict[str, Any] = {
+        "n_self_play_episodes": len(episodes),
+        "last_episode": int(episodes[-1].get("episode", len(episodes))) if episodes else 0,
+    }
+    if shaped:
+        out["shaped_reward_mean"] = float(np.mean(shaped))
+        out["shaped_reward_final"] = float(shaped[-1])
+    if losses:
+        out["avg_loss_mean"] = float(np.mean(losses))
+        out["avg_loss_final"] = float(losses[-1])
+    if wr:
+        out["league_win_rate"] = wr.get("win_rate")
+        out["opponents_cleared"] = wr.get("opponents_cleared")
+        out["beats_all_opponents"] = wr.get("beats_all_opponents")
+    if ladder:
+        out["ladder_beats_all"] = ladder.get("beats_all_opponents")
+        out["ladder_opponents_cleared"] = ladder.get("opponents_cleared")
+        out["ladder_n_opponents"] = ladder.get("n_opponents")
+    return out
+
+
 # ──────────────────────────────────────────────────────────────
 #  Data Loading
 # ──────────────────────────────────────────────────────────────
@@ -151,6 +271,9 @@ class TrainingMetricsLoader:
             "buffer_size_history": [],
             "checkpoint_metrics": [],
             "eval_metrics": [],
+            "episode_metrics": [],
+            "win_rate_eval": {},
+            "ladder_eval": {},
             "final_eval": {},
             "training_timestamps": [],
         }
@@ -199,6 +322,27 @@ class TrainingMetricsLoader:
                     data["win_rate_eval"] = json.load(f)
             except Exception as e:
                 logger.warning(f"Failed to load win rate eval: {e}")
+
+        ladder_eval = exp_dir / "metrics" / "ladder_eval.json"
+        if ladder_eval.exists():
+            try:
+                with open(ladder_eval) as f:
+                    data["ladder_eval"] = json.load(f)
+            except Exception as e:
+                logger.warning(f"Failed to load ladder eval: {e}")
+
+        # Prefer episode_metrics; fall back to training_progress self_play_episodes.
+        if not data.get("episode_metrics"):
+            progress_path = exp_dir / "metrics" / "training_progress.json"
+            if progress_path.exists():
+                try:
+                    with open(progress_path) as f:
+                        progress = json.load(f)
+                    episodes = progress.get("self_play_episodes") or []
+                    if episodes:
+                        data["episode_metrics"] = episodes
+                except Exception as e:
+                    logger.warning(f"Failed to load training_progress: {e}")
 
         final_eval = exp_dir / "metrics" / "final_eval.json"
         if final_eval.exists():
@@ -368,7 +512,7 @@ class MetricsVisualizer:
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
         window_size: int = 100,
-    ) -> plt.Figure:
+    ) -> Optional[plt.Figure]:
         """Plot training loss curves.
 
         Parameters
@@ -435,7 +579,7 @@ class MetricsVisualizer:
         self,
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
-    ) -> plt.Figure:
+    ) -> Optional[plt.Figure]:
         """Plot epsilon decay schedules.
 
         Parameters
@@ -489,7 +633,7 @@ class MetricsVisualizer:
         self,
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
-    ) -> plt.Figure:
+    ) -> Optional[plt.Figure]:
         """Plot replay buffer size over time.
 
         Parameters
@@ -543,7 +687,7 @@ class MetricsVisualizer:
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
         window_size: int = 5,
-    ) -> plt.Figure:
+    ) -> Optional[plt.Figure]:
         """Plot evaluation reward metrics over time.
 
         Parameters
@@ -609,7 +753,7 @@ class MetricsVisualizer:
         self,
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
-    ) -> plt.Figure:
+    ) -> Optional[plt.Figure]:
         """Plot final evaluation reward distributions.
 
         Parameters

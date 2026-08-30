@@ -1,0 +1,562 @@
+2026-08-30 05:35:27,168 [INFO] kaggriculture_self_play_training: Experiment directory: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30
+2026-08-30 05:35:27,173 [DEBUG] kaggriculture_self_play_training: Verbose debug logging enabled
+2026-08-30 05:35:27,173 [DEBUG] kaggriculture_self_play_training: Training config: {
+  "experiment_dir": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30",
+  "seed": 42,
+  "device": "auto",
+  "total_episodes": 16,
+  "learning_start_episodes": 2,
+  "batch_size": 32,
+  "checkpoint_interval": 5,
+  "use_kaggle_env": true,
+  "kinematic_phase_a": 3,
+  "kinematic_phase_b": 4,
+  "kinematic_phase_c": 6,
+  "turns_per_cycle": 24,
+  "cycles_per_episode": 30,
+  "max_episode_steps": 720,
+  "n_eval_episodes": 10,
+  "bootstrap_episodes": null,
+  "bootstrap_transitions": null,
+  "data_dir": "/Users/sweeden/kagg/working/kaggle_episodes",
+  "download_bootstrap": false,
+  "bc_epochs": 15,
+  "bc_batch_size": 64,
+  "bc_steps_per_epoch": 200,
+  "buffer_capacity": 50000,
+  "metadata_path": "/Users/sweeden/kagg/working/kaggle_episodes/metadata.json",
+  "bootstrap_top_per_day": 20,
+  "bootstrap_passes": 1,
+  "bc_epochs_per_pass": 1,
+  "verbose": true,
+  "code_src": "/Users/sweeden/kagg/datasets/scottweeden/self-training-code",
+  "bootstrap_mode": "daily_incremental",
+  "bootstrap_days_per_run": 1,
+  "publish_code_dataset": false,
+  "opponents_dir": "/Users/sweeden/kagg/opponents",
+  "ladder_eval_episodes": 10,
+  "ladder_win_rate_target": 0.5,
+  "min_self_play_episodes": 0,
+  "timestamp": "2026-08-30T05:35:27.168788",
+  "resumed_from": null
+}
+2026-08-30 05:35:27,184 [INFO] kaggriculture_self_play_training: Self-play pipeline running on device: mps
+2026-08-30 05:35:27,246 [DEBUG] kaggriculture_self_play_training: Model init: HierarchicalDQNBranching params=1716765 (1.72M) buffer_capacity=50000
+2026-08-30 05:35:27,762 [DEBUG] kaggriculture_self_play_training: Bootstrap phase: mode=daily_incremental episodes=None passes=1 transitions=None metadata=/Users/sweeden/kagg/working/kaggle_episodes/metadata.json
+2026-08-30 05:35:27,764 [INFO] path_b_bootstrap: Incremental daily bootstrap: adding 1 day(s) ['2026-08-15'] (0/2 dates already done)
+2026-08-30 05:35:27,765 [INFO] path_b_bootstrap: Bootstrap day 2026-08-15: 14 episodes (streaming BC, top_per_day=20)
+2026-08-30 05:35:27,765 [INFO] path_b_bootstrap: Streaming BC over 14 episode files (epochs=1, batch=64, steps/epoch=200)
+2026-08-30 05:35:28,544 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 1 | loss=2.43644 | file=93247305.json
+2026-08-30 05:35:28,579 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 2 | loss=2.41058 | file=93247305.json
+2026-08-30 05:35:28,610 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 3 | loss=2.38657 | file=93247305.json
+2026-08-30 05:35:32,637 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 100 | loss=0.98630 | file=93221407.json
+2026-08-30 05:35:36,728 [DEBUG] path_b_bootstrap: BC stream epoch 1/1 step 200 | loss=1.06627 | file=93166130.json
+2026-08-30 05:35:36,729 [INFO] path_b_bootstrap: BC stream epoch 1/1 | steps=200 | avg loss: 1.25204
+2026-08-30 05:35:41,230 [INFO] path_b_bootstrap: Bootstrap state saved: 1 days bootstrapped → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/metrics/bootstrap_state.json
+2026-08-30 05:35:41,230 [INFO] path_b_bootstrap: Marked day bootstrapped: 2026-08-15 (1 days total)
+2026-08-30 05:35:41,231 [INFO] path_b_bootstrap: Bootstrap state saved: 1 days bootstrapped → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/metrics/bootstrap_state.json
+2026-08-30 05:35:41,231 [INFO] kaggriculture_self_play_training: Replay buffer size after bootstrap: 20132
+2026-08-30 05:35:41,235 [INFO] path_b_bootstrap: Starting BC pretrain: 15 epochs, batch_size=64, buffer=20132, steps/epoch=200
+2026-08-30 05:35:41,338 [DEBUG] path_b_bootstrap: BC epoch 1/15 step 1/200 | loss=0.93000 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:41,371 [DEBUG] path_b_bootstrap: BC epoch 1/15 step 2/200 | loss=0.89782 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:41,403 [DEBUG] path_b_bootstrap: BC epoch 1/15 step 3/200 | loss=0.92774 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:42,881 [DEBUG] path_b_bootstrap: BC epoch 1/15 step 51/200 | loss=0.86692 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:44,380 [DEBUG] path_b_bootstrap: BC epoch 1/15 step 101/200 | loss=0.77673 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:45,865 [DEBUG] path_b_bootstrap: BC epoch 1/15 step 151/200 | loss=0.71523 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:47,329 [DEBUG] path_b_bootstrap: BC epoch 1/15 step 200/200 | loss=0.71267 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:47,330 [INFO] path_b_bootstrap: BC epoch 1/15 | avg loss: 0.77346
+2026-08-30 05:35:47,359 [DEBUG] path_b_bootstrap: BC epoch 2/15 step 1/200 | loss=0.80320 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:47,390 [DEBUG] path_b_bootstrap: BC epoch 2/15 step 2/200 | loss=0.68729 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:47,420 [DEBUG] path_b_bootstrap: BC epoch 2/15 step 3/200 | loss=0.66699 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:48,851 [DEBUG] path_b_bootstrap: BC epoch 2/15 step 51/200 | loss=0.68870 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:50,379 [DEBUG] path_b_bootstrap: BC epoch 2/15 step 101/200 | loss=0.67153 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:51,879 [DEBUG] path_b_bootstrap: BC epoch 2/15 step 151/200 | loss=0.68021 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:53,350 [DEBUG] path_b_bootstrap: BC epoch 2/15 step 200/200 | loss=0.58879 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:53,350 [INFO] path_b_bootstrap: BC epoch 2/15 | avg loss: 0.67266
+2026-08-30 05:35:53,379 [DEBUG] path_b_bootstrap: BC epoch 3/15 step 1/200 | loss=0.58841 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:53,409 [DEBUG] path_b_bootstrap: BC epoch 3/15 step 2/200 | loss=0.64089 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:53,438 [DEBUG] path_b_bootstrap: BC epoch 3/15 step 3/200 | loss=0.65956 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:54,864 [DEBUG] path_b_bootstrap: BC epoch 3/15 step 51/200 | loss=0.66496 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:56,401 [DEBUG] path_b_bootstrap: BC epoch 3/15 step 101/200 | loss=0.57743 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:57,903 [DEBUG] path_b_bootstrap: BC epoch 3/15 step 151/200 | loss=0.57269 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:59,375 [DEBUG] path_b_bootstrap: BC epoch 3/15 step 200/200 | loss=0.55816 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:59,375 [INFO] path_b_bootstrap: BC epoch 3/15 | avg loss: 0.61222
+2026-08-30 05:35:59,405 [DEBUG] path_b_bootstrap: BC epoch 4/15 step 1/200 | loss=0.56451 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:59,435 [DEBUG] path_b_bootstrap: BC epoch 4/15 step 2/200 | loss=0.56470 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:35:59,467 [DEBUG] path_b_bootstrap: BC epoch 4/15 step 3/200 | loss=0.60822 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:00,900 [DEBUG] path_b_bootstrap: BC epoch 4/15 step 51/200 | loss=0.60597 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:02,396 [DEBUG] path_b_bootstrap: BC epoch 4/15 step 101/200 | loss=0.61663 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:03,878 [DEBUG] path_b_bootstrap: BC epoch 4/15 step 151/200 | loss=0.62777 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:05,318 [DEBUG] path_b_bootstrap: BC epoch 4/15 step 200/200 | loss=0.53546 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:05,318 [INFO] path_b_bootstrap: BC epoch 4/15 | avg loss: 0.56467
+2026-08-30 05:36:05,349 [DEBUG] path_b_bootstrap: BC epoch 5/15 step 1/200 | loss=0.50440 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:05,379 [DEBUG] path_b_bootstrap: BC epoch 5/15 step 2/200 | loss=0.53270 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:05,409 [DEBUG] path_b_bootstrap: BC epoch 5/15 step 3/200 | loss=0.60640 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:06,869 [DEBUG] path_b_bootstrap: BC epoch 5/15 step 51/200 | loss=0.56061 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:08,365 [DEBUG] path_b_bootstrap: BC epoch 5/15 step 101/200 | loss=0.50386 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:09,894 [DEBUG] path_b_bootstrap: BC epoch 5/15 step 151/200 | loss=0.47660 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:11,340 [DEBUG] path_b_bootstrap: BC epoch 5/15 step 200/200 | loss=0.48488 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:11,340 [INFO] path_b_bootstrap: BC epoch 5/15 | avg loss: 0.52598
+2026-08-30 05:36:11,369 [DEBUG] path_b_bootstrap: BC epoch 6/15 step 1/200 | loss=0.45977 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:11,399 [DEBUG] path_b_bootstrap: BC epoch 6/15 step 2/200 | loss=0.47228 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:11,428 [DEBUG] path_b_bootstrap: BC epoch 6/15 step 3/200 | loss=0.57499 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:12,838 [DEBUG] path_b_bootstrap: BC epoch 6/15 step 51/200 | loss=0.51959 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:14,326 [DEBUG] path_b_bootstrap: BC epoch 6/15 step 101/200 | loss=0.45006 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:15,878 [DEBUG] path_b_bootstrap: BC epoch 6/15 step 151/200 | loss=0.46536 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:17,332 [DEBUG] path_b_bootstrap: BC epoch 6/15 step 200/200 | loss=0.43474 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:17,332 [INFO] path_b_bootstrap: BC epoch 6/15 | avg loss: 0.48147
+2026-08-30 05:36:17,363 [DEBUG] path_b_bootstrap: BC epoch 7/15 step 1/200 | loss=0.42624 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:17,395 [DEBUG] path_b_bootstrap: BC epoch 7/15 step 2/200 | loss=0.41597 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:17,424 [DEBUG] path_b_bootstrap: BC epoch 7/15 step 3/200 | loss=0.45092 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:18,841 [DEBUG] path_b_bootstrap: BC epoch 7/15 step 51/200 | loss=0.53594 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:20,368 [DEBUG] path_b_bootstrap: BC epoch 7/15 step 101/200 | loss=0.44428 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:21,851 [DEBUG] path_b_bootstrap: BC epoch 7/15 step 151/200 | loss=0.48776 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:23,296 [DEBUG] path_b_bootstrap: BC epoch 7/15 step 200/200 | loss=0.55737 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:23,296 [INFO] path_b_bootstrap: BC epoch 7/15 | avg loss: 0.44911
+2026-08-30 05:36:23,326 [DEBUG] path_b_bootstrap: BC epoch 8/15 step 1/200 | loss=0.42394 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:23,357 [DEBUG] path_b_bootstrap: BC epoch 8/15 step 2/200 | loss=0.40260 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:23,388 [DEBUG] path_b_bootstrap: BC epoch 8/15 step 3/200 | loss=0.49212 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:24,793 [DEBUG] path_b_bootstrap: BC epoch 8/15 step 51/200 | loss=0.43035 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:26,262 [DEBUG] path_b_bootstrap: BC epoch 8/15 step 101/200 | loss=0.40639 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:27,768 [DEBUG] path_b_bootstrap: BC epoch 8/15 step 151/200 | loss=0.44858 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:29,203 [DEBUG] path_b_bootstrap: BC epoch 8/15 step 200/200 | loss=0.38753 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:29,204 [INFO] path_b_bootstrap: BC epoch 8/15 | avg loss: 0.41755
+2026-08-30 05:36:29,234 [DEBUG] path_b_bootstrap: BC epoch 9/15 step 1/200 | loss=0.38861 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:29,264 [DEBUG] path_b_bootstrap: BC epoch 9/15 step 2/200 | loss=0.39167 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:29,293 [DEBUG] path_b_bootstrap: BC epoch 9/15 step 3/200 | loss=0.39304 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:30,698 [DEBUG] path_b_bootstrap: BC epoch 9/15 step 51/200 | loss=0.37434 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:32,177 [DEBUG] path_b_bootstrap: BC epoch 9/15 step 101/200 | loss=0.39635 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:33,663 [DEBUG] path_b_bootstrap: BC epoch 9/15 step 151/200 | loss=0.40660 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:35,109 [DEBUG] path_b_bootstrap: BC epoch 9/15 step 200/200 | loss=0.36729 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:35,109 [INFO] path_b_bootstrap: BC epoch 9/15 | avg loss: 0.39225
+2026-08-30 05:36:35,140 [DEBUG] path_b_bootstrap: BC epoch 10/15 step 1/200 | loss=0.39568 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:35,169 [DEBUG] path_b_bootstrap: BC epoch 10/15 step 2/200 | loss=0.36207 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:35,199 [DEBUG] path_b_bootstrap: BC epoch 10/15 step 3/200 | loss=0.32430 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:36,603 [DEBUG] path_b_bootstrap: BC epoch 10/15 step 51/200 | loss=0.43167 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:38,071 [DEBUG] path_b_bootstrap: BC epoch 10/15 step 101/200 | loss=0.37759 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:39,550 [DEBUG] path_b_bootstrap: BC epoch 10/15 step 151/200 | loss=0.38780 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:40,987 [DEBUG] path_b_bootstrap: BC epoch 10/15 step 200/200 | loss=0.38814 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:40,987 [INFO] path_b_bootstrap: BC epoch 10/15 | avg loss: 0.37001
+2026-08-30 05:36:41,016 [DEBUG] path_b_bootstrap: BC epoch 11/15 step 1/200 | loss=0.38320 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:41,045 [DEBUG] path_b_bootstrap: BC epoch 11/15 step 2/200 | loss=0.36969 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:41,075 [DEBUG] path_b_bootstrap: BC epoch 11/15 step 3/200 | loss=0.37397 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:42,519 [DEBUG] path_b_bootstrap: BC epoch 11/15 step 51/200 | loss=0.34407 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:43,982 [DEBUG] path_b_bootstrap: BC epoch 11/15 step 101/200 | loss=0.33998 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:45,447 [DEBUG] path_b_bootstrap: BC epoch 11/15 step 151/200 | loss=0.34755 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:46,873 [DEBUG] path_b_bootstrap: BC epoch 11/15 step 200/200 | loss=0.29952 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:46,873 [INFO] path_b_bootstrap: BC epoch 11/15 | avg loss: 0.35385
+2026-08-30 05:36:46,903 [DEBUG] path_b_bootstrap: BC epoch 12/15 step 1/200 | loss=0.33992 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:46,932 [DEBUG] path_b_bootstrap: BC epoch 12/15 step 2/200 | loss=0.43501 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:46,961 [DEBUG] path_b_bootstrap: BC epoch 12/15 step 3/200 | loss=0.35052 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:48,400 [DEBUG] path_b_bootstrap: BC epoch 12/15 step 51/200 | loss=0.29365 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:49,871 [DEBUG] path_b_bootstrap: BC epoch 12/15 step 101/200 | loss=0.32314 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:51,331 [DEBUG] path_b_bootstrap: BC epoch 12/15 step 151/200 | loss=0.30685 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:52,752 [DEBUG] path_b_bootstrap: BC epoch 12/15 step 200/200 | loss=0.27100 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:52,752 [INFO] path_b_bootstrap: BC epoch 12/15 | avg loss: 0.33337
+2026-08-30 05:36:52,780 [DEBUG] path_b_bootstrap: BC epoch 13/15 step 1/200 | loss=0.32825 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:52,811 [DEBUG] path_b_bootstrap: BC epoch 13/15 step 2/200 | loss=0.29778 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:52,839 [DEBUG] path_b_bootstrap: BC epoch 13/15 step 3/200 | loss=0.31682 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:54,253 [DEBUG] path_b_bootstrap: BC epoch 13/15 step 51/200 | loss=0.27753 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:55,728 [DEBUG] path_b_bootstrap: BC epoch 13/15 step 101/200 | loss=0.33699 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:57,255 [DEBUG] path_b_bootstrap: BC epoch 13/15 step 151/200 | loss=0.32338 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:58,694 [DEBUG] path_b_bootstrap: BC epoch 13/15 step 200/200 | loss=0.29479 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:58,694 [INFO] path_b_bootstrap: BC epoch 13/15 | avg loss: 0.31626
+2026-08-30 05:36:58,724 [DEBUG] path_b_bootstrap: BC epoch 14/15 step 1/200 | loss=0.31314 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:58,753 [DEBUG] path_b_bootstrap: BC epoch 14/15 step 2/200 | loss=0.29913 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:36:58,783 [DEBUG] path_b_bootstrap: BC epoch 14/15 step 3/200 | loss=0.32624 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:00,166 [DEBUG] path_b_bootstrap: BC epoch 14/15 step 51/200 | loss=0.28302 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:01,635 [DEBUG] path_b_bootstrap: BC epoch 14/15 step 101/200 | loss=0.28350 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:03,090 [DEBUG] path_b_bootstrap: BC epoch 14/15 step 151/200 | loss=0.30239 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:04,508 [DEBUG] path_b_bootstrap: BC epoch 14/15 step 200/200 | loss=0.28779 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:04,508 [INFO] path_b_bootstrap: BC epoch 14/15 | avg loss: 0.30686
+2026-08-30 05:37:04,538 [DEBUG] path_b_bootstrap: BC epoch 15/15 step 1/200 | loss=0.34096 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:04,569 [DEBUG] path_b_bootstrap: BC epoch 15/15 step 2/200 | loss=0.30920 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:04,599 [DEBUG] path_b_bootstrap: BC epoch 15/15 step 3/200 | loss=0.25891 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:05,996 [DEBUG] path_b_bootstrap: BC epoch 15/15 step 51/200 | loss=0.30969 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:07,447 [DEBUG] path_b_bootstrap: BC epoch 15/15 step 101/200 | loss=0.34148 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:08,930 [DEBUG] path_b_bootstrap: BC epoch 15/15 step 151/200 | loss=0.29337 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:10,406 [DEBUG] path_b_bootstrap: BC epoch 15/15 step 200/200 | loss=0.28000 | batch shapes={'tiles': (64, 9, 10, 10), 'numeric': (64, 55), 'action_verb': (64,), 'action_crop': (64,), 'action_hands': (64, 6), 'action_market': (64, 10), 'reward': (64,), 'next_tiles': (64, 9, 10, 10), 'next_numeric': (64, 55), 'done': (64,), 'weights': (64,)}
+2026-08-30 05:37:10,406 [INFO] path_b_bootstrap: BC epoch 15/15 | avg loss: 0.29220
+2026-08-30 05:37:10,409 [INFO] kaggriculture_self_play_training: BC pretrain metrics saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/metrics/bc_pretrain.json
+2026-08-30 05:37:12,011 [INFO] kaggriculture_self_play_training: BC completed (15 epoch losses); self-play eps_start=0.25 (was 1.0 without BC)
+2026-08-30 05:37:13,185 [DEBUG] kaggriculture_self_play_training: Self-play env: KaggleCompetitiveEnv max_steps=720 turns_per_cycle=24 use_kaggle=True
+2026-08-30 05:37:13,185 [INFO] kaggriculture_self_play_training: --- BEGINNING KAGGRICULTURE SELF-PLAY PIPELINE (episodes 1 → 16) ---
+2026-08-30 05:37:13,243 [DEBUG] kaggriculture_self_play_training: === Episode 1/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_0.pt | eps=0.250 | buffer=20132 ===
+2026-08-30 05:37:13,253 [DEBUG] kaggriculture_self_play_training: Ep 1 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:37:13,330 [DEBUG] kaggriculture_self_play_training: Ep 1 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=20133 learn=False
+2026-08-30 05:37:13,343 [DEBUG] kaggriculture_self_play_training: Ep 1 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.200 done=False buffer=20134 learn=False
+2026-08-30 05:37:13,356 [DEBUG] kaggriculture_self_play_training: Ep 1 step 2: verb=7 crop=0 raw_r=-12.310 shaped_r=-11.910 done=False buffer=20135 learn=False
+2026-08-30 05:37:15,426 [DEBUG] kaggriculture_self_play_training: Ep 1 step 100: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=20233 learn=False
+2026-08-30 05:37:17,631 [DEBUG] kaggriculture_self_play_training: Ep 1 step 200: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=20333 learn=False
+2026-08-30 05:37:19,764 [DEBUG] kaggriculture_self_play_training: Ep 1 step 300: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=20433 learn=False
+2026-08-30 05:37:21,928 [DEBUG] kaggriculture_self_play_training: Ep 1 step 400: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=20533 learn=False
+2026-08-30 05:37:24,105 [DEBUG] kaggriculture_self_play_training: Ep 1 step 500: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=20633 learn=False
+2026-08-30 05:37:26,246 [DEBUG] kaggriculture_self_play_training: Ep 1 step 600: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=20733 learn=False
+2026-08-30 05:37:28,280 [DEBUG] kaggriculture_self_play_training: Ep 1 step 700: verb=6 crop=0 raw_r=0.000 shaped_r=0.018 done=False buffer=20833 learn=False
+2026-08-30 05:37:28,654 [INFO] kaggriculture_self_play_training: Episode 01/16 | Epsilon: 0.250 | Buffer Size: 20851 | Raw Reward: -29.91 | Shaped Reward: -62.16 | Avg Loss: 0.00000
+2026-08-30 05:37:30,206 [DEBUG] kaggriculture_self_play_training: === Episode 2/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_0.pt | eps=0.250 | buffer=20851 ===
+2026-08-30 05:37:30,220 [DEBUG] kaggriculture_self_play_training: Ep 2 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:37:30,256 [DEBUG] kaggriculture_self_play_training: Ep 2 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=20852 learn=False
+2026-08-30 05:37:30,280 [DEBUG] kaggriculture_self_play_training: Ep 2 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.200 done=False buffer=20853 learn=False
+2026-08-30 05:37:30,305 [DEBUG] kaggriculture_self_play_training: Ep 2 step 2: verb=0 crop=0 raw_r=0.000 shaped_r=0.400 done=False buffer=20854 learn=False
+2026-08-30 05:37:32,512 [DEBUG] kaggriculture_self_play_training: Ep 2 step 100: verb=0 crop=0 raw_r=0.000 shaped_r=0.132 done=False buffer=20952 learn=False
+2026-08-30 05:37:34,707 [DEBUG] kaggriculture_self_play_training: Ep 2 step 200: verb=0 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=21052 learn=False
+2026-08-30 05:37:36,869 [DEBUG] kaggriculture_self_play_training: Ep 2 step 300: verb=0 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=21152 learn=False
+2026-08-30 05:37:39,067 [DEBUG] kaggriculture_self_play_training: Ep 2 step 400: verb=0 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=21252 learn=False
+2026-08-30 05:37:41,177 [DEBUG] kaggriculture_self_play_training: Ep 2 step 500: verb=0 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=21352 learn=False
+2026-08-30 05:37:43,212 [DEBUG] kaggriculture_self_play_training: Ep 2 step 600: verb=0 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=21452 learn=False
+2026-08-30 05:37:45,341 [DEBUG] kaggriculture_self_play_training: Ep 2 step 700: verb=0 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=21552 learn=False
+2026-08-30 05:37:45,713 [INFO] kaggriculture_self_play_training: Episode 02/16 | Epsilon: 0.250 | Buffer Size: 21570 | Raw Reward: -29.94 | Shaped Reward: 9.79 | Avg Loss: 0.00000
+2026-08-30 05:37:47,203 [DEBUG] kaggriculture_self_play_training: === Episode 3/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_0.pt | eps=0.236 | buffer=21570 ===
+2026-08-30 05:37:47,217 [DEBUG] kaggriculture_self_play_training: Ep 3 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:37:47,252 [DEBUG] kaggriculture_self_play_training: Ep 3 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=21571 learn=True
+2026-08-30 05:37:47,542 [DEBUG] kaggriculture_self_play_training: Ep 3 step 1 DQN update: loss=321.79401 batch=32 priorities_updated=32
+2026-08-30 05:37:47,543 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=321.79401 td_max=548.89783)
+2026-08-30 05:37:47,570 [DEBUG] kaggriculture_self_play_training: Ep 3 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.200 done=False buffer=21572 learn=True
+2026-08-30 05:37:47,616 [DEBUG] kaggriculture_self_play_training: Ep 3 step 2 DQN update: loss=310.19043 batch=32 priorities_updated=32
+2026-08-30 05:37:47,628 [DEBUG] kaggriculture_self_play_training: Ep 3 step 2: verb=5 crop=0 raw_r=0.000 shaped_r=0.400 done=False buffer=21573 learn=True
+2026-08-30 05:37:47,672 [DEBUG] kaggriculture_self_play_training: Ep 3 step 3 DQN update: loss=258.78204 batch=32 priorities_updated=32
+2026-08-30 05:37:53,829 [DEBUG] kaggriculture_self_play_training: Ep 3 step 100 DQN update: loss=10.02689 batch=32 priorities_updated=32
+2026-08-30 05:37:53,842 [DEBUG] kaggriculture_self_play_training: Ep 3 step 100: verb=6 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=21671 learn=True
+2026-08-30 05:38:00,266 [DEBUG] kaggriculture_self_play_training: Ep 3 step 200 DQN update: loss=3.53235 batch=32 priorities_updated=32
+2026-08-30 05:38:00,290 [DEBUG] kaggriculture_self_play_training: Ep 3 step 200: verb=3 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=21771 learn=True
+2026-08-30 05:38:06,506 [DEBUG] kaggriculture_self_play_training: Ep 3 step 300 DQN update: loss=4.38682 batch=32 priorities_updated=32
+2026-08-30 05:38:06,519 [DEBUG] kaggriculture_self_play_training: Ep 3 step 300: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=21871 learn=True
+2026-08-30 05:38:12,717 [DEBUG] kaggriculture_self_play_training: Ep 3 step 400 DQN update: loss=3.94866 batch=32 priorities_updated=32
+2026-08-30 05:38:12,741 [DEBUG] kaggriculture_self_play_training: Ep 3 step 400: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=21971 learn=True
+2026-08-30 05:38:18,934 [DEBUG] kaggriculture_self_play_training: Ep 3 step 500 DQN update: loss=5.57922 batch=32 priorities_updated=32
+2026-08-30 05:38:18,945 [DEBUG] kaggriculture_self_play_training: Ep 3 step 500: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=22071 learn=True
+2026-08-30 05:38:25,210 [DEBUG] kaggriculture_self_play_training: Ep 3 step 600 DQN update: loss=3.75931 batch=32 priorities_updated=32
+2026-08-30 05:38:25,224 [DEBUG] kaggriculture_self_play_training: Ep 3 step 600: verb=5 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=22171 learn=True
+2026-08-30 05:38:31,454 [DEBUG] kaggriculture_self_play_training: Ep 3 step 700 DQN update: loss=2.67490 batch=32 priorities_updated=32
+2026-08-30 05:38:31,468 [DEBUG] kaggriculture_self_play_training: Ep 3 step 700: verb=8 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=22271 learn=True
+2026-08-30 05:38:32,662 [INFO] kaggriculture_self_play_training: Episode 03/16 | Epsilon: 0.236 | Buffer Size: 22289 | Raw Reward: -29.94 | Shaped Reward: -73.53 | Avg Loss: 11.12574
+2026-08-30 05:38:34,472 [DEBUG] kaggriculture_self_play_training: === Episode 4/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_0.pt | eps=0.221 | buffer=22289 ===
+2026-08-30 05:38:34,487 [DEBUG] kaggriculture_self_play_training: Ep 4 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:38:34,508 [DEBUG] kaggriculture_self_play_training: Ep 4 step 0: verb=5 crop=0 raw_r=-0.100 shaped_r=-0.100 done=False buffer=22290 learn=True
+2026-08-30 05:38:34,564 [DEBUG] kaggriculture_self_play_training: Ep 4 step 1 DQN update: loss=5.77179 batch=32 priorities_updated=32
+2026-08-30 05:38:34,565 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=11.25612 td_max=140.86162)
+2026-08-30 05:38:34,587 [DEBUG] kaggriculture_self_play_training: Ep 4 step 1: verb=6 crop=0 raw_r=0.000 shaped_r=0.180 done=False buffer=22291 learn=True
+2026-08-30 05:38:34,630 [DEBUG] kaggriculture_self_play_training: Ep 4 step 2 DQN update: loss=5.98779 batch=32 priorities_updated=32
+2026-08-30 05:38:34,652 [DEBUG] kaggriculture_self_play_training: Ep 4 step 2: verb=3 crop=0 raw_r=-4.900 shaped_r=-4.520 done=False buffer=22292 learn=True
+2026-08-30 05:38:34,694 [DEBUG] kaggriculture_self_play_training: Ep 4 step 3 DQN update: loss=4.12311 batch=32 priorities_updated=32
+2026-08-30 05:38:40,760 [DEBUG] kaggriculture_self_play_training: Ep 4 step 100 DQN update: loss=3.77013 batch=32 priorities_updated=32
+2026-08-30 05:38:40,785 [DEBUG] kaggriculture_self_play_training: Ep 4 step 100: verb=0 crop=0 raw_r=0.000 shaped_r=0.014 done=False buffer=22390 learn=True
+2026-08-30 05:38:47,013 [DEBUG] kaggriculture_self_play_training: Ep 4 step 200 DQN update: loss=5.21351 batch=32 priorities_updated=32
+2026-08-30 05:38:47,026 [DEBUG] kaggriculture_self_play_training: Ep 4 step 200: verb=0 crop=0 raw_r=0.000 shaped_r=0.014 done=False buffer=22490 learn=True
+2026-08-30 05:38:53,446 [DEBUG] kaggriculture_self_play_training: Ep 4 step 300 DQN update: loss=2.82384 batch=32 priorities_updated=32
+2026-08-30 05:38:53,470 [DEBUG] kaggriculture_self_play_training: Ep 4 step 300: verb=0 crop=0 raw_r=0.000 shaped_r=0.026 done=False buffer=22590 learn=True
+2026-08-30 05:38:59,778 [DEBUG] kaggriculture_self_play_training: Ep 4 step 400 DQN update: loss=2.98292 batch=32 priorities_updated=32
+2026-08-30 05:38:59,801 [DEBUG] kaggriculture_self_play_training: Ep 4 step 400: verb=0 crop=0 raw_r=0.000 shaped_r=0.006 done=False buffer=22690 learn=True
+2026-08-30 05:39:06,040 [DEBUG] kaggriculture_self_play_training: Ep 4 step 500 DQN update: loss=4.48848 batch=32 priorities_updated=32
+2026-08-30 05:39:06,061 [DEBUG] kaggriculture_self_play_training: Ep 4 step 500: verb=0 crop=0 raw_r=0.000 shaped_r=0.006 done=False buffer=22790 learn=True
+2026-08-30 05:39:12,331 [DEBUG] kaggriculture_self_play_training: Ep 4 step 600 DQN update: loss=7.68271 batch=32 priorities_updated=32
+2026-08-30 05:39:12,355 [DEBUG] kaggriculture_self_play_training: Ep 4 step 600: verb=1 crop=0 raw_r=0.000 shaped_r=0.006 done=False buffer=22890 learn=True
+2026-08-30 05:39:18,608 [DEBUG] kaggriculture_self_play_training: Ep 4 step 700 DQN update: loss=7.51004 batch=32 priorities_updated=32
+2026-08-30 05:39:18,631 [DEBUG] kaggriculture_self_play_training: Ep 4 step 700: verb=0 crop=0 raw_r=0.000 shaped_r=0.006 done=False buffer=22990 learn=True
+2026-08-30 05:39:19,830 [INFO] kaggriculture_self_play_training: Episode 04/16 | Epsilon: 0.221 | Buffer Size: 23008 | Raw Reward: -29.97 | Shaped Reward: -231.22 | Avg Loss: 5.04186
+2026-08-30 05:39:21,731 [DEBUG] kaggriculture_self_play_training: === Episode 5/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_0.pt | eps=0.207 | buffer=23008 ===
+2026-08-30 05:39:21,746 [DEBUG] kaggriculture_self_play_training: Ep 5 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:39:21,783 [DEBUG] kaggriculture_self_play_training: Ep 5 step 0: verb=5 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=23009 learn=True
+2026-08-30 05:39:21,837 [DEBUG] kaggriculture_self_play_training: Ep 5 step 1 DQN update: loss=5.08611 batch=32 priorities_updated=32
+2026-08-30 05:39:21,838 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=10.83001 td_max=153.72156)
+2026-08-30 05:39:21,850 [DEBUG] kaggriculture_self_play_training: Ep 5 step 1: verb=5 crop=0 raw_r=-0.210 shaped_r=-0.010 done=False buffer=23010 learn=True
+2026-08-30 05:39:21,893 [DEBUG] kaggriculture_self_play_training: Ep 5 step 2 DQN update: loss=6.26656 batch=32 priorities_updated=32
+2026-08-30 05:39:21,918 [DEBUG] kaggriculture_self_play_training: Ep 5 step 2: verb=6 crop=0 raw_r=0.000 shaped_r=0.358 done=False buffer=23011 learn=True
+2026-08-30 05:39:21,959 [DEBUG] kaggriculture_self_play_training: Ep 5 step 3 DQN update: loss=4.17809 batch=32 priorities_updated=32
+2026-08-30 05:39:28,028 [DEBUG] kaggriculture_self_play_training: Ep 5 step 100 DQN update: loss=5.35928 batch=32 priorities_updated=32
+2026-08-30 05:39:28,049 [DEBUG] kaggriculture_self_play_training: Ep 5 step 100: verb=4 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=23109 learn=True
+2026-08-30 05:39:34,316 [DEBUG] kaggriculture_self_play_training: Ep 5 step 200 DQN update: loss=3.50073 batch=32 priorities_updated=32
+2026-08-30 05:39:34,341 [DEBUG] kaggriculture_self_play_training: Ep 5 step 200: verb=3 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=23209 learn=True
+2026-08-30 05:39:40,658 [DEBUG] kaggriculture_self_play_training: Ep 5 step 300 DQN update: loss=6.04278 batch=32 priorities_updated=32
+2026-08-30 05:39:40,679 [DEBUG] kaggriculture_self_play_training: Ep 5 step 300: verb=0 crop=0 raw_r=0.000 shaped_r=0.004 done=False buffer=23309 learn=True
+2026-08-30 05:39:46,817 [DEBUG] kaggriculture_self_play_training: Ep 5 step 400 DQN update: loss=6.17581 batch=32 priorities_updated=32
+2026-08-30 05:39:46,840 [DEBUG] kaggriculture_self_play_training: Ep 5 step 400: verb=8 crop=0 raw_r=0.000 shaped_r=0.004 done=False buffer=23409 learn=True
+2026-08-30 05:39:53,205 [DEBUG] kaggriculture_self_play_training: Ep 5 step 500 DQN update: loss=14.02609 batch=32 priorities_updated=32
+2026-08-30 05:39:53,227 [DEBUG] kaggriculture_self_play_training: Ep 5 step 500: verb=5 crop=0 raw_r=0.000 shaped_r=0.100 done=False buffer=23509 learn=True
+2026-08-30 05:39:59,820 [DEBUG] kaggriculture_self_play_training: Ep 5 step 600 DQN update: loss=3.69840 batch=32 priorities_updated=32
+2026-08-30 05:39:59,834 [DEBUG] kaggriculture_self_play_training: Ep 5 step 600: verb=3 crop=0 raw_r=0.000 shaped_r=0.006 done=False buffer=23609 learn=True
+2026-08-30 05:40:07,743 [DEBUG] kaggriculture_self_play_training: Ep 5 step 700 DQN update: loss=5.58964 batch=32 priorities_updated=32
+2026-08-30 05:40:07,759 [DEBUG] kaggriculture_self_play_training: Ep 5 step 700: verb=0 crop=0 raw_r=0.000 shaped_r=0.006 done=False buffer=23709 learn=True
+2026-08-30 05:40:09,252 [INFO] kaggriculture_self_play_training: Episode 05/16 | Epsilon: 0.207 | Buffer Size: 23727 | Raw Reward: -29.97 | Shaped Reward: -10.89 | Avg Loss: 5.75119
+2026-08-30 05:40:11,058 [DEBUG] kaggriculture_self_play_training: === Episode 6/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_5.pt | eps=0.193 | buffer=23727 ===
+2026-08-30 05:40:11,073 [DEBUG] kaggriculture_self_play_training: Ep 6 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:40:11,110 [DEBUG] kaggriculture_self_play_training: Ep 6 step 0: verb=5 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=23728 learn=True
+2026-08-30 05:40:11,167 [DEBUG] kaggriculture_self_play_training: Ep 6 step 1 DQN update: loss=5.46917 batch=32 priorities_updated=32
+2026-08-30 05:40:11,167 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=18.95817 td_max=176.37939)
+2026-08-30 05:40:11,189 [DEBUG] kaggriculture_self_play_training: Ep 6 step 1: verb=7 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=23729 learn=True
+2026-08-30 05:40:11,232 [DEBUG] kaggriculture_self_play_training: Ep 6 step 2 DQN update: loss=5.83779 batch=32 priorities_updated=32
+2026-08-30 05:40:11,254 [DEBUG] kaggriculture_self_play_training: Ep 6 step 2: verb=7 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=23730 learn=True
+2026-08-30 05:40:11,296 [DEBUG] kaggriculture_self_play_training: Ep 6 step 3 DQN update: loss=4.75007 batch=32 priorities_updated=32
+2026-08-30 05:40:17,457 [DEBUG] kaggriculture_self_play_training: Ep 6 step 100 DQN update: loss=9.59521 batch=32 priorities_updated=32
+2026-08-30 05:40:17,479 [DEBUG] kaggriculture_self_play_training: Ep 6 step 100: verb=4 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=23828 learn=True
+2026-08-30 05:40:23,622 [DEBUG] kaggriculture_self_play_training: Ep 6 step 200 DQN update: loss=5.20991 batch=32 priorities_updated=32
+2026-08-30 05:40:23,644 [DEBUG] kaggriculture_self_play_training: Ep 6 step 200: verb=0 crop=0 raw_r=0.000 shaped_r=-5.990 done=False buffer=23928 learn=True
+2026-08-30 05:40:29,804 [DEBUG] kaggriculture_self_play_training: Ep 6 step 300 DQN update: loss=6.86266 batch=32 priorities_updated=32
+2026-08-30 05:40:29,817 [DEBUG] kaggriculture_self_play_training: Ep 6 step 300: verb=0 crop=0 raw_r=0.000 shaped_r=-5.990 done=False buffer=24028 learn=True
+2026-08-30 05:40:35,843 [DEBUG] kaggriculture_self_play_training: Ep 6 step 400 DQN update: loss=7.85722 batch=32 priorities_updated=32
+2026-08-30 05:40:35,867 [DEBUG] kaggriculture_self_play_training: Ep 6 step 400: verb=6 crop=0 raw_r=0.000 shaped_r=-5.998 done=False buffer=24128 learn=True
+2026-08-30 05:40:42,022 [DEBUG] kaggriculture_self_play_training: Ep 6 step 500 DQN update: loss=16.93875 batch=32 priorities_updated=32
+2026-08-30 05:40:42,045 [DEBUG] kaggriculture_self_play_training: Ep 6 step 500: verb=0 crop=0 raw_r=0.000 shaped_r=-5.998 done=False buffer=24228 learn=True
+2026-08-30 05:40:48,266 [DEBUG] kaggriculture_self_play_training: Ep 6 step 600 DQN update: loss=6.89491 batch=32 priorities_updated=32
+2026-08-30 05:40:48,279 [DEBUG] kaggriculture_self_play_training: Ep 6 step 600: verb=3 crop=0 raw_r=0.000 shaped_r=-5.986 done=False buffer=24328 learn=True
+2026-08-30 05:40:54,571 [DEBUG] kaggriculture_self_play_training: Ep 6 step 700 DQN update: loss=9.42289 batch=32 priorities_updated=32
+2026-08-30 05:40:54,594 [DEBUG] kaggriculture_self_play_training: Ep 6 step 700: verb=0 crop=0 raw_r=0.000 shaped_r=-5.986 done=False buffer=24428 learn=True
+2026-08-30 05:40:55,729 [INFO] kaggriculture_self_play_training: Episode 06/16 | Epsilon: 0.193 | Buffer Size: 24446 | Raw Reward: -29.93 | Shaped Reward: -4114.64 | Avg Loss: 6.89751
+2026-08-30 05:40:57,513 [DEBUG] kaggriculture_self_play_training: === Episode 7/16 | opponent=online-self | eps=0.179 | buffer=24446 ===
+2026-08-30 05:40:57,529 [DEBUG] kaggriculture_self_play_training: Ep 7 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:40:57,558 [DEBUG] kaggriculture_self_play_training: Ep 7 step 0: verb=7 crop=0 raw_r=-0.240 shaped_r=-0.240 done=False buffer=24447 learn=True
+2026-08-30 05:40:57,615 [DEBUG] kaggriculture_self_play_training: Ep 7 step 1 DQN update: loss=4.86135 batch=32 priorities_updated=32
+2026-08-30 05:40:57,616 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=9.96077 td_max=69.35159)
+2026-08-30 05:40:57,639 [DEBUG] kaggriculture_self_play_training: Ep 7 step 1: verb=8 crop=0 raw_r=0.000 shaped_r=-0.048 done=False buffer=24448 learn=True
+2026-08-30 05:40:57,682 [DEBUG] kaggriculture_self_play_training: Ep 7 step 2 DQN update: loss=4.89935 batch=32 priorities_updated=32
+2026-08-30 05:40:57,695 [DEBUG] kaggriculture_self_play_training: Ep 7 step 2: verb=7 crop=0 raw_r=-0.400 shaped_r=-0.448 done=False buffer=24449 learn=True
+2026-08-30 05:40:57,735 [DEBUG] kaggriculture_self_play_training: Ep 7 step 3 DQN update: loss=7.05955 batch=32 priorities_updated=32
+2026-08-30 05:41:03,710 [DEBUG] kaggriculture_self_play_training: Ep 7 step 100 DQN update: loss=6.16896 batch=32 priorities_updated=32
+2026-08-30 05:41:03,732 [DEBUG] kaggriculture_self_play_training: Ep 7 step 100: verb=8 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=24547 learn=True
+2026-08-30 05:41:09,798 [DEBUG] kaggriculture_self_play_training: Ep 7 step 200 DQN update: loss=10.48000 batch=32 priorities_updated=32
+2026-08-30 05:41:09,821 [DEBUG] kaggriculture_self_play_training: Ep 7 step 200: verb=0 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=24647 learn=True
+2026-08-30 05:41:15,856 [DEBUG] kaggriculture_self_play_training: Ep 7 step 300 DQN update: loss=6.93925 batch=32 priorities_updated=32
+2026-08-30 05:41:15,877 [DEBUG] kaggriculture_self_play_training: Ep 7 step 300: verb=0 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=24747 learn=True
+2026-08-30 05:41:21,920 [DEBUG] kaggriculture_self_play_training: Ep 7 step 400 DQN update: loss=7.21662 batch=32 priorities_updated=32
+2026-08-30 05:41:21,943 [DEBUG] kaggriculture_self_play_training: Ep 7 step 400: verb=0 crop=0 raw_r=0.000 shaped_r=-5.998 done=False buffer=24847 learn=True
+2026-08-30 05:41:28,126 [DEBUG] kaggriculture_self_play_training: Ep 7 step 500 DQN update: loss=7.67176 batch=32 priorities_updated=32
+2026-08-30 05:41:28,150 [DEBUG] kaggriculture_self_play_training: Ep 7 step 500: verb=0 crop=0 raw_r=0.000 shaped_r=-5.982 done=False buffer=24947 learn=True
+2026-08-30 05:41:34,352 [DEBUG] kaggriculture_self_play_training: Ep 7 step 600 DQN update: loss=2.93430 batch=32 priorities_updated=32
+2026-08-30 05:41:34,375 [DEBUG] kaggriculture_self_play_training: Ep 7 step 600: verb=3 crop=0 raw_r=0.000 shaped_r=-5.982 done=False buffer=25047 learn=True
+2026-08-30 05:41:40,512 [DEBUG] kaggriculture_self_play_training: Ep 7 step 700 DQN update: loss=8.26557 batch=32 priorities_updated=32
+2026-08-30 05:41:40,535 [DEBUG] kaggriculture_self_play_training: Ep 7 step 700: verb=0 crop=0 raw_r=0.000 shaped_r=-5.982 done=False buffer=25147 learn=True
+2026-08-30 05:41:41,680 [INFO] kaggriculture_self_play_training: Episode 07/16 | Epsilon: 0.179 | Buffer Size: 25165 | Raw Reward: -29.91 | Shaped Reward: -4203.12 | Avg Loss: 7.71617
+2026-08-30 05:41:43,526 [DEBUG] kaggriculture_self_play_training: === Episode 8/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_0.pt | eps=0.164 | buffer=25165 ===
+2026-08-30 05:41:43,541 [DEBUG] kaggriculture_self_play_training: Ep 8 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:41:43,579 [DEBUG] kaggriculture_self_play_training: Ep 8 step 0: verb=5 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=25166 learn=True
+2026-08-30 05:41:43,633 [DEBUG] kaggriculture_self_play_training: Ep 8 step 1 DQN update: loss=6.85759 batch=32 priorities_updated=32
+2026-08-30 05:41:43,633 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=14.15776 td_max=133.58786)
+2026-08-30 05:41:43,654 [DEBUG] kaggriculture_self_play_training: Ep 8 step 1: verb=5 crop=0 raw_r=0.000 shaped_r=0.200 done=False buffer=25167 learn=True
+2026-08-30 05:41:43,696 [DEBUG] kaggriculture_self_play_training: Ep 8 step 2 DQN update: loss=5.28499 batch=32 priorities_updated=32
+2026-08-30 05:41:43,719 [DEBUG] kaggriculture_self_play_training: Ep 8 step 2: verb=5 crop=0 raw_r=0.000 shaped_r=0.400 done=False buffer=25168 learn=True
+2026-08-30 05:41:43,760 [DEBUG] kaggriculture_self_play_training: Ep 8 step 3 DQN update: loss=10.97991 batch=32 priorities_updated=32
+2026-08-30 05:41:49,770 [DEBUG] kaggriculture_self_play_training: Ep 8 step 100 DQN update: loss=7.16102 batch=32 priorities_updated=32
+2026-08-30 05:41:49,791 [DEBUG] kaggriculture_self_play_training: Ep 8 step 100: verb=0 crop=0 raw_r=0.000 shaped_r=0.016 done=False buffer=25266 learn=True
+2026-08-30 05:41:55,925 [DEBUG] kaggriculture_self_play_training: Ep 8 step 200 DQN update: loss=6.11981 batch=32 priorities_updated=32
+2026-08-30 05:41:55,937 [DEBUG] kaggriculture_self_play_training: Ep 8 step 200: verb=3 crop=1 raw_r=0.000 shaped_r=0.016 done=False buffer=25366 learn=True
+2026-08-30 05:42:02,024 [DEBUG] kaggriculture_self_play_training: Ep 8 step 300 DQN update: loss=11.71537 batch=32 priorities_updated=32
+2026-08-30 05:42:02,035 [DEBUG] kaggriculture_self_play_training: Ep 8 step 300: verb=0 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=25466 learn=True
+2026-08-30 05:42:08,223 [DEBUG] kaggriculture_self_play_training: Ep 8 step 400 DQN update: loss=23.17064 batch=32 priorities_updated=32
+2026-08-30 05:42:08,245 [DEBUG] kaggriculture_self_play_training: Ep 8 step 400: verb=3 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=25566 learn=True
+2026-08-30 05:42:14,367 [DEBUG] kaggriculture_self_play_training: Ep 8 step 500 DQN update: loss=7.40553 batch=32 priorities_updated=32
+2026-08-30 05:42:14,380 [DEBUG] kaggriculture_self_play_training: Ep 8 step 500: verb=0 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=25666 learn=True
+2026-08-30 05:42:21,684 [DEBUG] kaggriculture_self_play_training: Ep 8 step 600 DQN update: loss=12.12953 batch=32 priorities_updated=32
+2026-08-30 05:42:21,710 [DEBUG] kaggriculture_self_play_training: Ep 8 step 600: verb=5 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=25766 learn=True
+2026-08-30 05:42:29,506 [DEBUG] kaggriculture_self_play_training: Ep 8 step 700 DQN update: loss=3.38270 batch=32 priorities_updated=32
+2026-08-30 05:42:29,532 [DEBUG] kaggriculture_self_play_training: Ep 8 step 700: verb=0 crop=0 raw_r=0.000 shaped_r=0.012 done=False buffer=25866 learn=True
+2026-08-30 05:42:30,970 [INFO] kaggriculture_self_play_training: Episode 08/16 | Epsilon: 0.164 | Buffer Size: 25884 | Raw Reward: -29.94 | Shaped Reward: 13.87 | Avg Loss: 8.43941
+2026-08-30 05:42:32,611 [DEBUG] kaggriculture_self_play_training: === Episode 9/16 | opponent=online-self | eps=0.150 | buffer=25884 ===
+2026-08-30 05:42:32,626 [DEBUG] kaggriculture_self_play_training: Ep 9 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:42:32,661 [DEBUG] kaggriculture_self_play_training: Ep 9 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=25885 learn=True
+2026-08-30 05:42:32,717 [DEBUG] kaggriculture_self_play_training: Ep 9 step 1 DQN update: loss=11.19115 batch=32 priorities_updated=32
+2026-08-30 05:42:32,717 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=27.50037 td_max=208.18777)
+2026-08-30 05:42:32,741 [DEBUG] kaggriculture_self_play_training: Ep 9 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=25886 learn=True
+2026-08-30 05:42:32,782 [DEBUG] kaggriculture_self_play_training: Ep 9 step 2 DQN update: loss=5.21330 batch=32 priorities_updated=32
+2026-08-30 05:42:32,802 [DEBUG] kaggriculture_self_play_training: Ep 9 step 2: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=25887 learn=True
+2026-08-30 05:42:32,843 [DEBUG] kaggriculture_self_play_training: Ep 9 step 3 DQN update: loss=12.07543 batch=32 priorities_updated=32
+2026-08-30 05:42:38,537 [DEBUG] kaggriculture_self_play_training: Ep 9 step 100 DQN update: loss=5.78348 batch=32 priorities_updated=32
+2026-08-30 05:42:38,557 [DEBUG] kaggriculture_self_play_training: Ep 9 step 100: verb=0 crop=0 raw_r=0.000 shaped_r=-5.790 done=False buffer=25985 learn=True
+2026-08-30 05:42:44,643 [DEBUG] kaggriculture_self_play_training: Ep 9 step 200 DQN update: loss=8.00343 batch=32 priorities_updated=32
+2026-08-30 05:42:44,655 [DEBUG] kaggriculture_self_play_training: Ep 9 step 200: verb=5 crop=0 raw_r=0.000 shaped_r=-5.990 done=False buffer=26085 learn=True
+2026-08-30 05:42:50,820 [DEBUG] kaggriculture_self_play_training: Ep 9 step 300 DQN update: loss=6.64915 batch=32 priorities_updated=32
+2026-08-30 05:42:50,842 [DEBUG] kaggriculture_self_play_training: Ep 9 step 300: verb=6 crop=0 raw_r=0.000 shaped_r=-5.990 done=False buffer=26185 learn=True
+2026-08-30 05:42:56,850 [DEBUG] kaggriculture_self_play_training: Ep 9 step 400 DQN update: loss=7.68047 batch=32 priorities_updated=32
+2026-08-30 05:42:56,871 [DEBUG] kaggriculture_self_play_training: Ep 9 step 400: verb=6 crop=0 raw_r=0.000 shaped_r=-5.990 done=False buffer=26285 learn=True
+2026-08-30 05:43:02,923 [DEBUG] kaggriculture_self_play_training: Ep 9 step 500 DQN update: loss=6.51908 batch=32 priorities_updated=32
+2026-08-30 05:43:02,946 [DEBUG] kaggriculture_self_play_training: Ep 9 step 500: verb=0 crop=0 raw_r=0.000 shaped_r=-5.990 done=False buffer=26385 learn=True
+2026-08-30 05:43:09,041 [DEBUG] kaggriculture_self_play_training: Ep 9 step 600 DQN update: loss=7.80211 batch=32 priorities_updated=32
+2026-08-30 05:43:09,062 [DEBUG] kaggriculture_self_play_training: Ep 9 step 600: verb=0 crop=0 raw_r=0.000 shaped_r=-5.990 done=False buffer=26485 learn=True
+2026-08-30 05:43:15,377 [DEBUG] kaggriculture_self_play_training: Ep 9 step 700 DQN update: loss=13.54709 batch=32 priorities_updated=32
+2026-08-30 05:43:15,399 [DEBUG] kaggriculture_self_play_training: Ep 9 step 700: verb=6 crop=0 raw_r=0.000 shaped_r=-5.990 done=False buffer=26585 learn=True
+2026-08-30 05:43:16,607 [INFO] kaggriculture_self_play_training: Episode 09/16 | Epsilon: 0.150 | Buffer Size: 26603 | Raw Reward: -29.95 | Shaped Reward: -3893.54 | Avg Loss: 9.39815
+2026-08-30 05:43:18,958 [DEBUG] kaggriculture_self_play_training: === Episode 10/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_5.pt | eps=0.136 | buffer=26603 ===
+2026-08-30 05:43:18,998 [DEBUG] kaggriculture_self_play_training: Ep 10 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:43:19,138 [DEBUG] kaggriculture_self_play_training: Ep 10 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=26604 learn=True
+2026-08-30 05:43:19,268 [DEBUG] kaggriculture_self_play_training: Ep 10 step 1 DQN update: loss=11.55455 batch=32 priorities_updated=32
+2026-08-30 05:43:19,269 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=28.42277 td_max=304.24512)
+2026-08-30 05:43:19,295 [DEBUG] kaggriculture_self_play_training: Ep 10 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=26605 learn=True
+2026-08-30 05:43:19,349 [DEBUG] kaggriculture_self_play_training: Ep 10 step 2 DQN update: loss=5.31560 batch=32 priorities_updated=32
+2026-08-30 05:43:19,390 [DEBUG] kaggriculture_self_play_training: Ep 10 step 2: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=26606 learn=True
+2026-08-30 05:43:19,450 [DEBUG] kaggriculture_self_play_training: Ep 10 step 3 DQN update: loss=11.42188 batch=32 priorities_updated=32
+2026-08-30 05:43:25,729 [DEBUG] kaggriculture_self_play_training: Ep 10 step 100 DQN update: loss=13.45648 batch=32 priorities_updated=32
+2026-08-30 05:43:25,742 [DEBUG] kaggriculture_self_play_training: Ep 10 step 100: verb=6 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=26704 learn=True
+2026-08-30 05:43:31,934 [DEBUG] kaggriculture_self_play_training: Ep 10 step 200 DQN update: loss=12.00476 batch=32 priorities_updated=32
+2026-08-30 05:43:31,956 [DEBUG] kaggriculture_self_play_training: Ep 10 step 200: verb=6 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=26804 learn=True
+2026-08-30 05:43:38,196 [DEBUG] kaggriculture_self_play_training: Ep 10 step 300 DQN update: loss=18.81648 batch=32 priorities_updated=32
+2026-08-30 05:43:38,219 [DEBUG] kaggriculture_self_play_training: Ep 10 step 300: verb=1 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=26904 learn=True
+2026-08-30 05:43:44,321 [DEBUG] kaggriculture_self_play_training: Ep 10 step 400 DQN update: loss=8.50545 batch=32 priorities_updated=32
+2026-08-30 05:43:44,344 [DEBUG] kaggriculture_self_play_training: Ep 10 step 400: verb=3 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=27004 learn=True
+2026-08-30 05:43:50,608 [DEBUG] kaggriculture_self_play_training: Ep 10 step 500 DQN update: loss=9.06438 batch=32 priorities_updated=32
+2026-08-30 05:43:50,619 [DEBUG] kaggriculture_self_play_training: Ep 10 step 500: verb=7 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=27104 learn=True
+2026-08-30 05:43:56,708 [DEBUG] kaggriculture_self_play_training: Ep 10 step 600 DQN update: loss=16.61992 batch=32 priorities_updated=32
+2026-08-30 05:43:56,730 [DEBUG] kaggriculture_self_play_training: Ep 10 step 600: verb=0 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=27204 learn=True
+2026-08-30 05:44:02,775 [DEBUG] kaggriculture_self_play_training: Ep 10 step 700 DQN update: loss=3.16852 batch=32 priorities_updated=32
+2026-08-30 05:44:02,818 [DEBUG] kaggriculture_self_play_training: Ep 10 step 700: verb=0 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=27304 learn=True
+2026-08-30 05:44:03,946 [INFO] kaggriculture_self_play_training: Episode 10/16 | Epsilon: 0.136 | Buffer Size: 27322 | Raw Reward: -29.94 | Shaped Reward: -4029.86 | Avg Loss: 10.76501
+2026-08-30 05:44:06,051 [DEBUG] kaggriculture_self_play_training: === Episode 11/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_5.pt | eps=0.121 | buffer=27322 ===
+2026-08-30 05:44:06,068 [DEBUG] kaggriculture_self_play_training: Ep 11 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:44:06,103 [DEBUG] kaggriculture_self_play_training: Ep 11 step 0: verb=0 crop=0 raw_r=-0.020 shaped_r=-0.020 done=False buffer=27323 learn=True
+2026-08-30 05:44:06,165 [DEBUG] kaggriculture_self_play_training: Ep 11 step 1 DQN update: loss=12.32674 batch=32 priorities_updated=32
+2026-08-30 05:44:06,166 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=28.46728 td_max=250.20340)
+2026-08-30 05:44:06,187 [DEBUG] kaggriculture_self_play_training: Ep 11 step 1: verb=0 crop=0 raw_r=-0.050 shaped_r=-0.054 done=False buffer=27324 learn=True
+2026-08-30 05:44:06,229 [DEBUG] kaggriculture_self_play_training: Ep 11 step 2 DQN update: loss=25.89645 batch=32 priorities_updated=32
+2026-08-30 05:44:06,251 [DEBUG] kaggriculture_self_play_training: Ep 11 step 2: verb=0 crop=0 raw_r=-0.130 shaped_r=-0.144 done=False buffer=27325 learn=True
+2026-08-30 05:44:06,294 [DEBUG] kaggriculture_self_play_training: Ep 11 step 3 DQN update: loss=8.52013 batch=32 priorities_updated=32
+2026-08-30 05:44:12,250 [DEBUG] kaggriculture_self_play_training: Ep 11 step 100 DQN update: loss=8.71511 batch=32 priorities_updated=32
+2026-08-30 05:44:12,272 [DEBUG] kaggriculture_self_play_training: Ep 11 step 100: verb=0 crop=0 raw_r=0.000 shaped_r=-5.772 done=False buffer=27423 learn=True
+2026-08-30 05:44:18,326 [DEBUG] kaggriculture_self_play_training: Ep 11 step 200 DQN update: loss=8.62653 batch=32 priorities_updated=32
+2026-08-30 05:44:18,347 [DEBUG] kaggriculture_self_play_training: Ep 11 step 200: verb=5 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=27523 learn=True
+2026-08-30 05:44:24,394 [DEBUG] kaggriculture_self_play_training: Ep 11 step 300 DQN update: loss=10.62173 batch=32 priorities_updated=32
+2026-08-30 05:44:24,414 [DEBUG] kaggriculture_self_play_training: Ep 11 step 300: verb=3 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=27623 learn=True
+2026-08-30 05:44:30,631 [DEBUG] kaggriculture_self_play_training: Ep 11 step 400 DQN update: loss=21.64000 batch=32 priorities_updated=32
+2026-08-30 05:44:30,653 [DEBUG] kaggriculture_self_play_training: Ep 11 step 400: verb=3 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=27723 learn=True
+2026-08-30 05:44:36,662 [DEBUG] kaggriculture_self_play_training: Ep 11 step 500 DQN update: loss=9.67079 batch=32 priorities_updated=32
+2026-08-30 05:44:36,683 [DEBUG] kaggriculture_self_play_training: Ep 11 step 500: verb=0 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=27823 learn=True
+2026-08-30 05:44:42,696 [DEBUG] kaggriculture_self_play_training: Ep 11 step 600 DQN update: loss=13.08462 batch=32 priorities_updated=32
+2026-08-30 05:44:42,717 [DEBUG] kaggriculture_self_play_training: Ep 11 step 600: verb=7 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=27923 learn=True
+2026-08-30 05:44:48,715 [DEBUG] kaggriculture_self_play_training: Ep 11 step 700 DQN update: loss=6.65516 batch=32 priorities_updated=32
+2026-08-30 05:44:48,735 [DEBUG] kaggriculture_self_play_training: Ep 11 step 700: verb=8 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=28023 learn=True
+2026-08-30 05:44:49,860 [INFO] kaggriculture_self_play_training: Episode 11/16 | Epsilon: 0.121 | Buffer Size: 28041 | Raw Reward: -29.96 | Shaped Reward: -4245.31 | Avg Loss: 12.43073
+2026-08-30 05:44:51,894 [DEBUG] kaggriculture_self_play_training: === Episode 12/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_0.pt | eps=0.107 | buffer=28041 ===
+2026-08-30 05:44:51,911 [DEBUG] kaggriculture_self_play_training: Ep 12 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:44:51,946 [DEBUG] kaggriculture_self_play_training: Ep 12 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=28042 learn=True
+2026-08-30 05:44:52,007 [DEBUG] kaggriculture_self_play_training: Ep 12 step 1 DQN update: loss=6.91546 batch=32 priorities_updated=32
+2026-08-30 05:44:52,008 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=19.52589 td_max=109.94360)
+2026-08-30 05:44:52,029 [DEBUG] kaggriculture_self_play_training: Ep 12 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.200 done=False buffer=28043 learn=True
+2026-08-30 05:44:52,071 [DEBUG] kaggriculture_self_play_training: Ep 12 step 2 DQN update: loss=12.65134 batch=32 priorities_updated=32
+2026-08-30 05:44:52,084 [DEBUG] kaggriculture_self_play_training: Ep 12 step 2: verb=5 crop=0 raw_r=-0.110 shaped_r=0.290 done=False buffer=28044 learn=True
+2026-08-30 05:44:52,127 [DEBUG] kaggriculture_self_play_training: Ep 12 step 3 DQN update: loss=9.85195 batch=32 priorities_updated=32
+2026-08-30 05:44:58,113 [DEBUG] kaggriculture_self_play_training: Ep 12 step 100 DQN update: loss=16.33177 batch=32 priorities_updated=32
+2026-08-30 05:44:58,135 [DEBUG] kaggriculture_self_play_training: Ep 12 step 100: verb=3 crop=0 raw_r=0.000 shaped_r=0.266 done=False buffer=28142 learn=True
+2026-08-30 05:45:04,242 [DEBUG] kaggriculture_self_play_training: Ep 12 step 200 DQN update: loss=3.93425 batch=32 priorities_updated=32
+2026-08-30 05:45:04,263 [DEBUG] kaggriculture_self_play_training: Ep 12 step 200: verb=3 crop=0 raw_r=0.000 shaped_r=0.006 done=False buffer=28242 learn=True
+2026-08-30 05:45:10,364 [DEBUG] kaggriculture_self_play_training: Ep 12 step 300 DQN update: loss=6.35228 batch=32 priorities_updated=32
+2026-08-30 05:45:10,386 [DEBUG] kaggriculture_self_play_training: Ep 12 step 300: verb=3 crop=0 raw_r=0.000 shaped_r=0.006 done=False buffer=28342 learn=True
+2026-08-30 05:45:16,358 [DEBUG] kaggriculture_self_play_training: Ep 12 step 400 DQN update: loss=12.38904 batch=32 priorities_updated=32
+2026-08-30 05:45:16,378 [DEBUG] kaggriculture_self_play_training: Ep 12 step 400: verb=3 crop=0 raw_r=0.000 shaped_r=0.004 done=False buffer=28442 learn=True
+2026-08-30 05:45:22,399 [DEBUG] kaggriculture_self_play_training: Ep 12 step 500 DQN update: loss=7.98968 batch=32 priorities_updated=32
+2026-08-30 05:45:22,421 [DEBUG] kaggriculture_self_play_training: Ep 12 step 500: verb=3 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=28542 learn=True
+2026-08-30 05:45:28,540 [DEBUG] kaggriculture_self_play_training: Ep 12 step 600 DQN update: loss=7.24774 batch=32 priorities_updated=32
+2026-08-30 05:45:28,562 [DEBUG] kaggriculture_self_play_training: Ep 12 step 600: verb=2 crop=0 raw_r=0.000 shaped_r=0.106 done=False buffer=28642 learn=True
+2026-08-30 05:45:34,670 [DEBUG] kaggriculture_self_play_training: Ep 12 step 700 DQN update: loss=7.69123 batch=32 priorities_updated=32
+2026-08-30 05:45:34,692 [DEBUG] kaggriculture_self_play_training: Ep 12 step 700: verb=0 crop=0 raw_r=0.000 shaped_r=0.006 done=False buffer=28742 learn=True
+2026-08-30 05:45:35,855 [INFO] kaggriculture_self_play_training: Episode 12/16 | Epsilon: 0.107 | Buffer Size: 28760 | Raw Reward: -29.97 | Shaped Reward: 124.18 | Avg Loss: 12.68960
+2026-08-30 05:45:37,976 [DEBUG] kaggriculture_self_play_training: === Episode 13/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_5.pt | eps=0.093 | buffer=28760 ===
+2026-08-30 05:45:37,993 [DEBUG] kaggriculture_self_play_training: Ep 13 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:45:38,036 [DEBUG] kaggriculture_self_play_training: Ep 13 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=28761 learn=True
+2026-08-30 05:45:38,092 [DEBUG] kaggriculture_self_play_training: Ep 13 step 1 DQN update: loss=22.66829 batch=32 priorities_updated=32
+2026-08-30 05:45:38,092 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=65.71870 td_max=630.35828)
+2026-08-30 05:45:38,115 [DEBUG] kaggriculture_self_play_training: Ep 13 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=28762 learn=True
+2026-08-30 05:45:38,158 [DEBUG] kaggriculture_self_play_training: Ep 13 step 2 DQN update: loss=12.68569 batch=32 priorities_updated=32
+2026-08-30 05:45:38,182 [DEBUG] kaggriculture_self_play_training: Ep 13 step 2: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=28763 learn=True
+2026-08-30 05:45:38,225 [DEBUG] kaggriculture_self_play_training: Ep 13 step 3 DQN update: loss=21.74463 batch=32 priorities_updated=32
+2026-08-30 05:45:43,960 [DEBUG] kaggriculture_self_play_training: Ep 13 step 100 DQN update: loss=17.02460 batch=32 priorities_updated=32
+2026-08-30 05:45:43,982 [DEBUG] kaggriculture_self_play_training: Ep 13 step 100: verb=5 crop=0 raw_r=0.000 shaped_r=-5.810 done=False buffer=28861 learn=True
+2026-08-30 05:45:50,103 [DEBUG] kaggriculture_self_play_training: Ep 13 step 200 DQN update: loss=4.85076 batch=32 priorities_updated=32
+2026-08-30 05:45:50,124 [DEBUG] kaggriculture_self_play_training: Ep 13 step 200: verb=5 crop=0 raw_r=0.000 shaped_r=-5.688 done=False buffer=28961 learn=True
+2026-08-30 05:45:56,240 [DEBUG] kaggriculture_self_play_training: Ep 13 step 300 DQN update: loss=11.23325 batch=32 priorities_updated=32
+2026-08-30 05:45:56,260 [DEBUG] kaggriculture_self_play_training: Ep 13 step 300: verb=7 crop=0 raw_r=0.000 shaped_r=-5.740 done=False buffer=29061 learn=True
+2026-08-30 05:46:02,332 [DEBUG] kaggriculture_self_play_training: Ep 13 step 400 DQN update: loss=8.60006 batch=32 priorities_updated=32
+2026-08-30 05:46:02,354 [DEBUG] kaggriculture_self_play_training: Ep 13 step 400: verb=5 crop=0 raw_r=0.000 shaped_r=-5.704 done=False buffer=29161 learn=True
+2026-08-30 05:46:08,364 [DEBUG] kaggriculture_self_play_training: Ep 13 step 500 DQN update: loss=10.85855 batch=32 priorities_updated=32
+2026-08-30 05:46:08,376 [DEBUG] kaggriculture_self_play_training: Ep 13 step 500: verb=5 crop=0 raw_r=0.000 shaped_r=-5.752 done=False buffer=29261 learn=True
+2026-08-30 05:46:14,460 [DEBUG] kaggriculture_self_play_training: Ep 13 step 600 DQN update: loss=10.60808 batch=32 priorities_updated=32
+2026-08-30 05:46:14,482 [DEBUG] kaggriculture_self_play_training: Ep 13 step 600: verb=7 crop=0 raw_r=0.000 shaped_r=-5.992 done=False buffer=29361 learn=True
+2026-08-30 05:46:20,484 [DEBUG] kaggriculture_self_play_training: Ep 13 step 700 DQN update: loss=14.56802 batch=32 priorities_updated=32
+2026-08-30 05:46:20,505 [DEBUG] kaggriculture_self_play_training: Ep 13 step 700: verb=7 crop=0 raw_r=0.000 shaped_r=-5.996 done=False buffer=29461 learn=True
+2026-08-30 05:46:21,615 [INFO] kaggriculture_self_play_training: Episode 13/16 | Epsilon: 0.093 | Buffer Size: 29479 | Raw Reward: -29.98 | Shaped Reward: -3902.17 | Avg Loss: 14.48856
+2026-08-30 05:46:23,949 [DEBUG] kaggriculture_self_play_training: === Episode 14/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_0.pt | eps=0.079 | buffer=29479 ===
+2026-08-30 05:46:23,965 [DEBUG] kaggriculture_self_play_training: Ep 14 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:46:24,003 [DEBUG] kaggriculture_self_play_training: Ep 14 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=29480 learn=True
+2026-08-30 05:46:24,054 [DEBUG] kaggriculture_self_play_training: Ep 14 step 1 DQN update: loss=4.41347 batch=32 priorities_updated=32
+2026-08-30 05:46:24,054 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=14.37354 td_max=76.75000)
+2026-08-30 05:46:24,075 [DEBUG] kaggriculture_self_play_training: Ep 14 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.200 done=False buffer=29481 learn=True
+2026-08-30 05:46:24,116 [DEBUG] kaggriculture_self_play_training: Ep 14 step 2 DQN update: loss=10.11206 batch=32 priorities_updated=32
+2026-08-30 05:46:24,138 [DEBUG] kaggriculture_self_play_training: Ep 14 step 2: verb=0 crop=0 raw_r=0.000 shaped_r=0.400 done=False buffer=29482 learn=True
+2026-08-30 05:46:24,180 [DEBUG] kaggriculture_self_play_training: Ep 14 step 3 DQN update: loss=9.30810 batch=32 priorities_updated=32
+2026-08-30 05:46:30,436 [DEBUG] kaggriculture_self_play_training: Ep 14 step 100 DQN update: loss=14.51712 batch=32 priorities_updated=32
+2026-08-30 05:46:30,462 [DEBUG] kaggriculture_self_play_training: Ep 14 step 100: verb=3 crop=0 raw_r=0.000 shaped_r=0.066 done=False buffer=29580 learn=True
+2026-08-30 05:46:36,756 [DEBUG] kaggriculture_self_play_training: Ep 14 step 200 DQN update: loss=8.91311 batch=32 priorities_updated=32
+2026-08-30 05:46:36,779 [DEBUG] kaggriculture_self_play_training: Ep 14 step 200: verb=3 crop=0 raw_r=0.000 shaped_r=0.126 done=False buffer=29680 learn=True
+2026-08-30 05:46:42,996 [DEBUG] kaggriculture_self_play_training: Ep 14 step 300 DQN update: loss=9.98520 batch=32 priorities_updated=32
+2026-08-30 05:46:43,020 [DEBUG] kaggriculture_self_play_training: Ep 14 step 300: verb=3 crop=0 raw_r=0.000 shaped_r=0.006 done=False buffer=29780 learn=True
+2026-08-30 05:46:49,153 [DEBUG] kaggriculture_self_play_training: Ep 14 step 400 DQN update: loss=12.24009 batch=32 priorities_updated=32
+2026-08-30 05:46:49,173 [DEBUG] kaggriculture_self_play_training: Ep 14 step 400: verb=3 crop=0 raw_r=0.000 shaped_r=0.002 done=False buffer=29880 learn=True
+2026-08-30 05:46:55,344 [DEBUG] kaggriculture_self_play_training: Ep 14 step 500 DQN update: loss=8.59610 batch=32 priorities_updated=32
+2026-08-30 05:46:55,357 [DEBUG] kaggriculture_self_play_training: Ep 14 step 500: verb=3 crop=0 raw_r=0.000 shaped_r=0.002 done=False buffer=29980 learn=True
+2026-08-30 05:47:01,465 [DEBUG] kaggriculture_self_play_training: Ep 14 step 600 DQN update: loss=18.13750 batch=32 priorities_updated=32
+2026-08-30 05:47:01,488 [DEBUG] kaggriculture_self_play_training: Ep 14 step 600: verb=2 crop=0 raw_r=0.000 shaped_r=0.162 done=False buffer=30080 learn=True
+2026-08-30 05:47:07,796 [DEBUG] kaggriculture_self_play_training: Ep 14 step 700 DQN update: loss=14.55021 batch=32 priorities_updated=32
+2026-08-30 05:47:07,817 [DEBUG] kaggriculture_self_play_training: Ep 14 step 700: verb=1 crop=0 raw_r=0.000 shaped_r=0.082 done=False buffer=30180 learn=True
+2026-08-30 05:47:08,960 [INFO] kaggriculture_self_play_training: Episode 14/16 | Epsilon: 0.079 | Buffer Size: 30198 | Raw Reward: -29.59 | Shaped Reward: 82.26 | Avg Loss: 15.03049
+2026-08-30 05:47:11,269 [DEBUG] kaggriculture_self_play_training: === Episode 15/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_5.pt | eps=0.064 | buffer=30198 ===
+2026-08-30 05:47:11,285 [DEBUG] kaggriculture_self_play_training: Ep 15 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:47:11,323 [DEBUG] kaggriculture_self_play_training: Ep 15 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=30199 learn=True
+2026-08-30 05:47:11,386 [DEBUG] kaggriculture_self_play_training: Ep 15 step 1 DQN update: loss=10.75070 batch=32 priorities_updated=32
+2026-08-30 05:47:11,386 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=58.03267 td_max=452.69165)
+2026-08-30 05:47:11,410 [DEBUG] kaggriculture_self_play_training: Ep 15 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=30200 learn=True
+2026-08-30 05:47:11,453 [DEBUG] kaggriculture_self_play_training: Ep 15 step 2 DQN update: loss=23.30057 batch=32 priorities_updated=32
+2026-08-30 05:47:11,476 [DEBUG] kaggriculture_self_play_training: Ep 15 step 2: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=30201 learn=True
+2026-08-30 05:47:11,518 [DEBUG] kaggriculture_self_play_training: Ep 15 step 3 DQN update: loss=9.65524 batch=32 priorities_updated=32
+2026-08-30 05:47:17,607 [DEBUG] kaggriculture_self_play_training: Ep 15 step 100 DQN update: loss=26.99389 batch=32 priorities_updated=32
+2026-08-30 05:47:17,631 [DEBUG] kaggriculture_self_play_training: Ep 15 step 100: verb=6 crop=0 raw_r=0.000 shaped_r=-4.066 done=False buffer=30299 learn=True
+2026-08-30 05:47:24,031 [DEBUG] kaggriculture_self_play_training: Ep 15 step 200 DQN update: loss=12.35893 batch=32 priorities_updated=32
+2026-08-30 05:47:24,053 [DEBUG] kaggriculture_self_play_training: Ep 15 step 200: verb=5 crop=0 raw_r=-0.100 shaped_r=-6.068 done=False buffer=30399 learn=True
+2026-08-30 05:47:30,206 [DEBUG] kaggriculture_self_play_training: Ep 15 step 300 DQN update: loss=5.02972 batch=32 priorities_updated=32
+2026-08-30 05:47:30,228 [DEBUG] kaggriculture_self_play_training: Ep 15 step 300: verb=5 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=30499 learn=True
+2026-08-30 05:47:36,387 [DEBUG] kaggriculture_self_play_training: Ep 15 step 400 DQN update: loss=8.91332 batch=32 priorities_updated=32
+2026-08-30 05:47:36,409 [DEBUG] kaggriculture_self_play_training: Ep 15 step 400: verb=6 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=30599 learn=True
+2026-08-30 05:47:42,657 [DEBUG] kaggriculture_self_play_training: Ep 15 step 500 DQN update: loss=12.48897 batch=32 priorities_updated=32
+2026-08-30 05:47:42,680 [DEBUG] kaggriculture_self_play_training: Ep 15 step 500: verb=5 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=30699 learn=True
+2026-08-30 05:47:48,941 [DEBUG] kaggriculture_self_play_training: Ep 15 step 600 DQN update: loss=20.52094 batch=32 priorities_updated=32
+2026-08-30 05:47:48,962 [DEBUG] kaggriculture_self_play_training: Ep 15 step 600: verb=5 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=30799 learn=True
+2026-08-30 05:47:55,180 [DEBUG] kaggriculture_self_play_training: Ep 15 step 700 DQN update: loss=20.82366 batch=32 priorities_updated=32
+2026-08-30 05:47:55,201 [DEBUG] kaggriculture_self_play_training: Ep 15 step 700: verb=5 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=30899 learn=True
+2026-08-30 05:47:56,383 [INFO] kaggriculture_self_play_training: Episode 15/16 | Epsilon: 0.064 | Buffer Size: 30917 | Raw Reward: -29.94 | Shaped Reward: -3942.63 | Avg Loss: 16.99828
+2026-08-30 05:47:58,738 [DEBUG] kaggriculture_self_play_training: === Episode 16/16 | opponent=/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/checkpoints/checkpoint_ep_15.pt | eps=0.050 | buffer=30917 ===
+2026-08-30 05:47:58,753 [DEBUG] kaggriculture_self_play_training: Ep 16 step 0 obs: tiles=(1, 9, 10, 10) numeric=(1, 55) valid_verbs=3 valid_crops=0 valid_market=4
+2026-08-30 05:47:58,791 [DEBUG] kaggriculture_self_play_training: Ep 16 step 0: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=30918 learn=True
+2026-08-30 05:47:58,852 [DEBUG] kaggriculture_self_play_training: Ep 16 step 1 DQN update: loss=20.50182 batch=32 priorities_updated=32
+2026-08-30 05:47:58,852 [INFO] kaggriculture_self_play_training: PER: TD-error priority reweighting applied (n=32 td_mean=37.29544 td_max=214.48462)
+2026-08-30 05:47:58,875 [DEBUG] kaggriculture_self_play_training: Ep 16 step 1: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=30919 learn=True
+2026-08-30 05:47:58,919 [DEBUG] kaggriculture_self_play_training: Ep 16 step 2 DQN update: loss=12.59309 batch=32 priorities_updated=32
+2026-08-30 05:47:58,941 [DEBUG] kaggriculture_self_play_training: Ep 16 step 2: verb=0 crop=0 raw_r=0.000 shaped_r=0.000 done=False buffer=30920 learn=True
+2026-08-30 05:47:58,982 [DEBUG] kaggriculture_self_play_training: Ep 16 step 3 DQN update: loss=23.85699 batch=32 priorities_updated=32
+2026-08-30 05:48:05,071 [DEBUG] kaggriculture_self_play_training: Ep 16 step 100 DQN update: loss=12.62439 batch=32 priorities_updated=32
+2026-08-30 05:48:05,093 [DEBUG] kaggriculture_self_play_training: Ep 16 step 100: verb=6 crop=0 raw_r=0.000 shaped_r=-3.288 done=False buffer=31018 learn=True
+2026-08-30 05:48:11,214 [DEBUG] kaggriculture_self_play_training: Ep 16 step 200 DQN update: loss=24.10221 batch=32 priorities_updated=32
+2026-08-30 05:48:11,235 [DEBUG] kaggriculture_self_play_training: Ep 16 step 200: verb=5 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=31118 learn=True
+2026-08-30 05:48:17,519 [DEBUG] kaggriculture_self_play_training: Ep 16 step 300 DQN update: loss=17.31639 batch=32 priorities_updated=32
+2026-08-30 05:48:17,542 [DEBUG] kaggriculture_self_play_training: Ep 16 step 300: verb=5 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=31218 learn=True
+2026-08-30 05:48:23,688 [DEBUG] kaggriculture_self_play_training: Ep 16 step 400 DQN update: loss=13.79340 batch=32 priorities_updated=32
+2026-08-30 05:48:23,710 [DEBUG] kaggriculture_self_play_training: Ep 16 step 400: verb=5 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=31318 learn=True
+2026-08-30 05:48:30,191 [DEBUG] kaggriculture_self_play_training: Ep 16 step 500 DQN update: loss=15.91131 batch=32 priorities_updated=32
+2026-08-30 05:48:30,213 [DEBUG] kaggriculture_self_play_training: Ep 16 step 500: verb=6 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=31418 learn=True
+2026-08-30 05:48:36,710 [DEBUG] kaggriculture_self_play_training: Ep 16 step 600 DQN update: loss=18.19734 batch=32 priorities_updated=32
+2026-08-30 05:48:36,735 [DEBUG] kaggriculture_self_play_training: Ep 16 step 600: verb=5 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=31518 learn=True
+2026-08-30 05:48:43,261 [DEBUG] kaggriculture_self_play_training: Ep 16 step 700 DQN update: loss=15.25991 batch=32 priorities_updated=32
+2026-08-30 05:48:43,285 [DEBUG] kaggriculture_self_play_training: Ep 16 step 700: verb=5 crop=0 raw_r=0.000 shaped_r=-5.988 done=False buffer=31618 learn=True
+2026-08-30 05:48:44,504 [INFO] kaggriculture_self_play_training: Episode 16/16 | Epsilon: 0.050 | Buffer Size: 31636 | Raw Reward: -29.94 | Shaped Reward: -3742.64 | Avg Loss: 20.03734
+2026-08-30 05:48:46,946 [INFO] kaggriculture_self_play_training: Final model saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/models/model.pth
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training: League win-rate summary: 0.00 (0/100 ep), cleared=0/10, beats_all=False
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training: Ladder eval (10 opponents, 10 ep each, target 50%): beats_all=False → /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/metrics/ladder_eval.json
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training:   [FAIL] vs fallow_finn      win=0% (0/10) money 3000 vs 3000
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training:   [FAIL] vs wheat_walter     win=0% (0/10) money 0 vs 6493
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training:   [FAIL] vs rotation_rosa    win=0% (0/10) money 0 vs 11960
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training:   [FAIL] vs homestead_hana   win=0% (0/10) money 0 vs 15297
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training:   [FAIL] vs melon_mateo      win=0% (0/10) money 0 vs 25046
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training:   [FAIL] vs rancher_rita     win=0% (0/10) money 0 vs 43605
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training:   [FAIL] vs broker_bea       win=0% (0/10) money 0 vs 47962
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training:   [FAIL] vs ledger_lena      win=0% (0/10) money 0 vs 47157
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training:   [FAIL] vs slotter_silas    win=0% (0/10) money 0 vs 46203
+2026-08-30 06:04:21,638 [INFO] kaggriculture_self_play_training:   [FAIL] vs closer_cleo      win=0% (0/10) money 0 vs 17870
+2026-08-30 06:04:21,640 [INFO] kaggriculture_self_play_training: Agent export saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/agent.py
+2026-08-30 06:04:21,640 [INFO] kaggriculture_self_play_training: Episode metrics saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/metrics/episode_metrics.json
+2026-08-30 06:04:21,641 [INFO] kaggriculture_self_play_training: Cumulative training progress saved to: /Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/turns24_2026-08-30/metrics/training_progress.json
+2026-08-30 06:04:21,641 [INFO] kaggriculture_self_play_training: --- SELF-PLAY TRAINING LOOP COMPLETED ---

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import copy
 import random
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -67,7 +67,7 @@ class KaggleEnvWrapper:
         self.n_market_actions = 10
 
         # Stack history
-        self.obs_history = []
+        self.obs_history: List[Optional[Dict[str, torch.Tensor]]] = []
         for _ in range(stack_size - 1):
             self.obs_history.append(None)
 
@@ -78,8 +78,8 @@ class KaggleEnvWrapper:
 
     def reset(
         self,
-        seed: int = None,
-        options: Dict = None,
+        seed: Optional[int] = None,
+        options: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, torch.Tensor]:
         """Reset the environment.
 
@@ -108,7 +108,8 @@ class KaggleEnvWrapper:
             states[1 - self.player_id], player_id=1 - self.player_id
         )
 
-        self.obs_history = [None] * (self.stack_size - 1)
+        history: List[Optional[Dict[str, torch.Tensor]]] = [None] * (self.stack_size - 1)
+        self.obs_history = history
         obs = self._convert_observation(
             states[self.player_id], player_id=self.player_id
         )
@@ -120,7 +121,7 @@ class KaggleEnvWrapper:
         return obs
 
     def step(self, action: Dict[str, Any]) -> Tuple[
-        Dict[str, torch.Tensor], float, bool, bool, Dict
+        Optional[Dict[str, torch.Tensor]], float, bool, bool, Dict[str, Any]
     ]:
         """Execute an action and return transition.
 
@@ -131,8 +132,8 @@ class KaggleEnvWrapper:
 
         Returns
         -------
-        next_obs : dict
-            Tensor-friendly next observation.
+        next_obs : dict or None
+            Tensor-friendly next observation (``None`` when the episode ended).
         reward : float
             Episode reward.
         terminated : bool
@@ -148,7 +149,7 @@ class KaggleEnvWrapper:
             action = self._enforce_valid_actions(action, current_obs)
 
         opponent_action = self._opponent_action()
-        actions = [None, None]
+        actions: List[Optional[Dict[str, Any]]] = [None, None]
         actions[self.player_id] = self._decode_if_needed(action, self.player_id)
         actions[1 - self.player_id] = self._decode_if_needed(
             opponent_action, 1 - self.player_id
@@ -159,7 +160,7 @@ class KaggleEnvWrapper:
         opponent_state = states[1 - self.player_id]
 
         reward = float(agent_state.get("reward") or 0)
-        info = agent_state.get("info") or {}
+        info: Dict[str, Any] = dict(agent_state.get("info") or {})
 
         # Handle done signal
         status = agent_state.get("status")

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Kaggriculture basedpyright language server
+# Uses conda env `kagg` (gymnasium, stable_baselines3, kaggle_environments).
+#
+# Cursor / VS Code: rely on pyrightconfig.json + cursorpyright (Anysphere Python).
+# Standalone / custom client: point the LSP command at this script (stdio).
+#
+#   command: scripts/kagg-basedpyright-lsp
+#   args:    ["--stdio"]   # default if no args passed
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+KAGG_PYTHON="${KAGG_PYTHON:-/Users/sweeden/miniforge3/envs/kagg/bin/python}"
+KAGG_BIN="$(dirname "$KAGG_PYTHON")"
+SITE_PACKAGES="${KAGG_BIN%/bin}/lib/python3.12/site-packages"
+LANGSERVER="${KAGG_BIN}/basedpyright-langserver"
+
+if [[ ! -x "$LANGSERVER" ]]; then
+  echo "basedpyright-langserver not found at $LANGSERVER" >&2
+  echo "Install with: conda install -n kagg -c conda-forge basedpyright" >&2
+  exit 1
+fi
+
+export PATH="${KAGG_BIN}:${PATH}"
+export VIRTUAL_ENV="${KAGG_BIN%/bin}"
+export PYTHONPATH="${ROOT}/datasets/scottweeden/self-training-code:${SITE_PACKAGES}${PYTHONPATH:+:${PYTHONPATH}}"
+
+cd "$ROOT"
+if [[ "$#" -eq 0 ]]; then
+  set -- --stdio
+fi
+exec "$LANGSERVER" "$@"

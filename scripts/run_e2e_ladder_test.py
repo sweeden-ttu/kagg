@@ -10,9 +10,10 @@ from pathlib import Path
 
 # Line-buffer stdout/stderr so ``tee`` and log files show progress immediately.
 os.environ.setdefault("PYTHONUNBUFFERED", "1")
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(line_buffering=True)
-    sys.stderr.reconfigure(line_buffering=True)
+for _stream in (sys.stdout, sys.stderr):
+    _reconfigure = getattr(_stream, "reconfigure", None)
+    if callable(_reconfigure):
+        _reconfigure(line_buffering=True)
 
 ROOT = Path(__file__).resolve().parents[1]
 CODE_SRC = ROOT / "datasets/scottweeden/self-training-code"

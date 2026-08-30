@@ -1,0 +1,82 @@
+{
+  "epochs": 25,
+  "batch_size": 64,
+  "bc_steps_per_epoch": 300,
+  "buffer_size": 25000,
+  "buffer_capacity": 50000,
+  "bootstrap_transitions": 40264,
+  "metadata_path": "/Users/sweeden/kagg/working/kaggle_episodes/metadata.json",
+  "bootstrap_passes": 1,
+  "bc_epochs_per_pass": 2,
+  "bootstrap_mode": "daily_incremental",
+  "bootstrap_days_per_run": 1,
+  "bootstrapped_dates": [
+    "2026-08-15"
+  ],
+  "stream_stats": {
+    "epoch_losses": [
+      1.4985531881451606,
+      1.1312953676780064
+    ],
+    "new_days": [
+      "2026-08-15"
+    ],
+    "bootstrapped_dates": [
+      "2026-08-15"
+    ],
+    "total_transitions_loaded": 40264,
+    "day_stats": [
+      {
+        "date": "2026-08-15",
+        "episodes": 26,
+        "transitions": 40264,
+        "buffer_seeded": 37388,
+        "bc_epoch_losses": [
+          1.4985531881451606,
+          1.1312953676780064
+        ],
+        "bc_final_loss": 1.1312953676780064,
+        "corpus_stats": {
+          "episode_count": 697,
+          "avg_score_mean": 3026.5300721305593,
+          "min_score_mean": 2998.797230956958,
+          "sum_score_mean": 6053.060144261119,
+          "score_margin_mean": 27.732841173601166,
+          "size_bytes_total": 21462110197,
+          "size_bytes_mean": 30792123.668579627
+        }
+      }
+    ],
+    "bootstrap_mode": "daily_incremental",
+    "bootstrap_state_path": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/metrics/bootstrap_state.json"
+  },
+  "epoch_losses": [
+    1.0055660738547643,
+    0.864561087290446,
+    0.7692785771687826,
+    0.7085325272878011,
+    0.6418045955896378,
+    0.5959315130114555,
+    0.5500770093003908,
+    0.5170543304085732,
+    0.4829982841014862,
+    0.4593183199564616,
+    0.43715301622947056,
+    0.4161583738525709,
+    0.3973266196250915,
+    0.38357205579678216,
+    0.36564728647470474,
+    0.3550002304216226,
+    0.3409046890338262,
+    0.32511563181877134,
+    0.3191966711481412,
+    0.31006043300032615,
+    0.3020085271199544,
+    0.2874086581170559,
+    0.2819367392361164,
+    0.27763060276707013,
+    0.2733720656732718
+  ],
+  "final_loss": 0.2733720656732718,
+  "cumulative_bc_loss": 11.667613918284575
+}

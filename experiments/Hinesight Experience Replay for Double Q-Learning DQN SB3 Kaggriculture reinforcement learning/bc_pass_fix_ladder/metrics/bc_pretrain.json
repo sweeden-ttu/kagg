@@ -1,0 +1,82 @@
+{
+  "epochs": 25,
+  "batch_size": 64,
+  "bc_steps_per_epoch": 250,
+  "buffer_size": 25000,
+  "buffer_capacity": 50000,
+  "bootstrap_transitions": 34512,
+  "metadata_path": "/Users/sweeden/kagg/working/kaggle_episodes/metadata.json",
+  "bootstrap_passes": 1,
+  "bc_epochs_per_pass": 2,
+  "bootstrap_mode": "daily_incremental",
+  "bootstrap_days_per_run": 1,
+  "bootstrapped_dates": [
+    "2026-08-15"
+  ],
+  "stream_stats": {
+    "epoch_losses": [
+      1.1364609017372131,
+      0.8365502805709839
+    ],
+    "new_days": [
+      "2026-08-15"
+    ],
+    "bootstrapped_dates": [
+      "2026-08-15"
+    ],
+    "total_transitions_loaded": 34512,
+    "day_stats": [
+      {
+        "date": "2026-08-15",
+        "episodes": 26,
+        "transitions": 34512,
+        "buffer_seeded": 37388,
+        "bc_epoch_losses": [
+          1.1364609017372131,
+          0.8365502805709839
+        ],
+        "bc_final_loss": 0.8365502805709839,
+        "corpus_stats": {
+          "episode_count": 697,
+          "avg_score_mean": 3026.5300721305593,
+          "min_score_mean": 2998.797230956958,
+          "sum_score_mean": 6053.060144261119,
+          "score_margin_mean": 27.732841173601166,
+          "size_bytes_total": 21462110197,
+          "size_bytes_mean": 30792123.668579627
+        }
+      }
+    ],
+    "bootstrap_mode": "daily_incremental",
+    "bootstrap_state_path": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/bc_pass_fix_ladder/metrics/bootstrap_state.json"
+  },
+  "epoch_losses": [
+    0.7410816683769226,
+    0.6583890273571015,
+    0.595759052991867,
+    0.5494711636304855,
+    0.507147253870964,
+    0.47254633224010467,
+    0.43822432732582095,
+    0.4109615845680237,
+    0.38156925678253173,
+    0.3642734475135803,
+    0.3470427957773209,
+    0.3299200508594513,
+    0.3188561497926712,
+    0.3092006041407585,
+    0.29775628477334976,
+    0.2894484553337097,
+    0.27798404163122176,
+    0.27246309638023375,
+    0.26351400643587114,
+    0.2542280108332634,
+    0.2501154469847679,
+    0.2422261611223221,
+    0.23640807658433916,
+    0.23364073699712753,
+    0.2277718862891197
+  ],
+  "final_loss": 0.2277718862891197,
+  "cumulative_bc_loss": 9.269998918592929
+}

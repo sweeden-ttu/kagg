@@ -1,0 +1,8 @@
+{
+  "experiment_dir": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder",
+  "plots_dir": "/Users/sweeden/kagg/experiments/Hinesight Experience Replay for Double Q-Learning DQN SB3 Kaggriculture reinforcement learning/farm_bc_ladder/plots",
+  "plots_written": [],
+  "ok": false,
+  "n_self_play_episodes": 0,
+  "last_episode": 0
+}
