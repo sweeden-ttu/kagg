@@ -46,27 +46,53 @@ def load_kaggle_agent_policy(agent_path: Path | str) -> Callable[[Dict[str, Any]
     return module.agent
 
 
-def resolve_opponents_dir(explicit: Optional[str | Path] = None) -> Optional[Path]:
+def resolve_opponents_dir(
+    explicit: Optional[str | Path] = None,
+    *,
+    code_src: Optional[str | Path] = None,
+) -> Optional[Path]:
     """Locate the reference ladder ``opponents/`` directory."""
     if explicit:
         path = Path(explicit)
-        return path if path.is_dir() else None
-    candidates = [
-        Path("/kaggle/input/opponents"),
-        _repo_root() / "opponents",
-        Path("~/kagg/opponents").expanduser(),
-    ]
+        return path.resolve() if path.is_dir() else None
+
+    candidates: List[Path] = []
+    if code_src:
+        candidates.append(Path(code_src) / "opponents")
+    candidates.extend(
+        [
+            Path("/kaggle/input/opponents"),
+            Path("/kaggle/input/kaggriculture-reference-agents"),
+            Path("/kaggle/input/datasets/raykkretzschmar/kaggriculture-reference-agents"),
+            _repo_root() / "opponents",
+            Path("~/kagg/opponents").expanduser(),
+        ]
+    )
     for candidate in candidates:
         if candidate.is_dir() and any(candidate.glob("*.py")):
             return candidate.resolve()
     return None
 
 
+def count_reference_opponent_files(opponents_dir: Path | str) -> int:
+    """Count ladder agent modules under ``opponents_dir`` (manifest or ``*.py``)."""
+    root = Path(opponents_dir)
+    manifest = (
+        DEFAULT_OPPONENT_MANIFEST
+        if DEFAULT_OPPONENT_MANIFEST.exists()
+        else root / "agents_manifest.csv"
+    )
+    if manifest.exists():
+        with open(manifest, encoding="utf-8") as fh:
+            return sum(1 for row in csv.DictReader(fh) if (root / row["file"]).exists())
+    return len(list(root.glob("*.py")))
+
+
 def discover_reference_opponents(
     opponents_dir: Optional[Path | str] = None,
 ) -> List[Tuple[str, Callable[[Dict[str, Any]], Dict[str, Any]]]]:
     """Return (slug, policy) pairs for the reference ladder, ordered by tier."""
-    root = Path(opponents_dir) if opponents_dir else resolve_opponents_dir()
+    root = Path(opponents_dir) if opponents_dir else resolve_opponents_dir(code_src=code_src)
     if root is None:
         raise FileNotFoundError("Reference opponents directory not found")
     manifest = DEFAULT_OPPONENT_MANIFEST if DEFAULT_OPPONENT_MANIFEST.exists() else root / "agents_manifest.csv"
@@ -90,13 +116,14 @@ def evaluate_ladder(
     challenger_policy: Callable[[Dict[str, Any]], Dict[str, Any]],
     *,
     opponents_dir: Optional[str | Path] = None,
+    code_src: Optional[str | Path] = None,
     n_episodes: int = 10,
     max_steps: int = 720,
     base_seed: int = 42,
     win_rate_target: float = 0.5,
 ) -> Dict[str, Any]:
     """Head-to-head eval vs every reference ladder opponent."""
-    opponents = discover_reference_opponents(opponents_dir)
+    opponents = discover_reference_opponents(opponents_dir or resolve_opponents_dir(code_src=code_src))
     results: Dict[str, Any] = {}
     beats_all = True
     for slug, opp_fn in opponents:
@@ -115,7 +142,9 @@ def evaluate_ladder(
         beats_all &= summary["cleared"]
         results[slug] = summary
     return {
-        "opponents_dir": str(resolve_opponents_dir(opponents_dir) or opponents_dir or ""),
+        "opponents_dir": str(
+            resolve_opponents_dir(opponents_dir, code_src=code_src) or opponents_dir or ""
+        ),
         "n_episodes_per_opponent": n_episodes,
         "win_rate_target": win_rate_target,
         "beats_all_opponents": beats_all,

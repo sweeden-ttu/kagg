@@ -24,6 +24,7 @@ DEFAULT_ARTIFACT_REL_PATHS: Sequence[str] = (
     "metrics/bc_pretrain.json",
     "metrics/episode_metrics.json",
     "metrics/win_rate_eval.json",
+    "metrics/ladder_eval.json",
     "config.json",
     "agent.py",
 )

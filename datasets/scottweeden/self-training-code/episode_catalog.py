@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 DEFAULT_START_DATE = "2026-07-30"
-DEFAULT_END_DATE = "2026-08-27"
+DEFAULT_END_DATE = (date_cls.today() - timedelta(days=1)).isoformat()
 
 # Kaggle notebook mount layouts (both observed in the wild):
 #   /kaggle/input/kaggriculture-episodes-2026-08-27/{id}.json   ← flat (current)

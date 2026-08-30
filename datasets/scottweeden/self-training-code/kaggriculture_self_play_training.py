@@ -1384,7 +1384,7 @@ def train_self_play(total_episodes: int = 15,
             logger.warning("Win-rate eval skipped: %s", exc)
 
     if ladder_eval_episodes > 0:
-        opp_root = resolve_opponents_dir(opponents_dir)
+        opp_root = resolve_opponents_dir(opponents_dir, code_src=code_src)
         if opp_root is None:
             logger.warning(
                 "ladder_eval_episodes=%d but opponents/ directory not found (opponents_dir=%r)",
@@ -1396,6 +1396,7 @@ def train_self_play(total_episodes: int = 15,
                 ladder_report = evaluate_ladder(
                     _path_b_policy,
                     opponents_dir=str(opp_root),
+                    code_src=code_src,
                     n_episodes=ladder_eval_episodes,
                     max_steps=max_episode_steps,
                     base_seed=seed + 2000,

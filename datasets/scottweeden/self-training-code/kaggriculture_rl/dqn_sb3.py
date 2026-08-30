@@ -1,7 +1,11 @@
 """Stable-Baselines3-style DQN wrapper for Kaggriculture.
 
-This module provides a high-level DQN interface inspired by
-stable-baselines3 DQN (https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html)
+**Canonical training path:** ``kaggriculture_self_play_training.train_self_play``
+(Path B hierarchical DQN + bootstrap + self-play + ladder eval). This module wraps
+the legacy flat-branch ``kaggriculture_rl.dqn`` stack for SB3-compatible
+experiments and is optional — not used by the main training notebook.
+
+Inspired by stable-baselines3 DQN (https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html)
 but adapted for the multi-branch action space of Kaggriculture:
     - Farmer actions    (15 discrete actions)
     - Hand actions      (6 hands × 15 discrete actions each)

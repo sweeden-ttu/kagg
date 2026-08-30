@@ -29,6 +29,9 @@ Production home for the Kaggriculture agent.
 │   ├── slotter_silas.py      ← tier 8
 │   └── closer_cleo.py        ← tier 9
 │
+├── kaggriculture-self-training/   ← Kaggle training notebook + kernel-metadata.json
+│   └── kaggriculture-self-training.ipynb
+│
 ├── datasets/
 │   ├── reference/            ← opponent ladder metadata (from Kaggle reference dataset)
 │   │   ├── agents_manifest.csv      ← tier order, expected bank, strategy notes
@@ -41,10 +44,6 @@ Production home for the Kaggriculture agent.
 │   ├── published_eval.json   ← output from run_published_eval.py
 │   └── eval_summary.json     ← output from run_experiments_eval.py
 │
-└── kernel1/                  ← reserved for the single training notebook (not migrated yet)
-|    └── (thees contain .ipynb that are operating experiments )
-├── kernel2/                  ← reserved for the single training notebook (not migrated yet)
-     └── (empty — add train.ipynb here when training code lands)
 ```
 ---
 
@@ -117,19 +116,22 @@ The replay buffer is seeded from the **last 30 calendar days** of public Kaggric
 
 **Dueling Double DQN with action branching**, API aligned with [Stable-Baselines3 DQN](https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html): online + target networks, hierarchical action heads (farmer / crop / hands / market).
 
-### Phase 2 — Dual adversarial pipeline
+### Phase 2 — Self-play + ladder eval
 
 | Seat | Role |
 |---|---|
-| **Player 0** | Online DQN challenger — learns from replay |
-| **Player 1** | Frozen policy from `opponents/` |
+| **Player 0** | Online Path B DQN — learns from replay during self-play |
+| **Player 1 (training)** | Frozen **checkpoint pool** (historical selves) |
+| **Player 1 (eval)** | Reference agents in `opponents/` — ladder report only |
 
-Promotion = head-to-head win rate vs **every** file in `opponents/`.
+Self-play optimizes vs the checkpoint pool. **Ladder eval** (after training) measures head-to-head win rate vs every file in `opponents/`; it does not retrain on failure.
+
+Promotion target: win rate ≥ 50% vs **every** opponent in ladder eval.
 
 ```text
   Episode JSONs (30d) ──► Imitation buffer ──► BC warm-start
                                                     │
-  opponents/*.py ◄──── self-play 720-step ──── DQN challenger
+  opponents/*.py ◄──── ladder eval (post-training) ──── trained agent
                                                     │
                                               main.py + model.pth
 ```
@@ -179,16 +181,5 @@ Win/loss/tie: higher final bank wins ([Kaggle rubric](https://www.kaggle.com/com
 Copied from: `~/kaggle-leaderboard-notebooks/challenges/kaggriculture/`  
 Do not sync experiments or scripts back from legacy without explicit merge into the file budget above.
 
----
-
-## Notebook TODO (`kaggriculture-self-training/kaggriculture-self-training.ipynb`)
-
-- [ ] Attach/bundle opponents for Kaggle + resolve from code dataset fallback
-- [ ] Add `ladder_eval_episodes: 10` to `medium` preset
-- [ ] Pop `kaggriculture_self_play_training` from `sys.modules`
-- [ ] Preflight `OPPONENTS_DIR.exists()` when ladder > 0
-- [ ] Add `ladder_eval.json` to publish artifacts
-- [ ] Clear stale outputs; fix “~1 min” comment/ETA
-- [ ] Split setup cell (optional but high leverage)
-- [ ] Resume policy — explicit fresh-run flag for dry_run
+See [TODO.md](TODO.md) for the notebook fix tracker.
 
