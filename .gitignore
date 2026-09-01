@@ -3,9 +3,21 @@ datasets/published-champion/
 datasets/kaggle/
 datasets/experiments/
 working/
+
+# Model weights and replay checkpoints (hosted on Kaggle datasets, not git)
 **/training_artifacts/checkpoints/
 **/training_artifacts/models/
+experiments/**/checkpoints/
+experiments/**/models/
+results/**/checkpoints/
+results/**/models/
 *.pt
+*.pth
+
+# Episode metadata cache (multi-MB JSON; rebuilt from daily manifests)
+results/kaggle_episodes/metadata.json
+results/kaggle_episodes/episodes/
+
 __pycache__/
 *.pyc
 .DS_Store
