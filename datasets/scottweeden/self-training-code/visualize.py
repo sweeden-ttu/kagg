@@ -43,7 +43,11 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 import numpy as np
 
@@ -53,6 +57,8 @@ try:
     matplotlib.use("Agg")  # Non-interactive backend for servers
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
     from matplotlib.ticker import MaxNLocator
     HAS_MATPLOTLIB = True
 except ImportError:
@@ -67,7 +73,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _legend_if_labeled(ax: "plt.Axes", **kwargs: Any) -> None:
+def _legend_if_labeled(ax: Axes, **kwargs: Any) -> None:
     """Call legend only when at least one artist has a label."""
     if not HAS_MATPLOTLIB:
         return
@@ -490,7 +496,7 @@ class MetricsVisualizer:
         self,
         font_size: int = 12,
         figure_size: Tuple[int, int] = (12, 8),
-        output_dir: Optional[str] = None,
+        output_dir: Optional[str | Path] = None,
     ):
         self.font_size = font_size
         self.figure_size = figure_size
@@ -512,7 +518,7 @@ class MetricsVisualizer:
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
         window_size: int = 100,
-    ) -> Optional[plt.Figure]:
+    ) -> Optional[Figure]:
         """Plot training loss curves.
 
         Parameters
@@ -579,7 +585,7 @@ class MetricsVisualizer:
         self,
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
-    ) -> Optional[plt.Figure]:
+    ) -> Optional[Figure]:
         """Plot epsilon decay schedules.
 
         Parameters
@@ -633,7 +639,7 @@ class MetricsVisualizer:
         self,
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
-    ) -> Optional[plt.Figure]:
+    ) -> Optional[Figure]:
         """Plot replay buffer size over time.
 
         Parameters
@@ -687,7 +693,7 @@ class MetricsVisualizer:
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
         window_size: int = 5,
-    ) -> Optional[plt.Figure]:
+    ) -> Optional[Figure]:
         """Plot evaluation reward metrics over time.
 
         Parameters
@@ -753,7 +759,7 @@ class MetricsVisualizer:
         self,
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
-    ) -> Optional[plt.Figure]:
+    ) -> Optional[Figure]:
         """Plot final evaluation reward distributions.
 
         Parameters
@@ -831,7 +837,7 @@ class MetricsVisualizer:
         self,
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
-    ) -> Optional[plt.Figure]:
+    ) -> Optional[Figure]:
         """Plot Path B self-play episode metrics (epsilon, reward, loss)."""
         if not HAS_MATPLOTLIB:
             return None
@@ -880,7 +886,7 @@ class MetricsVisualizer:
         self,
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
-    ) -> Optional[plt.Figure]:
+    ) -> Optional[Figure]:
         """Plot rubric-aligned win-rate evaluation (league aggregate)."""
         if not HAS_MATPLOTLIB:
             return None
@@ -926,7 +932,7 @@ class MetricsVisualizer:
         self,
         loader: TrainingMetricsLoader,
         exp_names: Optional[List[str]] = None,
-    ) -> List[plt.Figure]:
+    ) -> List[Figure]:
         """Create a comprehensive comparison of all experiments.
 
         Parameters
@@ -1049,7 +1055,7 @@ class MetricsVisualizer:
 
     def save_figures(
         self,
-        figures: List[plt.Figure],
+        figures: List[Figure],
         exp_names: List[str],
         *,
         close: bool = True,
@@ -1092,7 +1098,7 @@ class MetricsVisualizer:
                 plt.close(fig)
             logger.info(f"Saved: {filepath}")
 
-    def show_figures(self, figures: List[plt.Figure]) -> None:
+    def show_figures(self, figures: List[Figure]) -> None:
         """Display all figures interactively.
 
         Parameters
@@ -1237,31 +1243,35 @@ def main():
         for metric in args.metrics:
             if metric == "loss":
                 fig = visualizer.plot_loss_curves(loader, exp_names)
-                if not args.no_save and args.output_dir:
-                    visualizer.save_figures([fig], exp_names)
-                if args.show:
-                    visualizer.show_figures([fig])
+                if fig is not None:
+                    if not args.no_save and args.output_dir:
+                        visualizer.save_figures([fig], exp_names)
+                    if args.show:
+                        visualizer.show_figures([fig])
 
             elif metric == "epsilon":
                 fig = visualizer.plot_epsilon_decay(loader, exp_names)
-                if not args.no_save and args.output_dir:
-                    visualizer.save_figures([fig], exp_names)
-                if args.show:
-                    visualizer.show_figures([fig])
+                if fig is not None:
+                    if not args.no_save and args.output_dir:
+                        visualizer.save_figures([fig], exp_names)
+                    if args.show:
+                        visualizer.show_figures([fig])
 
             elif metric == "reward":
                 fig = visualizer.plot_eval_rewards(loader, exp_names)
-                if not args.no_save and args.output_dir:
-                    visualizer.save_figures([fig], exp_names)
-                if args.show:
-                    visualizer.show_figures([fig])
+                if fig is not None:
+                    if not args.no_save and args.output_dir:
+                        visualizer.save_figures([fig], exp_names)
+                    if args.show:
+                        visualizer.show_figures([fig])
 
             elif metric == "buffer":
                 fig = visualizer.plot_buffer_size(loader, exp_names)
-                if not args.no_save and args.output_dir:
-                    visualizer.save_figures([fig], exp_names)
-                if args.show:
-                    visualizer.show_figures([fig])
+                if fig is not None:
+                    if not args.no_save and args.output_dir:
+                        visualizer.save_figures([fig], exp_names)
+                    if args.show:
+                        visualizer.show_figures([fig])
 
             elif metric == "self_play":
                 fig = visualizer.plot_self_play_episode_metrics(loader, exp_names)

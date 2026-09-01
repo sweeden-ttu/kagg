@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Tuple, Any, Optional, TypedDict
 
 from kaggriculture_adapter import (
     COMPETITION_TURNS_PER_DAY,
@@ -115,6 +115,14 @@ KaggricultureFeatureExtractor = PathBFeatureExtractor
 # SECTION 2: HIERARCHICAL ACTION DECODER NETWORK
 # ==============================================================================
 
+class HierarchicalQValues(TypedDict):
+    value: torch.Tensor
+    farmer_verb: torch.Tensor
+    crop_parameter: torch.Tensor
+    hands: List[torch.Tensor]
+    market: torch.Tensor
+
+
 class HierarchicalDQNBranching(nn.Module):
     """
     An advanced Dueling Double DQN that replaces flat output heads with:
@@ -199,7 +207,7 @@ class HierarchicalDQNBranching(nn.Module):
     def forward(self,
                 tiles: torch.Tensor,
                 numeric: torch.Tensor,
-                market_history: Optional[torch.Tensor] = None) -> Dict[str, torch.Tensor]:
+                market_history: Optional[torch.Tensor] = None) -> HierarchicalQValues:
         """
         Calculates joint state action Q-values across the hierarchical heads.
         """
@@ -270,23 +278,26 @@ class HierarchicalActionMasker:
     def get_dynamic_masks(obs: Dict[str, Any]) -> Dict[str, np.ndarray]:
         return get_action_masks(obs)
 
-def apply_hierarchical_masks(q_values: Dict[str, torch.Tensor], 
+def apply_hierarchical_masks(q_values: HierarchicalQValues,
                              masks: Dict[str, np.ndarray], 
-                             device: torch.device) -> Dict[str, torch.Tensor]:
-    masked_q = {}
-    
+                             device: torch.device) -> HierarchicalQValues:
     fv_mask_tensor = torch.as_tensor(masks["farmer_verb"], dtype=torch.bool, device=device)
-    masked_q["farmer_verb"] = torch.where(fv_mask_tensor, q_values["farmer_verb"], torch.tensor(-1e9, device=device))
-    
     cc_mask_tensor = torch.as_tensor(masks["crop_parameter"], dtype=torch.bool, device=device)
-    masked_q["crop_parameter"] = torch.where(cc_mask_tensor, q_values["crop_parameter"], torch.tensor(-1e9, device=device))
-    
-    masked_q["hands"] = q_values["hands"]
-    
     m_mask_tensor = torch.as_tensor(masks["market"], dtype=torch.bool, device=device).unsqueeze(0).unsqueeze(1)
-    masked_q["market"] = torch.where(m_mask_tensor, q_values["market"], torch.tensor(-1e9, device=device))
-    
-    masked_q["value"] = q_values["value"]
+
+    masked_q: HierarchicalQValues = {
+        "farmer_verb": torch.where(
+            fv_mask_tensor, q_values["farmer_verb"], torch.tensor(-1e9, device=device)
+        ),
+        "crop_parameter": torch.where(
+            cc_mask_tensor, q_values["crop_parameter"], torch.tensor(-1e9, device=device)
+        ),
+        "hands": q_values["hands"],
+        "market": torch.where(
+            m_mask_tensor, q_values["market"], torch.tensor(-1e9, device=device)
+        ),
+        "value": q_values["value"],
+    }
     return masked_q
 
 

@@ -338,7 +338,11 @@ def farm_plant_census(observation: Dict[str, Any]) -> Dict[str, int]:
         shed_count = int(sum(int(v or 0) for v in shed.values()))
     standing_plant = isinstance(standing, dict) and standing.get("kind") == "PLANT"
     standing_empty = standing is None
-    watered = bool(standing_plant and standing.get("watered_today", False))
+    watered = bool(
+        isinstance(standing, dict)
+        and standing_plant
+        and standing.get("watered_today", False)
+    )
     return {
         "plants": plants,
         "harvestable": harvestable,

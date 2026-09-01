@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import collections
 import random
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple, TypedDict, Union
 
 import numpy as np
@@ -370,7 +371,6 @@ class DuelingDoubleDQNBranching(nn.Module):
 
     def save(self, path: Union[str, Path]) -> None:
         """Save model to file."""
-        from pathlib import Path
         torch.save(self.state_dict(), Path(path))
 
     @classmethod
@@ -380,7 +380,6 @@ class DuelingDoubleDQNBranching(nn.Module):
         device: str = "cpu",
     ) -> "DuelingDoubleDQNBranching":
         """Load model from file (creates default structure)."""
-        from pathlib import Path
         model = cls(
             feature_extractor=KaggricultureFeatureExtractor(),
             features_dim=512,
@@ -925,7 +924,6 @@ class DoubleDQNLearner:
 
     def save_checkpoint(self, path: Union[str, Path]) -> None:
         """Save full training state."""
-        from pathlib import Path
         torch.save({
             "online_state_dict": self.online.state_dict(),
             "target_state_dict": self.target.state_dict(),
@@ -945,7 +943,6 @@ class DoubleDQNLearner:
         device: str = "cpu",
     ) -> "DoubleDQNLearner":
         """Load full training state from checkpoint."""
-        from pathlib import Path
         data = torch.load(Path(path), map_location=device, weights_only=False)
 
         learner = cls(

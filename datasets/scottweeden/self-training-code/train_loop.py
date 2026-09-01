@@ -20,6 +20,7 @@ import torch.optim as optim
 from environment import create_competitive_env
 from kaggriculture_path_b_rebuild import (
     HierarchicalActionMasker,
+    HierarchicalDQNBranching,
     apply_hierarchical_masks,
     break_pass_spawn_deadlock,
     prefer_farm_invest_actions,
@@ -38,8 +39,8 @@ logger = logging.getLogger(__name__)
 
 
 def run_self_play_training(
-    online_net: nn.Module,
-    target_net: nn.Module,
+    online_net: HierarchicalDQNBranching,
+    target_net: HierarchicalDQNBranching,
     optimizer: optim.Optimizer,
     learner,  # HierarchicalDoubleDQNLearner
     reward_shaper,  # CompetitiveRewardShaper
