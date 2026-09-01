@@ -170,49 +170,22 @@ def farm_labor_state(observation: Dict[str, Any]) -> Dict[str, Any]:
     player = int(observation.get("player", 0) or 0)
     farms = observation.get("farms", []) or []
     farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    opp = _farm_mapping(farms[1 - player] if len(farms) > (1 - player) else {})
     hands = farm.get("hands") or []
     return {
         "hour": int(observation.get("hour", 0) or 0),
         "day": int(observation.get("day", 0) or 0),
         "money": float(farm.get("money", 0.0) or 0.0),
-        "opp_money": float(opp.get("money", 0.0) or 0.0),
         "hires_today": int(farm.get("hires_today", 0) or 0),
         "n_hands": len(hands) if isinstance(hands, list) else 0,
     }
 
 
-def should_scale_farm(observation: Dict[str, Any]) -> bool:
-    """Hire 8 / buy NE only when behind a richer farm or already compounding.
-
-    Finn/Walter/Rosa stay on the 4-hand wheat loop unless we are losing or
-    already well above their banks. Hana's ~12k bank trips the scale gate.
-    """
-    labor = farm_labor_state(observation)
-    day = int(labor["day"])
-    mine = float(labor["money"])
-    opp = float(labor.get("opp_money") or 0.0)
-    if day < 4:
-        return False
-    if opp >= mine + 400.0:
-        return True
-    if opp >= 9000.0 and day >= 6:
-        return True
-    if mine >= 8000.0 and day >= 8:
-        return True
-    return False
-
-
-def daily_hire_target_for_day(day: int, observation: Optional[Dict[str, Any]] = None) -> int:
-    """Crew size for this calendar day (4 unless scale gate → 8)."""
-    if observation is not None and not should_scale_farm(observation):
-        return 4
+def daily_hire_target_for_day(day: int) -> int:
+    """Crew size for this calendar day (Hana-style ramp 4→8)."""
     target = int(HANDS_BY_DAY[0][1]) if HANDS_BY_DAY else int(DAILY_HIRE_TARGET)
     for from_day, count in HANDS_BY_DAY:
         if int(day) >= int(from_day):
             target = int(count)
-    if observation is None:
-        return min(int(target), 4)  # conservative without obs
     return min(int(target), int(CREW_HAND_CAP))
 
 
@@ -253,8 +226,6 @@ def land_buy_wanted(
         return False
     if int(labor["day"]) < int(LAND_MIN_DAY):
         return False
-    if not should_scale_farm(observation):
-        return False
     census = farm_plant_census(observation)
     if int(census["plants"]) < int(LAND_MIN_PLANTS):
         return False
@@ -284,7 +255,7 @@ def daily_hire_orders_wanted(
     already = int(labor["hires_today"])
     have = int(labor["n_hands"])
     if target is None:
-        cap = daily_hire_target_for_day(int(labor["day"]), observation)
+        cap = daily_hire_target_for_day(int(labor["day"]))
     else:
         cap = int(target)
     cap = min(int(cap), int(CREW_HAND_CAP))

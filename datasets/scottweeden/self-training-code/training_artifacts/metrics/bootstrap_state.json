@@ -1,108 +1,234 @@
 {
   "bootstrapped_dates": [
+    "2026-07-30",
+    "2026-07-31",
+    "2026-08-01",
+    "2026-08-02",
+    "2026-08-03",
+    "2026-08-04",
+    "2026-08-05",
+    "2026-08-06",
+    "2026-08-07",
+    "2026-08-08",
+    "2026-08-09",
+    "2026-08-10",
+    "2026-08-11",
+    "2026-08-12",
+    "2026-08-13",
+    "2026-08-14",
     "2026-08-15",
-    "2026-08-16"
+    "2026-08-16",
+    "2026-08-17",
+    "2026-08-18",
+    "2026-08-19",
+    "2026-08-20",
+    "2026-08-21"
   ],
   "runs": [
     {
       "new_days": [
-        "2026-08-15",
-        "2026-08-16"
+        "2026-08-17",
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20",
+        "2026-08-21"
       ],
       "day_stats": [
         {
-          "date": "2026-08-15",
-          "episodes": 2,
-          "transitions": 5752,
-          "buffer_seeded": 2876,
+          "date": "2026-08-17",
+          "episodes": 699,
+          "transitions": 1005162,
+          "buffer_seeded": 40000,
           "bc_epoch_losses": [
-            2.3835896253585815,
-            2.2452836434046426,
-            2.105433464050293,
-            1.9398760795593262
+            0.22325226268739953
           ],
-          "bc_final_loss": 1.9398760795593262,
+          "bc_final_loss": 0.22325226268739953,
           "corpus_stats": {
-            "episode_count": 697,
-            "avg_score_mean": 3026.5300721305593,
-            "min_score_mean": 2998.797230956958,
-            "sum_score_mean": 6053.060144261119,
-            "score_margin_mean": 27.732841173601166,
-            "size_bytes_total": 21462110197,
-            "size_bytes_mean": 30792123.668579627
+            "episode_count": 699,
+            "avg_score_mean": 2947.1821780658083,
+            "min_score_mean": 2924.558730955651,
+            "sum_score_mean": 5894.36435616452,
+            "score_margin_mean": 22.62344711015736,
+            "size_bytes_total": 21464858938,
+            "size_bytes_mean": 30707952.70100143
           }
         },
         {
-          "date": "2026-08-16",
-          "episodes": 2,
-          "transitions": 5752,
-          "buffer_seeded": 2876,
+          "date": "2026-08-18",
+          "episodes": 697,
+          "transitions": 1002286,
+          "buffer_seeded": 40000,
           "bc_epoch_losses": [
-            1.7487524549166362,
-            1.5452865362167358,
-            1.3077130913734436,
-            1.0951987107594807
+            0.1565277958816226
           ],
-          "bc_final_loss": 1.0951987107594807,
+          "bc_final_loss": 0.1565277958816226,
           "corpus_stats": {
-            "episode_count": 699,
-            "avg_score_mean": 2987.1080068941346,
-            "min_score_mean": 2960.4211421659516,
-            "sum_score_mean": 5974.216013771102,
-            "score_margin_mean": 26.68686472818312,
-            "size_bytes_total": 21472964135,
-            "size_bytes_mean": 30719548.118741058
+            "episode_count": 697,
+            "avg_score_mean": 2881.630469906743,
+            "min_score_mean": 2860.8693028593975,
+            "sum_score_mean": 5763.260939853659,
+            "score_margin_mean": 20.761167047345776,
+            "size_bytes_total": 21459751622,
+            "size_bytes_mean": 30788739.773314204
+          }
+        },
+        {
+          "date": "2026-08-19",
+          "episodes": 695,
+          "transitions": 999410,
+          "buffer_seeded": 40000,
+          "bc_epoch_losses": [
+            0.2665142918719883
+          ],
+          "bc_final_loss": 0.2665142918719883,
+          "corpus_stats": {
+            "episode_count": 695,
+            "avg_score_mean": 2908.994524647482,
+            "min_score_mean": 2886.865386378417,
+            "sum_score_mean": 5817.98904932518,
+            "score_margin_mean": 22.129138269064754,
+            "size_bytes_total": 21450101283,
+            "size_bytes_mean": 30863455.083453238
+          }
+        },
+        {
+          "date": "2026-08-20",
+          "episodes": 698,
+          "transitions": 1003724,
+          "buffer_seeded": 40000,
+          "bc_epoch_losses": [
+            0.22965928657751916
+          ],
+          "bc_final_loss": 0.22965928657751916,
+          "corpus_stats": {
+            "episode_count": 698,
+            "avg_score_mean": 2863.3459466289396,
+            "min_score_mean": 2841.51689447851,
+            "sum_score_mean": 5726.691893282235,
+            "score_margin_mean": 21.829052150429796,
+            "size_bytes_total": 21469189764,
+            "size_bytes_mean": 30758151.5243553
+          }
+        },
+        {
+          "date": "2026-08-21",
+          "episodes": 697,
+          "transitions": 1002286,
+          "buffer_seeded": 40000,
+          "bc_epoch_losses": [
+            0.32349533162776756
+          ],
+          "bc_final_loss": 0.32349533162776756,
+          "corpus_stats": {
+            "episode_count": 697,
+            "avg_score_mean": 2853.0660981248207,
+            "min_score_mean": 2829.922390420373,
+            "sum_score_mean": 5706.132196262553,
+            "score_margin_mean": 23.143707704447642,
+            "size_bytes_total": 21459402721,
+            "size_bytes_mean": 30788239.197991394
           }
         }
       ],
-      "transitions_this_run": 11504,
-      "bc_final_loss": 1.0951987107594807
+      "transitions_this_run": 5012868,
+      "bc_final_loss": 0.32349533162776756
     }
   ],
-  "total_transitions": 11504,
+  "total_transitions": 5024372,
   "day_records": {
-    "2026-08-15": {
-      "date": "2026-08-15",
-      "episodes": 2,
-      "transitions": 5752,
-      "buffer_seeded": 2876,
+    "2026-08-17": {
+      "date": "2026-08-17",
+      "episodes": 699,
+      "transitions": 1005162,
+      "buffer_seeded": 40000,
       "bc_epoch_losses": [
-        2.3835896253585815,
-        2.2452836434046426,
-        2.105433464050293,
-        1.9398760795593262
+        0.22325226268739953
       ],
-      "bc_final_loss": 1.9398760795593262,
-      "corpus_stats": {
-        "episode_count": 697,
-        "avg_score_mean": 3026.5300721305593,
-        "min_score_mean": 2998.797230956958,
-        "sum_score_mean": 6053.060144261119,
-        "score_margin_mean": 27.732841173601166,
-        "size_bytes_total": 21462110197,
-        "size_bytes_mean": 30792123.668579627
-      }
-    },
-    "2026-08-16": {
-      "date": "2026-08-16",
-      "episodes": 2,
-      "transitions": 5752,
-      "buffer_seeded": 2876,
-      "bc_epoch_losses": [
-        1.7487524549166362,
-        1.5452865362167358,
-        1.3077130913734436,
-        1.0951987107594807
-      ],
-      "bc_final_loss": 1.0951987107594807,
+      "bc_final_loss": 0.22325226268739953,
       "corpus_stats": {
         "episode_count": 699,
-        "avg_score_mean": 2987.1080068941346,
-        "min_score_mean": 2960.4211421659516,
-        "sum_score_mean": 5974.216013771102,
-        "score_margin_mean": 26.68686472818312,
-        "size_bytes_total": 21472964135,
-        "size_bytes_mean": 30719548.118741058
+        "avg_score_mean": 2947.1821780658083,
+        "min_score_mean": 2924.558730955651,
+        "sum_score_mean": 5894.36435616452,
+        "score_margin_mean": 22.62344711015736,
+        "size_bytes_total": 21464858938,
+        "size_bytes_mean": 30707952.70100143
+      }
+    },
+    "2026-08-18": {
+      "date": "2026-08-18",
+      "episodes": 697,
+      "transitions": 1002286,
+      "buffer_seeded": 40000,
+      "bc_epoch_losses": [
+        0.1565277958816226
+      ],
+      "bc_final_loss": 0.1565277958816226,
+      "corpus_stats": {
+        "episode_count": 697,
+        "avg_score_mean": 2881.630469906743,
+        "min_score_mean": 2860.8693028593975,
+        "sum_score_mean": 5763.260939853659,
+        "score_margin_mean": 20.761167047345776,
+        "size_bytes_total": 21459751622,
+        "size_bytes_mean": 30788739.773314204
+      }
+    },
+    "2026-08-19": {
+      "date": "2026-08-19",
+      "episodes": 695,
+      "transitions": 999410,
+      "buffer_seeded": 40000,
+      "bc_epoch_losses": [
+        0.2665142918719883
+      ],
+      "bc_final_loss": 0.2665142918719883,
+      "corpus_stats": {
+        "episode_count": 695,
+        "avg_score_mean": 2908.994524647482,
+        "min_score_mean": 2886.865386378417,
+        "sum_score_mean": 5817.98904932518,
+        "score_margin_mean": 22.129138269064754,
+        "size_bytes_total": 21450101283,
+        "size_bytes_mean": 30863455.083453238
+      }
+    },
+    "2026-08-20": {
+      "date": "2026-08-20",
+      "episodes": 698,
+      "transitions": 1003724,
+      "buffer_seeded": 40000,
+      "bc_epoch_losses": [
+        0.22965928657751916
+      ],
+      "bc_final_loss": 0.22965928657751916,
+      "corpus_stats": {
+        "episode_count": 698,
+        "avg_score_mean": 2863.3459466289396,
+        "min_score_mean": 2841.51689447851,
+        "sum_score_mean": 5726.691893282235,
+        "score_margin_mean": 21.829052150429796,
+        "size_bytes_total": 21469189764,
+        "size_bytes_mean": 30758151.5243553
+      }
+    },
+    "2026-08-21": {
+      "date": "2026-08-21",
+      "episodes": 697,
+      "transitions": 1002286,
+      "buffer_seeded": 40000,
+      "bc_epoch_losses": [
+        0.32349533162776756
+      ],
+      "bc_final_loss": 0.32349533162776756,
+      "corpus_stats": {
+        "episode_count": 697,
+        "avg_score_mean": 2853.0660981248207,
+        "min_score_mean": 2829.922390420373,
+        "sum_score_mean": 5706.132196262553,
+        "score_margin_mean": 23.143707704447642,
+        "size_bytes_total": 21459402721,
+        "size_bytes_mean": 30788239.197991394
       }
     }
   }

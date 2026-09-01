@@ -254,7 +254,7 @@ class HierarchicalDQNBranching(nn.Module):
             "value": V,
             "farmer_verb": Q_farmer_verb,
             "crop_parameter": Q_crop,
-            "hands": torch.stack(Q_hands, dim=1),  # (B, num_hands, num_hand_actions)
+            "hands": Q_hands,
             "market": Q_market
         }
 

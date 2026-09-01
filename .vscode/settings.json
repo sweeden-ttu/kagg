@@ -2,6 +2,27 @@
   "python.defaultInterpreterPath": "/Users/sweeden/miniforge3/envs/kagg/bin/python",
   "python.condaPath": "/Users/sweeden/miniforge3/bin/conda",
   "python.terminal.activateEnvironment": true,
+  "terminal.integrated.env.osx": {
+    "CURSOR_CONDA_ENV": "kagg"
+  },
+  "terminal.integrated.profiles.osx": {
+    "kagg": {
+      "path": "/bin/zsh",
+      "args": ["-l"],
+      "env": {
+        "CURSOR_CONDA_ENV": "kagg"
+      },
+      "overrideName": true
+    }
+  },
+  "terminal.integrated.defaultProfile.osx": "kagg",
+  "terminal.integrated.automationProfile.osx": {
+    "path": "/bin/zsh",
+    "args": ["-l"],
+    "env": {
+      "CURSOR_CONDA_ENV": "kagg"
+    }
+  },
   "python.languageServer": "None",
   "jupyter.jupyterServerType": "remote",
   "jupyter.jupyterServerURI": "http://nb.local.com:8888/",
@@ -16,6 +37,7 @@
     "${workspaceFolder}/datasets/scottweeden/self-training-code"
   ],
   "cursorpyright.analysis.autoImportCompletions": true,
+  
   "cursorpyright.analysis.useLibraryCodeForTypes": true,
 
   "basedpyright.analysis.typeCheckingMode": "basic",

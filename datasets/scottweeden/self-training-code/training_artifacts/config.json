@@ -7,6 +7,11 @@
   "batch_size": 32,
   "checkpoint_interval": 10,
   "use_kaggle_env": true,
+  "kinematic_phase_a": 3,
+  "kinematic_phase_b": 4,
+  "kinematic_phase_c": 6,
+  "turns_per_cycle": 24,
+  "cycles_per_episode": 30,
   "max_episode_steps": 720,
   "n_eval_episodes": 10,
   "bootstrap_episodes": null,
@@ -26,15 +31,35 @@
   "bootstrap_mode": "daily_incremental",
   "bootstrap_days_per_run": 5,
   "publish_code_dataset": true,
-  "timestamp": "2026-08-29T19:52:00.536269",
+  "opponents_dir": null,
+  "ladder_eval_episodes": 0,
+  "ladder_win_rate_target": 0.75,
+  "min_self_play_episodes": 0,
+  "timestamp": "2026-08-30T14:53:27.168233",
   "resumed_from": "/kaggle/working/run/checkpoints/training_state_latest.pt",
+  "reward_phase_gates": {
+    "mode": "kinematic_invest_liquidate_mix",
+    "season_days": 30,
+    "hours_per_day": 24,
+    "invest_liquidate_start": [
+      0.25,
+      0.75
+    ],
+    "invest_liquidate_end": [
+      0.75,
+      0.25
+    ],
+    "mix_bonus_scale": 0.8,
+    "schedule_affinity": 0.25,
+    "turns_per_day_ref": 24
+  },
   "last_completed_episode": 25,
   "bootstrap_days_this_run": [
-    "2026-08-10",
-    "2026-08-11",
-    "2026-08-12",
-    "2026-08-13",
-    "2026-08-14"
+    "2026-08-17",
+    "2026-08-18",
+    "2026-08-19",
+    "2026-08-20",
+    "2026-08-21"
   ],
   "bootstrapped_dates": [
     "2026-07-30",
@@ -52,7 +77,14 @@
     "2026-08-11",
     "2026-08-12",
     "2026-08-13",
-    "2026-08-14"
+    "2026-08-14",
+    "2026-08-15",
+    "2026-08-16",
+    "2026-08-17",
+    "2026-08-18",
+    "2026-08-19",
+    "2026-08-20",
+    "2026-08-21"
   ],
-  "bootstrap_transitions_loaded": 4929464
+  "bootstrap_transitions_loaded": 5012868
 }
