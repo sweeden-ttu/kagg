@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from kaggriculture_adapter import PATH_B_TILE_CHANNELS
 from kaggriculture_self_play_training import (
     SOURCE_BOOTSTRAP,
     SOURCE_SELFPLAY,
@@ -13,7 +14,7 @@ from kaggriculture_self_play_training import (
 
 def _tr(seed: int = 0):
     rng = np.random.default_rng(seed)
-    tiles = rng.random((9, 10, 10), dtype=np.float32)
+    tiles = rng.random((PATH_B_TILE_CHANNELS, 10, 10), dtype=np.float32)
     numeric = rng.random(55, dtype=np.float32)
     hands = np.zeros(6, dtype=np.int64)
     market = np.zeros(10, dtype=np.int64)
@@ -61,3 +62,36 @@ def test_bootstrap_reservoir_keeps_capacity():
         buf.push(*_tr(i), source=SOURCE_BOOTSTRAP)
     assert buf.bootstrap_size == 5
     assert buf._bootstrap_seen >= 20
+
+
+def test_next_masks_collate_and_default_to_all_valid():
+    """Masked-DDQN contract: pushed next_masks come back as tensors; legacy
+    transitions without masks collate to all-valid masks."""
+    buf = PrioritizedReplayBuffer(capacity=16, bootstrap_fraction=0.5)
+    for i in range(4):
+        t = list(_tr(i))
+        # Push a masked transition (11-field format).
+        masks = {
+            "farmer_verb": np.zeros(15, dtype=bool),
+            "crop_parameter": np.zeros(5, dtype=bool),
+            "hands": np.zeros((6, 15), dtype=bool),
+            "market": np.zeros(10, dtype=bool),
+        }
+        masks["farmer_verb"][0] = True  # PASS only
+        masks["crop_parameter"][0] = True
+        masks["hands"][:, 0] = True      # PASS only for every hand
+        masks["market"][0] = True        # PASS only
+        buf.push(*t, next_masks=masks, source=SOURCE_BOOTSTRAP)
+    # Push two legacy transitions (10-field format, no masks).
+    for i in range(2):
+        buf.push(*_tr(100 + i), source=SOURCE_BOOTSTRAP)
+
+    batch, _, _ = buf.sample(batch_size=4)
+    assert "next_farmer_mask" in batch
+    assert batch["next_farmer_mask"].shape == (4, 15)
+    assert batch["next_crop_mask"].shape == (4, 5)
+    assert batch["next_hands_mask"].shape == (4, 6, 15)
+    assert batch["next_market_mask"].shape == (4, 10)
+    # Some sampled transition is masked (PASS-only) and others all-valid.
+    assert batch["next_farmer_mask"].sum(dim=-1).max() == 15  # at least one all-valid
+    assert batch["next_farmer_mask"].sum(dim=-1).min() == 1   # at least one PASS-only

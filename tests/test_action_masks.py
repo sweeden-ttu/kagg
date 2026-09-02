@@ -8,6 +8,7 @@ from kaggriculture_adapter import (
     FARMER_ACTIONS,
     LAND_PRICES,
     MARKET_ACTIONS,
+    SEED_COSTS,
     get_action_masks,
     plant_is_harvestable,
     plant_is_mature,
@@ -62,7 +63,7 @@ def test_buy_land_blocked_when_broke():
     obs = _base_obs(money=50.0, unlocked=[[0, 0]], fert_price=100.0)
     m = get_action_masks(obs)["market"]
     assert not m[MARKET_ACTIONS["BUY_LAND"]]
-    assert m[MARKET_ACTIONS["BUY_SEED"]]  # cheapest seed is 2–10
+    assert m[MARKET_ACTIONS["BUY_SEED"]]  # cheapest seed is 10
     assert not m[MARKET_ACTIONS["BUY_PRODUCT"]]
 
 
@@ -82,6 +83,41 @@ def test_sell_when_shed_has_crop():
     m = get_action_masks(obs)["market"]
     assert m[MARKET_ACTIONS["SELL"]]
     assert not m[MARKET_ACTIONS["BUY_LAND"]]
+
+
+def test_engine_cost_constants_match_game():
+    """Regression: seed + land prices must equal the competition engine so market
+    masks reflect real affordability (they were 2–10x too cheap before)."""
+    assert SEED_COSTS == {
+        "WHEAT": 10,
+        "CARROT": 20,
+        "TOMATO": 50,
+        "STRAWBERRY": 100,
+        "MELON": 80,
+    }
+    assert LAND_PRICES == [1000, 2000, 4000]
+
+
+def test_land_affordable_below_2000_after_nw_expansion():
+    # NE land costs 1000 — it was previously hidden by a money >= 2000 gate.
+    obs = _base_obs(money=LAND_PRICES[0], unlocked=[[0, 0]])
+    assert get_action_masks(obs)["market"][MARKET_ACTIONS["BUY_LAND"]]
+
+
+def test_hands_masks_follow_hand_position():
+    obs = _base_obs(money=3000.0, seeds={"WHEAT": 2})
+    obs["farms"][0]["hands"] = [[1, 1], [3, 3]]  # hand0 stands on the WEED
+    masks = get_action_masks(obs)
+    hm = masks["hands"]
+    assert hm.shape == (6, 15)
+    # hand0 is ON a weed → DIG is legal (plus PASS + movement).
+    assert hm[0, FARMER_ACTIONS["DIG"]]
+    assert hm[0, FARMER_ACTIONS["PASS"]]
+    # hand1 stands on EMPTY with seeds → PLANT is legal.
+    assert hm[1, FARMER_ACTIONS["PLANT"]]
+    # Un-hired hands (indices 2-5) are PASS-only and can never act.
+    assert hm[2].sum() == 1 and hm[2, FARMER_ACTIONS["PASS"]]
+    assert not hm[2, FARMER_ACTIONS["WATER"]]
 
 
 def test_action_masker_delegates_and_uses_player_farm():

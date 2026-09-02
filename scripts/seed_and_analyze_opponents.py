@@ -245,6 +245,7 @@ def extract_transitions_from_game(
             "reward": float(r0),
             "next_tiles": enc_next_p0["tiles"],
             "next_numeric": enc_next_p0["numeric"],
+            "next_masks": get_action_masks(next_obs_p0),
             "done": is_done,
         })
 
@@ -278,6 +279,7 @@ def extract_transitions_from_game(
             "reward": float(r1),
             "next_tiles": enc_next_p1["tiles"],
             "next_numeric": enc_next_p1["numeric"],
+            "next_masks": get_action_masks(next_obs_p1),
             "done": is_done,
         })
 

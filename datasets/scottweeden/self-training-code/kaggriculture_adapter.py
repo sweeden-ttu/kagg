@@ -95,8 +95,20 @@ TILE_CLASS: Dict[str, int] = {
 
 CROP_TO_TILE_CLASS = {crop: TILE_CLASS[crop] for crop in CROPS}
 
-SEED_COSTS = {"WHEAT": 10, "CARROT": 8, "TOMATO": 5, "STRAWBERRY": 3, "MELON": 2}
-LAND_PRICES: List[int] = [200, 400, 800, 1600]
+# WARNING: these MUST match the actual competition engine (repo root kaggriculture.py).
+# They were previously CARROT=8 / TOMATO=5 / STRAWBERRY=3 / MELON=2 and land
+# [200, 400, 800, 1600] — 2–10x cheaper than the real game. That made the market
+# action masks claim actions were affordable when they were not, so the trained
+# policy emitted silent no-ops (BuySeed/BuyLand with insufficient bank) on live
+# servers and the BUY_LAND gate hid genuinely affordable expansions.
+SEED_COSTS = {"WHEAT": 10, "CARROT": 20, "TOMATO": 50, "STRAWBERRY": 100, "MELON": 80}
+LAND_PRICES: List[int] = [1000, 2000, 4000]
+
+# Path B observation encoding.
+SEASON_DAYS: int = 30  # competition season length (matches engine + reward shaper)
+# Number of channels in encode_path_b_observation output. Order matters: keep
+# PATH_B_TILE_CHANNELS and the channel indices below in sync with the encoder.
+PATH_B_TILE_CHANNELS: int = 18
 
 
 def hire_cost_today(hires_today: int) -> int:
@@ -324,14 +336,26 @@ def encode_path_b_observation(
     observation: Dict[str, Any],
     player_id: int,
 ) -> Dict[str, np.ndarray]:
-    """Convert official observation to Path B float tiles (9,10,10) + numeric(55)."""
+    """Convert official observation to Path B float tiles (18,10,10) + numeric(55).
+
+    Tile channels (fixed order; PATH_B_TILE_CHANNELS must match this list):
+      0  my farmer           9  WEED
+      1  opponent farmer    10  LOCKED
+      2  watered_today      11  COOP structure
+      3  WHEAT              12  PASTURE structure
+      4  CARROT             13  animal present
+      5  TOMATO             14  fed_today
+      6  STRAWBERRY         15  cared_today
+      7  MELON              16  fertilizer_available
+      8  yield_units (/6)   17  fertilized (plant)
+    """
     farms = observation.get("farms", []) or []
     private = observation.get("private", {}) or {}
     market = observation.get("market", {}) or {}
     my_farm = farms[player_id] if len(farms) > player_id else {}
     opp_farm = farms[1 - player_id] if len(farms) > 1 - player_id else {}
 
-    tiles_grid = np.zeros((9, 10, 10), dtype=np.float32)
+    tiles_grid = np.zeros((PATH_B_TILE_CHANNELS, 10, 10), dtype=np.float32)
     my_farmer = my_farm.get("farmer", [0, 0])
     opp_farmer = opp_farm.get("farmer", [0, 0])
 
@@ -345,11 +369,14 @@ def encode_path_b_observation(
             tiles_grid[1, fy, fx] = 1.0
 
     raw_tiles = my_farm.get("tiles", [])
+    day = int(observation.get("day", 0) or 0)
     for y in range(min(10, len(raw_tiles))):
         row = raw_tiles[y]
         for x in range(min(10, len(row))):
             tile = row[x]
-            if isinstance(tile, dict):
+            if tile == "LOCKED":
+                tiles_grid[10, y, x] = 1.0
+            elif isinstance(tile, dict):
                 if tile.get("watered_today"):
                     tiles_grid[2, y, x] = 1.0
                 kind = tile.get("kind")
@@ -359,11 +386,28 @@ def encode_path_b_observation(
                         tiles_grid[3 + CROPS.index(crop), y, x] = 1.0
                     progress = tile.get("yield_units", 0)
                     if isinstance(progress, (int, float)):
-                        tiles_grid[8, y, x] = min(1.0, float(progress))
+                        tiles_grid[8, y, x] = min(1.0, float(progress) / 6.0)
+                    if int(tile.get("fertilized_until_day", 0) or 0) >= day:
+                        tiles_grid[17, y, x] = 1.0
+                elif kind == "WEED":
+                    tiles_grid[9, y, x] = 1.0
+                elif kind in ("COOP", "PASTURE"):
+                    tiles_grid[11 if kind == "COOP" else 12, y, x] = 1.0
+                    if tile.get("animal"):
+                        tiles_grid[13, y, x] = 1.0
+                    if tile.get("fed_today"):
+                        tiles_grid[14, y, x] = 1.0
+                    if tile.get("cared_today"):
+                        tiles_grid[15, y, x] = 1.0
+                    if tile.get("fertilizer_available"):
+                        tiles_grid[16, y, x] = 1.0
+                    progress = tile.get("yield_units", 0)
+                    if isinstance(progress, (int, float)):
+                        tiles_grid[8, y, x] = min(1.0, float(progress) / 6.0)
 
     numeric: List[float] = []
-    numeric.append(float(observation.get("day", 0)) / float(CYCLES_PER_EPISODE))
-    numeric.append(float(observation.get("hour", 0)) / float(TURNS_PER_CYCLE))
+    numeric.append(float(observation.get("day", 0)) / float(SEASON_DAYS))
+    numeric.append(float(observation.get("hour", 0)) / float(COMPETITION_TURNS_PER_DAY))
     my_money = float(my_farm.get("money", 0.0))
     opp_money = float(opp_farm.get("money", 0.0))
     numeric.extend([
@@ -390,6 +434,19 @@ def encode_path_b_observation(
         numeric.append(1.0 if shop in unlocked else 0.0)
     numeric.append(len(my_farm.get("hands", [])) / 6.0)
     numeric.append(len(opp_farm.get("hands", [])) / 6.0)
+    # Per-hand normalized positions (6 × 2) so the hand heads can coordinate
+    # spatially instead of sharing one position-blind latent.
+    my_hands = my_farm.get("hands", []) or []
+    for i in range(6):
+        if i < len(my_hands) and isinstance(my_hands[i], (list, tuple)) and len(my_hands[i]) >= 2:
+            numeric.append(float(my_hands[i][0]) / 10.0)
+            numeric.append(float(my_hands[i][1]) / 10.0)
+        else:
+            numeric.append(0.0)
+            numeric.append(0.0)
+    # Animal / fertilizer products held in the shed.
+    for item in ("EGG", "MILK", "WOOL", "FERTILIZER"):
+        numeric.append(float(shed.get(item, 0)) / 100.0)
     while len(numeric) < 55:
         numeric.append(0.0)
 
@@ -514,15 +571,24 @@ def decode_hand_verb(
     crop_idx: int = 0,
     observation: Optional[Dict[str, Any]] = None,
     hand_pos: Optional[Tuple[int, int]] = None,
+    faithful: bool = False,
 ) -> List[Any]:
     verb = FARMER_INDEX_TO_VERB[min(max(hand_idx, 0), NUM_HAND_ACTIONS - 1)]
-    if verb in ("NORTH", "SOUTH", "WEST", "EAST", "WATER", "HARVEST", "DIG"):
-        return [verb]
     if verb == "PLANT":
         crop = CROPS[min(max(crop_idx, 0), len(CROPS) - 1)]
         return ["PLANT", crop]
+    # Faithful mode decodes the exact indexed verb so the transition the buffer
+    # stores ("action_hands = idx") is the command the engine actually executed.
+    # Previously, verbs like BUILD_COOP/DROP/PICKUP silently became PASS (or were
+    # rewritten to heuristic WATER/HARVEST/DIG), mislabeling every such transition.
+    if faithful or verb in (
+        "PASS", "DIG", "WATER", "HARVEST",
+        "NORTH", "SOUTH", "WEST", "EAST",
+        "DROP", "PICKUP", "BUILD_COOP", "BUILD_PASTURE",
+    ):
+        return [verb]
 
-    # Smart hand fallback for watering and harvest assistance
+    # Smart hand fallback for watering and harvest assistance.
     if observation is not None and hand_pos is not None:
         hx, hy = hand_pos
         player = int(observation.get("player", 0) or 0)
@@ -591,8 +657,14 @@ def decode_market_verb(market_idx: int, observation: Dict[str, Any]) -> List[Any
 def decode_action(
     action_indices: Dict[str, Any],
     observation: Dict[str, Any],
+    *,
+    faithful: bool = False,
 ) -> Dict[str, Any]:
-    """Decode branched integer action to official Kaggle command dict."""
+    """Decode branched integer action to official Kaggle command dict.
+
+    ``faithful=True`` (Path B / RL loop) decodes every hand to exactly the indexed
+    verb so stored actions equal executed actions.
+    """
     crop_idx = int(action_indices.get("crop", action_indices.get("action_crop", 0)))
     farmer = decode_farmer_verb(
         int(action_indices["farmer"]),
@@ -616,7 +688,13 @@ def decode_action(
             h_pos = (int(hand_obj["pos"][0]), int(hand_obj["pos"][1]))
         elif isinstance(hand_obj, (list, tuple)) and len(hand_obj) >= 2:
             h_pos = (int(hand_obj[0]), int(hand_obj[1]))
-        hands_out.append(decode_hand_verb(h_idx, crop_idx=crop_idx, observation=observation, hand_pos=h_pos))
+        hands_out.append(decode_hand_verb(
+            h_idx,
+            crop_idx=crop_idx,
+            observation=observation,
+            hand_pos=h_pos,
+            faithful=faithful,
+        ))
 
     market_indices = action_indices.get("market")
     market_orders: List[List[Any]] = []
@@ -639,7 +717,11 @@ def decode_path_b_action(
     market_indices: List[int],
     observation: Dict[str, Any],
 ) -> Dict[str, Any]:
-    """Decode Path B hierarchical indices via shared decode logic."""
+    """Decode Path B hierarchical indices via shared decode logic.
+
+    Hands decode faithfully (faithful=True) so the integer stored in the replay
+    buffer is exactly the command the engine executed — no heuristic rewrites.
+    """
     return decode_action(
         {
             "farmer": verb_idx,
@@ -648,6 +730,7 @@ def decode_path_b_action(
             "market": market_indices,
         },
         observation,
+        faithful=True,
     )
 
 
@@ -718,7 +801,7 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
     unlocked = my_farm.get("unlocked_quadrants", [])
     if isinstance(unlocked, list) and len(unlocked) < 4:
         land_idx = max(0, len(unlocked) - 1)
-        if land_idx < len(LAND_PRICES) and money >= LAND_PRICES[land_idx] and day <= 20 and money >= 2000:
+        if land_idx < len(LAND_PRICES) and money >= LAND_PRICES[land_idx] and day <= 20:
             market_mask[MARKET_ACTIONS["BUY_LAND"]] = True
 
     hires_today = int(my_farm.get("hires_today", 0) or 0)
@@ -730,10 +813,45 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
     if money >= 800 and day <= 20:
         market_mask[MARKET_ACTIONS["BUY_ANIMAL"]] = True
 
+    # Per-hand verb masks: hands act at their own tile position. Hands beyond the
+    # currently-hired count get a PASS-only mask (they never produce an action at
+    # decode time). This lets the network and exploration stay legal per hand.
+    hand_masks = np.zeros((NUM_HANDS, NUM_FARMER_ACTIONS), dtype=bool)
+    hands = my_farm.get("hands", []) or []
+    for h_idx in range(NUM_HANDS):
+        hand_masks[h_idx, FARMER_ACTIONS["PASS"]] = True
+        if h_idx >= len(hands):
+            continue
+        h_pos = hands[h_idx]
+        if not isinstance(h_pos, (list, tuple)) or len(h_pos) < 2:
+            continue
+        hx, hy = int(h_pos[0]), int(h_pos[1])
+        if 0 <= hy < len(tiles) and 0 <= hx < len(tiles[hy]):
+            htile = tiles[hy][hx]
+            if isinstance(htile, dict):
+                hkind = htile.get("kind")
+                if hkind == "WEED":
+                    hand_masks[h_idx, FARMER_ACTIONS["DIG"]] = True
+                elif hkind == "PLANT":
+                    if not htile.get("watered_today", False):
+                        hand_masks[h_idx, FARMER_ACTIONS["WATER"]] = True
+                    if plant_is_harvestable(htile, day):
+                        hand_masks[h_idx, FARMER_ACTIONS["HARVEST"]] = True
+                elif hkind not in ("LOCKED",) and has_seeds and day <= 26:
+                    hand_masks[h_idx, FARMER_ACTIONS["PLANT"]] = True
+            elif htile in ("EMPTY", "", None) and has_seeds and day <= 26:
+                hand_masks[h_idx, FARMER_ACTIONS["PLANT"]] = True
+        for dx, dy, idx in [(0, -1, FARMER_ACTIONS["NORTH"]), (0, 1, FARMER_ACTIONS["SOUTH"]),
+                            (-1, 0, FARMER_ACTIONS["WEST"]), (1, 0, FARMER_ACTIONS["EAST"])]:
+            nx, ny = hx + dx, hy + dy
+            if 0 <= nx < 10 and 0 <= ny < 10 and ny < len(tiles) and nx < len(tiles[ny]) and tiles[ny][nx] != "LOCKED":
+                hand_masks[h_idx, idx] = True
+
     return {
         "farmer_verb": farmer_mask,
         "crop_parameter": crop_mask,
         "market": market_mask,
+        "hands": hand_masks,
     }
 
 

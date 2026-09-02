@@ -66,9 +66,13 @@ def run_self_play_training(
     Parameters are the same components that train_self_play() creates.
     Returns the accumulated episode_metrics list.
     """
-    # Exploration parameter decay.
-    eps_start = 0.12  # BC was already run before this is called
-    eps_end = 0.03
+    # Exploration parameter decay. BC already ran before this is called, but the
+    # action space is large and hierarchical (15 farmer verbs × 6 hands × 10
+    # market orders) and the observation now exposes weeds/animals/land — a low ε
+    # floor would never explore those. Start high enough to discover behavior
+    # beyond the cloned expert, decay to a small floor.
+    eps_start = 0.35
+    eps_end = 0.05
     eps_decay_steps = max(1, total_episodes - learning_start_episodes)
     logger.info(
         "Self-play eps_start=%.2f (BC already completed)",
@@ -167,7 +171,15 @@ def run_self_play_training(
                 c_valid_idxs = np.where(masks["crop_parameter"])[0]
                 crop_idx = random.choice(c_valid_idxs) if len(c_valid_idxs) > 0 else 0
 
-                hands_indices = [random.randint(0, 14) for _ in range(online_net.num_hands)]
+                hands_indices = []
+                for h_i in range(online_net.num_hands):
+                    h_masks = masks.get("hands")
+                    h_valid = (
+                        np.where(h_masks[h_i])[0]
+                        if h_masks is not None and h_i < len(h_masks)
+                        else np.array([], dtype=np.int64)
+                    )
+                    hands_indices.append(random.choice(h_valid) if len(h_valid) > 0 else 0)
                 market_indices = []
                 m_valid_idxs = np.where(masks["market"])[0]
                 for _ in range(online_net.max_market_orders):
@@ -231,6 +243,9 @@ def run_self_play_training(
             parsed_next_p0 = parser.parse_observation(next_obs_p0)
 
             # 4. Save Transition into Prioritized Experience Replay Buffer
+            # Store the *next* state's action masks so the DDQN target can
+            # restrict its argmax to legal actions (masked Double Q-learning).
+            next_masks = HierarchicalActionMasker.get_dynamic_masks(next_obs_p0)
             buffer.push(
                 tiles=parsed_p0["tiles"],
                 numeric=parsed_p0["numeric"],
@@ -241,7 +256,8 @@ def run_self_play_training(
                 reward=shaped_reward_p0,
                 next_tiles=parsed_next_p0["tiles"],
                 next_numeric=parsed_next_p0["numeric"],
-                done=done
+                done=done,
+                next_masks=next_masks,
             )
 
             # Shift state reference

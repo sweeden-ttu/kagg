@@ -15,6 +15,7 @@ sys.path.insert(0, str(CODE_SRC))
 from kaggriculture_adapter import (  # noqa: E402
     NUM_HANDS,
     NUM_MARKET_ACTIONS,
+    PATH_B_TILE_CHANNELS,
     encode_path_b_action,
     encode_path_b_observation,
 )
@@ -36,8 +37,10 @@ def _path_b_transition(obs: Dict[str, Any], next_obs: Dict[str, Any], reward: fl
     action = encode_path_b_action(PASS_ACTION)
     tiles = encoded["tiles"]
     numeric = encoded["numeric"]
-    if tiles.shape != (9, 10, 10):
-        raise ValueError(f"expected Path B tiles (9, 10, 10), got {tiles.shape}")
+    if tiles.shape != (PATH_B_TILE_CHANNELS, 10, 10):
+        raise ValueError(
+            f"expected Path B tiles ({PATH_B_TILE_CHANNELS}, 10, 10), got {tiles.shape}"
+        )
     if numeric.shape != (55,):
         raise ValueError(f"expected Path B numeric (55,), got {numeric.shape}")
     if action["hands"].shape != (NUM_HANDS,):
@@ -86,7 +89,7 @@ def main() -> int:
 
     batch, indices, _weights = buf.sample(batch_size=8, beta=0.4)
     assert batch and len(indices) == 8, "expected mixed PER sample of size 8"
-    assert batch["tiles"].shape == (8, 9, 10, 10), batch["tiles"].shape
+    assert batch["tiles"].shape == (8, PATH_B_TILE_CHANNELS, 10, 10), batch["tiles"].shape
     assert batch["numeric"].shape == (8, 55), batch["numeric"].shape
 
     td_errors = np.linspace(0.1, 9.0, num=len(indices), dtype=np.float32)

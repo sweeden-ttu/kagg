@@ -215,6 +215,7 @@ def generate_expert_episodes(
                 reward=float(r0),
                 next_tiles=enc_next_p0["tiles"],
                 next_numeric=enc_next_p0["numeric"],
+                next_masks=get_action_masks(next_obs_p0),
                 done=is_done,
                 source=SOURCE_BOOTSTRAP,
             )

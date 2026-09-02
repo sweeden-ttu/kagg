@@ -8,6 +8,14 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import torch
 
+from kaggriculture_adapter import (
+    CROPS,
+    NUM_FARMER_ACTIONS,
+    NUM_HAND_ACTIONS,
+    NUM_HANDS,
+    NUM_MARKET_ACTIONS,
+)
+
 SOURCE_BOOTSTRAP = "bootstrap"
 SOURCE_SELFPLAY = "selfplay"
 
@@ -92,9 +100,17 @@ class PrioritizedReplayBuffer:
         next_tiles: np.ndarray,
         next_numeric: np.ndarray,
         done: bool,
+        next_masks: Optional[Dict[str, np.ndarray]] = None,
         source: str = SOURCE_SELFPLAY,
     ) -> None:
-        """Push a transition into the specified partition."""
+        """Push a transition into the specified partition.
+
+        ``next_masks`` is the action mask of the *next* state (keys
+        ``farmer_verb`` (15,), ``crop_parameter`` (5,), ``hands`` (6, 15),
+        ``market`` (10,)). It lets the DDQN target restrict its argmax to legal
+        actions. Transitions without masks (legacy checkpoints) collate to
+        all-valid masks, preserving old behavior.
+        """
         if source not in (SOURCE_BOOTSTRAP, SOURCE_SELFPLAY):
             raise ValueError(
                 f"source must be {SOURCE_BOOTSTRAP!r} or {SOURCE_SELFPLAY!r}, got {source!r}"
@@ -107,6 +123,7 @@ class PrioritizedReplayBuffer:
         transition = (
             tiles, numeric, action_verb, action_crop, action_hands,
             action_market, reward, next_tiles, next_numeric, done,
+            next_masks,
         )
 
         current_prios = prios[: len(buf)]
@@ -154,8 +171,29 @@ class PrioritizedReplayBuffer:
     def _batch_from_samples(
         self, samples: List[tuple], weights: np.ndarray
     ) -> Dict[str, torch.Tensor]:
-        """Collate a list of transitions into a tensor batch dict."""
-        tiles_b, numeric_b, act_v_b, act_c_b, act_h_b, act_m_b, r_b, n_tiles_b, n_num_b, d_b = zip(*samples)
+        """Collate a list of transitions into a tensor batch dict.
+
+        Handles both 10-field legacy transitions (no next-state masks) and the
+        11-field current format (with ``next_masks``). Missing masks default to
+        all-valid so masked-DDQN gracefully degrades on legacy buffers.
+        """
+        head = [s[:10] for s in samples]
+        tiles_b, numeric_b, act_v_b, act_c_b, act_h_b, act_m_b, r_b, n_tiles_b, n_num_b, d_b = zip(*head)
+
+        fv_masks, cc_masks, h_masks, mk_masks = [], [], [], []
+        for s in samples:
+            nm = s[10] if len(s) > 10 else None
+            if nm is None:
+                fv_masks.append(np.ones(NUM_FARMER_ACTIONS, dtype=bool))
+                cc_masks.append(np.ones(len(CROPS), dtype=bool))
+                h_masks.append(np.ones((NUM_HANDS, NUM_HAND_ACTIONS), dtype=bool))
+                mk_masks.append(np.ones(NUM_MARKET_ACTIONS, dtype=bool))
+            else:
+                fv_masks.append(np.asarray(nm.get("farmer_verb", np.ones(NUM_FARMER_ACTIONS, dtype=bool)), dtype=bool))
+                cc_masks.append(np.asarray(nm.get("crop_parameter", np.ones(len(CROPS), dtype=bool)), dtype=bool))
+                h_masks.append(np.asarray(nm.get("hands", np.ones((NUM_HANDS, NUM_HAND_ACTIONS), dtype=bool)), dtype=bool))
+                mk_masks.append(np.asarray(nm.get("market", np.ones(NUM_MARKET_ACTIONS, dtype=bool)), dtype=bool))
+
         return {
             "tiles": torch.as_tensor(np.array(tiles_b), dtype=torch.float32),
             "numeric": torch.as_tensor(np.array(numeric_b), dtype=torch.float32),
@@ -168,6 +206,10 @@ class PrioritizedReplayBuffer:
             "next_numeric": torch.as_tensor(np.array(n_num_b), dtype=torch.float32),
             "done": torch.as_tensor(d_b, dtype=torch.float32),
             "weights": torch.as_tensor(weights, dtype=torch.float32),
+            "next_farmer_mask": torch.as_tensor(np.array(fv_masks), dtype=torch.bool),
+            "next_crop_mask": torch.as_tensor(np.array(cc_masks), dtype=torch.bool),
+            "next_hands_mask": torch.as_tensor(np.array(h_masks), dtype=torch.bool),
+            "next_market_mask": torch.as_tensor(np.array(mk_masks), dtype=torch.bool),
         }
 
     def sample(

@@ -172,6 +172,7 @@ def generate_tier2_her_demonstrations(
                     "reward": float(r0),
                     "next_tiles": enc_next_p0["tiles"],
                     "next_numeric": enc_next_p0["numeric"],
+                    "next_masks": get_action_masks(next_obs_p0),
                     "done": is_done,
                     "p0_money": cur_m0,
                     "p1_money": opp_m0,
@@ -198,6 +199,7 @@ def generate_tier2_her_demonstrations(
                     reward=trans["reward"],
                     next_tiles=trans["next_tiles"],
                     next_numeric=trans["next_numeric"],
+                    next_masks=trans["next_masks"],
                     done=trans["done"],
                     source=SOURCE_BOOTSTRAP,
                 )
@@ -216,6 +218,7 @@ def generate_tier2_her_demonstrations(
                         reward=trans["reward"] + hindsight_bonus,
                         next_tiles=trans["next_tiles"],
                         next_numeric=trans["next_numeric"],
+                        next_masks=trans["next_masks"],
                         done=trans["done"],
                         source=SOURCE_BOOTSTRAP,
                     )

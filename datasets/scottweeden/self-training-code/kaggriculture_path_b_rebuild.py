@@ -13,6 +13,7 @@ from kaggriculture_adapter import (
     NUM_FARMER_ACTIONS,
     NUM_HANDS,
     NUM_MARKET_ACTIONS,
+    PATH_B_TILE_CHANNELS,
     encode_path_b_observation,
     get_action_masks,
     daily_hire_orders_wanted,
@@ -42,7 +43,7 @@ class KaggricultureFeatureExtractor(nn.Module):
     Dual-branch feature extractor mapping spatial observations (CNN) and global
     normalized numerical context (MLP) into a high-capacity joint latent space.
     """
-    def __init__(self, spatial_channels: int = 9, numeric_dim: int = 55, latent_dim: int = 512):
+    def __init__(self, spatial_channels: int = PATH_B_TILE_CHANNELS, numeric_dim: int = 55, latent_dim: int = 512):
         super().__init__()
         
         # CNN Branch
@@ -280,7 +281,25 @@ def apply_hierarchical_masks(q_values: Dict[str, torch.Tensor],
     cc_mask_tensor = torch.as_tensor(masks["crop_parameter"], dtype=torch.bool, device=device)
     masked_q["crop_parameter"] = torch.where(cc_mask_tensor, q_values["crop_parameter"], torch.tensor(-1e9, device=device))
     
-    masked_q["hands"] = q_values["hands"]
+    hand_masks = masks.get("hands")
+    if hand_masks is not None:
+        hand_masks_t = torch.as_tensor(np.asarray(hand_masks, dtype=bool), device=device)
+        masked_hands = []
+        for i in range(len(q_values["hands"])):
+            if i < hand_masks_t.shape[0]:
+                masked_hands.append(
+                    torch.where(
+                        hand_masks_t[i],
+                        q_values["hands"][i],
+                        torch.tensor(-1e9, device=device),
+                    )
+                )
+            else:
+                masked_hands.append(q_values["hands"][i])
+        masked_q["hands"] = masked_hands
+    else:
+        # Legacy masks (no per-hand masks available) — leave hands unmasked.
+        masked_q["hands"] = q_values["hands"]
     
     m_mask_tensor = torch.as_tensor(masks["market"], dtype=torch.bool, device=device).unsqueeze(0).unsqueeze(1)
     masked_q["market"] = torch.where(m_mask_tensor, q_values["market"], torch.tensor(-1e9, device=device))
@@ -584,10 +603,47 @@ class HierarchicalDoubleDQNLearner:
             q_next_online = self.online(batch["next_tiles"], batch["next_numeric"])
             V_next = q_next_online["value"].squeeze(-1)
 
-            best_verb = q_next_online["farmer_verb"].argmax(dim=-1)
-            best_crop = q_next_online["crop_parameter"].argmax(dim=-1)
-            best_hands = [q_next_online["hands"][i].argmax(dim=-1) for i in range(self.online.num_hands)]
-            best_market = q_next_online["market"].argmax(dim=-1)
+            fv_mask = batch.get("next_farmer_mask")
+            cc_mask = batch.get("next_crop_mask")
+            hm_mask = batch.get("next_hands_mask")
+            mk_mask = batch.get("next_market_mask")
+
+            def _masked_argmax(q_head: torch.Tensor, mask: Optional[torch.Tensor]) -> torch.Tensor:
+                """Argmax over legal actions; plain argmax when no mask is available."""
+                if mask is None:
+                    return q_head.argmax(dim=-1)
+                qh = q_head.clone()
+                qh = torch.where(
+                    mask.to(qh.device),
+                    qh,
+                    torch.tensor(-1e9, device=qh.device),
+                )
+                return qh.argmax(dim=-1)
+
+            # Double Q with action masking: the ONLINE net picks the best *legal*
+            # next action, the TARGET net evaluates it. Without the mask the
+            # argmax routinely bootstraps on illegal actions (e.g. WATER on an
+            # empty tile), which is exactly the overestimation bias DDQN exists
+            # to remove.
+            best_verb = _masked_argmax(q_next_online["farmer_verb"], fv_mask)
+            best_crop = _masked_argmax(q_next_online["crop_parameter"], cc_mask)
+            best_hands = [
+                _masked_argmax(
+                    q_next_online["hands"][i],
+                    None if hm_mask is None else hm_mask[:, i],
+                )
+                for i in range(self.online.num_hands)
+            ]
+            best_market = torch.stack(
+                [
+                    _masked_argmax(
+                        q_next_online["market"][:, step, :],
+                        mk_mask,  # market mask is per-action-type, same for every order slot
+                    )
+                    for step in range(self.online.max_market_orders)
+                ],
+                dim=1,
+            )
 
             q_next_target = self.target(
                 batch["next_tiles"],

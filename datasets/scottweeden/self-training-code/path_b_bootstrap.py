@@ -10,7 +10,11 @@ from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 import numpy as np
 import torch
 
-from kaggriculture_adapter import encode_path_b_action, encode_path_b_observation
+from kaggriculture_adapter import (
+    encode_path_b_action,
+    encode_path_b_observation,
+    get_action_masks,
+)
 from dataset_loader import EPISODE_FILE_PATTERN, KaggleEpisodesLoader
 from datetime import date as date_cls, timedelta
 from episode_catalog import (
@@ -114,6 +118,8 @@ def parse_path_b_episode_transitions(
                 parsed = encode_path_b_observation(obs_with_player, player_id)
                 parsed_next = encode_path_b_observation(next_with_player, player_id)
                 action = encode_path_b_action(action_raw, max_market_orders=max_market_orders)
+                # Next-state action masks so the DDQN target argmax stays legal.
+                next_masks = get_action_masks(next_with_player)
 
                 cur_farms = observation.get("farms") or []
                 next_farms = next_observation.get("farms") or []
@@ -147,6 +153,7 @@ def parse_path_b_episode_transitions(
                     "raw_reward": raw_reward,
                     "next_tiles": parsed_next["tiles"],
                     "next_numeric": parsed_next["numeric"],
+                    "next_masks": next_masks,
                     "done": done,
                 }
             )
@@ -167,6 +174,8 @@ def _push_transition(buffer: Any, transition: Dict[str, Any]) -> None:
         "next_numeric": transition["next_numeric"],
         "done": transition["done"],
     }
+    if transition.get("next_masks") is not None:
+        push_kwargs["next_masks"] = transition["next_masks"]
     if hasattr(buffer, "push"):
         try:
             import inspect
