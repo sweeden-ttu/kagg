@@ -472,13 +472,27 @@ def prefer_farm_invest_actions(
                 if hire < m_mask.shape[-1]:
                     hire_legal = bool(m_mask[..., 0, hire])
 
+        farms = observation.get("farms", []) or []
+        player = int(observation.get("player", 0) or 0)
+        farm = farms[player] if len(farms) > player else {}
+        turn = int(observation.get("turn", 0) or 0)
+        hour = turn % 24
+        money = float(farm.get("money", 0.0) or 0.0)
+        hands = farm.get("hands", []) or []
+
         max_m_val = torch.max(market_out[..., 0, :])
-        if sell_legal and shed_count > 0:
-            market_out[..., 0, sell] = max_m_val + 100.0
-        elif buy_legal and seed_count <= 0 and day <= 24:
-            market_out[..., 0, buy_seed] = max_m_val + buy_seed_bonus
+        if hire_legal and hour == 0 and len(hands) < 4 and money >= 20 and day <= 24:
+            needed = min(4 - len(hands), 4)
+            for slot_i in range(needed):
+                market_out[..., slot_i, hire] = torch.max(market_out[..., slot_i, :]) + 130.0
+        elif sell_legal and (shed_count >= 10 or (day >= 26 and shed_count > 0)):
+            for slot_i in range(min(4, max(1, shed_count // 10))):
+                market_out[..., slot_i, sell] = torch.max(market_out[..., slot_i, :]) + 110.0
+        elif buy_legal and seed_count <= 4 and day <= 24:
+            for slot_i in range(min(3, max(1, (10 - seed_count) // 4))):
+                market_out[..., slot_i, buy_seed] = torch.max(market_out[..., slot_i, :]) + buy_seed_bonus
         elif seed_count >= seed_surplus_threshold or day >= 25:
-            market_out[..., 0, buy_seed] = market_out[..., 0, buy_seed] - buy_seed_surplus_penalty
+            market_out[..., :, buy_seed] = market_out[..., :, buy_seed] - buy_seed_surplus_penalty
 
         if day >= 26:
             # Endgame liquidation

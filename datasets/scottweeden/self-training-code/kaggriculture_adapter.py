@@ -476,14 +476,26 @@ def _best_sell_crop(observation: Dict[str, Any]) -> Optional[str]:
 
 def _best_buy_seed_crop(observation: Dict[str, Any]) -> Optional[str]:
     money = 0.0
-    farms = observation.get("farms", [])
-    player = observation.get("player", 0)
+    farms = observation.get("farms", []) or []
+    player = int(observation.get("player", 0) or 0)
     if len(farms) > player:
-        money = float(farms[player].get("money", 0.0))
-    for crop in CROPS:
-        if money >= SEED_COSTS.get(crop, 999):
-            return crop
-    return None
+        money = float(farms[player].get("money", 0.0) or 0.0)
+    day = int(observation.get("day", 1) or 1)
+    seeds = observation.get("private", {}).get("seeds", {}) or {}
+
+    if day <= 4:
+        pref = ["CARROT", "WHEAT"]
+    elif day <= 18:
+        pref = ["CARROT", "WHEAT", "TOMATO"]
+    elif day <= 24:
+        pref = ["CARROT", "WHEAT"]
+    else:
+        pref = ["WHEAT"]
+
+    for c in pref:
+        if seeds.get(c, 0) < 6 and money >= SEED_COSTS.get(c, 10):
+            return c
+    return pref[0] if money >= SEED_COSTS.get(pref[0], 10) else "WHEAT"
 
 
 def decode_farmer_verb(verb_idx: int, crop_idx: int, observation: Dict[str, Any]) -> List[Any]:
@@ -501,20 +513,55 @@ def decode_hand_verb(
     hand_idx: int,
     crop_idx: int = 0,
     observation: Optional[Dict[str, Any]] = None,
+    hand_pos: Optional[Tuple[int, int]] = None,
 ) -> List[Any]:
     verb = FARMER_INDEX_TO_VERB[min(max(hand_idx, 0), NUM_HAND_ACTIONS - 1)]
-    if verb == "WATER":
-        return ["WATER"]
-    if verb == "HARVEST":
-        return ["HARVEST"]
+    if verb in ("NORTH", "SOUTH", "WEST", "EAST", "WATER", "HARVEST", "DIG"):
+        return [verb]
     if verb == "PLANT":
         crop = CROPS[min(max(crop_idx, 0), len(CROPS) - 1)]
-        if observation is not None:
-            if observation.get("private", {}).get("seeds", {}).get(crop, 0) <= 0:
-                crop = _best_plant_crop(observation)
         return ["PLANT", crop]
-    if verb in ("NORTH", "SOUTH", "WEST", "EAST"):
-        return [verb]
+
+    # Smart hand fallback for watering and harvest assistance
+    if observation is not None and hand_pos is not None:
+        hx, hy = hand_pos
+        player = int(observation.get("player", 0) or 0)
+        farms = observation.get("farms", []) or []
+        farm = farms[player] if len(farms) > player else {}
+        tiles = farm.get("tiles", []) or []
+        if 0 <= hy < len(tiles) and 0 <= hx < len(tiles[hy]):
+            tile = tiles[hy][hx]
+            if isinstance(tile, dict):
+                if tile.get("kind") == "PLANT":
+                    if not tile.get("watered_today", False):
+                        return ["WATER"]
+                    if tile.get("yield_units", 0) >= 3:
+                        return ["HARVEST"]
+                elif tile.get("kind") == "WEED":
+                    return ["DIG"]
+
+            # Step toward nearest unwatered plant
+            best_target = None
+            min_dist = 999
+            for ty in range(min(5, len(tiles))):
+                for tx in range(min(5, len(tiles[ty]))):
+                    t = tiles[ty][tx]
+                    if isinstance(t, dict) and t.get("kind") == "PLANT" and not t.get("watered_today", False):
+                        d = abs(tx - hx) + abs(ty - hy)
+                        if d < min_dist:
+                            min_dist = d
+                            best_target = (tx, ty)
+            if best_target:
+                tx, ty = best_target
+                if tx < hx:
+                    return ["WEST"]
+                if tx > hx:
+                    return ["EAST"]
+                if ty < hy:
+                    return ["NORTH"]
+                if ty > hy:
+                    return ["SOUTH"]
+
     return ["PASS"]
 
 
@@ -528,28 +575,19 @@ def decode_market_verb(market_idx: int, observation: Dict[str, Any]) -> List[Any
         crop = _best_buy_seed_crop(observation)
         if crop:
             seeds = observation.get("private", {}).get("seeds", {}) or {}
-            qty = 4 if seeds.get(crop, 0) == 0 else 2
+            qty = 8 if seeds.get(crop, 0) == 0 else 4
             return [["BUY_SEED", crop, qty]]
         return []
     if verb == "SELL":
         crop = _best_sell_crop(observation)
         if crop:
             shed = observation.get("private", {}).get("shed", {}) or {}
-            qty = min(5, int(shed.get(crop, 5) or 5))
+            qty = min(40, int(shed.get(crop, 40) or 40))
             if qty > 0:
                 return [["SELL", crop, qty]]
         return []
     if verb == "HIRE":
         return [["HIRE"]]
-    if verb == "BUY_ANIMAL":
-        return [["BUY_ANIMAL", "COW", 1]]
-    if verb == "BUY_LAND":
-        return [["BUY_LAND"]]
-    if verb == "BUY_PRODUCT":
-        return [["BUY_PRODUCT", "FERTILIZER", 1]]
-    return []
-
-
 def decode_action(
     action_indices: Dict[str, Any],
     observation: Dict[str, Any],
@@ -572,7 +610,13 @@ def decode_action(
     hands_out: List[List[Any]] = []
     for i in range(len(active_hands)):
         h_idx = int(hands_raw[i]) if i < len(hands_raw) else 0
-        hands_out.append(decode_hand_verb(h_idx, crop_idx=crop_idx, observation=observation))
+        h_pos = None
+        hand_obj = active_hands[i]
+        if isinstance(hand_obj, dict) and "pos" in hand_obj:
+            h_pos = (int(hand_obj["pos"][0]), int(hand_obj["pos"][1]))
+        elif isinstance(hand_obj, (list, tuple)) and len(hand_obj) >= 2:
+            h_pos = (int(hand_obj[0]), int(hand_obj[1]))
+        hands_out.append(decode_hand_verb(h_idx, crop_idx=crop_idx, observation=observation, hand_pos=h_pos))
 
     market_indices = action_indices.get("market")
     market_orders: List[List[Any]] = []
@@ -657,10 +701,11 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
         if seeds.get(crop, 0) > 0:
             crop_mask[i] = True
 
+    total_seeds = sum(int(seeds.get(c, 0) or 0) for c in CROPS)
     market_mask = np.zeros(NUM_MARKET_ACTIONS, dtype=bool)
     market_mask[0] = True
     for crop in CROPS:
-        if money >= SEED_COSTS.get(crop, 999) and day <= 25:
+        if money >= SEED_COSTS.get(crop, 999) and day <= 24 and total_seeds < 10:
             market_mask[1] = True  # BUY_SEED
             break
     if any(shed.get(c, 0) > 0 for c in CROPS):
@@ -679,7 +724,7 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
     hires_today = int(my_farm.get("hires_today", 0) or 0)
     hire_cost = hire_cost_today(hires_today)
     hands = my_farm.get("hands", []) or []
-    if money >= hire_cost and len(hands) < 6 and day <= 24 and money >= 500:
+    if money >= hire_cost and len(hands) < 4 and day <= 24 and money >= 10:
         market_mask[MARKET_ACTIONS["HIRE"]] = True
 
     if money >= 800 and day <= 20:
