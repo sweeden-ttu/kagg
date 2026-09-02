@@ -1,0 +1,10 @@
+{
+  "ownerSlug": "scottweeden",
+  "title": "Kaggriculture Self-Training DQN Agent",
+  "slug": "kaggriculture-self-training-dqn",
+  "subtitle": "Self-play reinforcement learning and behavior cloning model artifacts for Kaggriculture.",
+  "isPrivate": true,
+  "description": "# Model Summary\n\nTrained PyTorch DQN model and checkpoint artifacts for Kaggriculture reinforcement learning self-play.\n\n## Architecture\n\nDeep Q-Network (DQN) with kinematic phase gating, behavior cloning pre-training, and self-play replay buffer.\n\n## Artifacts Included\n\n- `models/model.pth`: Exported PyTorch model weights\n- `checkpoints/`: Training state checkpoint (`training_state_latest.pt`)\n- `agent.py`: Submission agent adapter\n- `config.json`: Complete experiment hyperparameter configuration\n- `metrics/`: Win rate, ladder evaluation, training progress, and episode metrics\n- `plots/`: Loss, epsilon decay, buffer size, reward, and win-rate curves\n- `logs/`: Training run logs\n",
+  "publishTime": "",
+  "provenanceSources": ""
+}
