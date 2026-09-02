@@ -55,6 +55,16 @@ IMPORT_TO_PYPI: dict[str, str] = {
     "tensorboard": "tensorboard",
 }
 
+# Default pins for Kaggle kernel + local kagg conda env (override PyPI "latest" in generator).
+PINNED_VERSIONS: dict[str, str] = {
+    "kaggle-environments": "1.32.7",
+    "matplotlib": "3.11.1",
+    "numpy": "2.5.2",
+    "tensorboard": "2.21.0",
+    "torch": "2.13.0",
+    "tqdm": "4.70.0",
+}
+
 # Apple-only optional backend; not bundled for Kaggle GPU kernels.
 KAGGLE_EXCLUDE = {"mlx"}
 
@@ -113,7 +123,7 @@ def build_requirements(usage: dict[str, set[str]]) -> list[tuple[str, str, list[
         if not pypi:
             unmapped[imp] = sorted(files)
             continue
-        version = fetch_pypi_version(pypi)
+        version = PINNED_VERSIONS.get(pypi) or fetch_pypi_version(pypi)
         rows.append((pypi, version, sorted(files)))
 
     if unmapped:

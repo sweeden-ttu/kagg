@@ -95,441 +95,7 @@ TILE_CLASS: Dict[str, int] = {
 
 CROP_TO_TILE_CLASS = {crop: TILE_CLASS[crop] for crop in CROPS}
 
-# Engine seed prices (kaggriculture.CROPS[*]["seed"]).
-SEED_COSTS = {"WHEAT": 10, "CARROT": 20, "TOMATO": 50, "STRAWBERRY": 100, "MELON": 80}
-LAND_PRICES = [1000, 2000, 4000]
-# Engine: cost = farmHandCostMult * fib(hires_today), fib(0)=1,1,2,3,5,...
-# Four morning hires cost 1+1+2+3 = 7. Eight cost 54 (through fib 21).
-HIRE_FIB_COSTS = (1, 1, 2, 3, 5, 8, 13, 21)
-HIRE_COST = 1
-# Neural net still has NUM_HANDS=6 heads; rule-based crew can hire up to 8
-# (Hana). Hands reset each dawn, so this is a daily re-hire target.
-CREW_HAND_CAP = 8
-DAILY_HIRE_TARGET = 8
-HANDS_BY_DAY: Tuple[Tuple[int, int], ...] = ((0, 4), (4, 8))
-MAX_HIRE_ORDERS_PER_TURN = 5
-HIRE_MAX_UNIT_COST = 21
-HIRE_HOUR_LIMIT = 2
-HIRE_CASH_RESERVE = 80
-# One extra quadrant (NE @ $1000) only after the wheat engine is printing cash.
-LAND_BUY_TARGET = 1
-LAND_CASH_BUFFER = 500
-LAND_MIN_PLANTS = 10
-LAND_MIN_DAY = 6
-LAND_MIN_MONEY = 2800
-TARGET_WHEAT_PLANTS = 16
-TARGET_PLANTS_PER_QUADRANT = 16
-# Carrot mix only after NE is unlocked (wheat-only until then).
-STAPLE_CROPS: Tuple[str, ...] = ("WHEAT", "CARROT")
-STAPLE_SHARE = {"WHEAT": 0.75, "CARROT": 0.25}
-SEED_BUY_BATCH = 6
-SELL_CHUNK = 30
-ANIMAL_MIN_COST = 400
-SHED_CAP = 100
-DEFAULT_FERTILIZER_PRICE = 100
-_HAND_VERBS = frozenset({
-    "PASS", "DIG", "WATER", "PLANT", "HARVEST",
-    "NORTH", "SOUTH", "WEST", "EAST", "DROP", "PICKUP",
-})
-
-# Engine growth table (kaggriculture.py CROPS). Wheat is planted with
-# yield_units=1 immediately, but HARVEST is a no-op until first_yield_day.
-CROP_GROWTH: Dict[str, Dict[str, Any]] = {
-    "WHEAT": {"first_yield_day": 2, "max_yield_day": 4, "ongoing": False, "max_yield": 6},
-    "CARROT": {"first_yield_day": 2, "max_yield_day": 3, "ongoing": False, "max_yield": 4},
-    "TOMATO": {"first_yield_day": 8, "max_yield_day": 8, "ongoing": True, "max_yield": 4},
-    "STRAWBERRY": {"first_yield_day": 10, "max_yield_day": 10, "ongoing": True, "max_yield": 4},
-    "MELON": {"first_yield_day": 10, "max_yield_day": 12, "ongoing": False, "max_yield": 6},
-}
-
-
-def _farm_mapping(farm: Any) -> Dict[str, Any]:
-    if farm is None:
-        return {}
-    if isinstance(farm, dict):
-        return farm
-    try:
-        return dict(farm)
-    except (TypeError, ValueError):
-        return {}
-
-
-def hire_cost_today(hires_today: int) -> int:
-    """Next HIRE coin cost (engine ``_hire_cost`` with mult=1)."""
-    n = max(0, int(hires_today))
-    if n < len(HIRE_FIB_COSTS):
-        return int(HIRE_FIB_COSTS[n])
-    a, b = 1, 1
-    for _ in range(n):
-        a, b = b, a + b
-    return int(a)
-
-
-def farm_labor_state(observation: Dict[str, Any]) -> Dict[str, Any]:
-    """Hour, cash, and crew size for daily HIRE gating."""
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    hands = farm.get("hands") or []
-    return {
-        "hour": int(observation.get("hour", 0) or 0),
-        "day": int(observation.get("day", 0) or 0),
-        "money": float(farm.get("money", 0.0) or 0.0),
-        "hires_today": int(farm.get("hires_today", 0) or 0),
-        "n_hands": len(hands) if isinstance(hands, list) else 0,
-    }
-
-
-def daily_hire_target_for_day(day: int) -> int:
-    """Crew size for this calendar day (Hana-style ramp 4→8)."""
-    target = int(HANDS_BY_DAY[0][1]) if HANDS_BY_DAY else int(DAILY_HIRE_TARGET)
-    for from_day, count in HANDS_BY_DAY:
-        if int(day) >= int(from_day):
-            target = int(count)
-    return min(int(target), int(CREW_HAND_CAP))
-
-
-def unlocked_quadrant_count(observation: Dict[str, Any]) -> int:
-    """How many farm quadrants are unlocked (NW counts as 1)."""
-    labor_player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[labor_player] if len(farms) > labor_player else {})
-    unlocked = farm.get("unlocked_quadrants") or []
-    return max(1, len(unlocked) if isinstance(unlocked, list) else 1)
-
-
-def target_plant_count(observation: Dict[str, Any]) -> int:
-    """Plant cap grows with land once a real crew can work the extra tiles."""
-    n_quad = unlocked_quadrant_count(observation)
-    labor = farm_labor_state(observation)
-    crew = max(int(labor["n_hands"]), int(labor["hires_today"]))
-    base = int(TARGET_WHEAT_PLANTS)
-    # Even on one quadrant, a full crew can push past 16 watered plants.
-    if crew >= 6:
-        base = max(base, 20)
-    if n_quad <= 1:
-        return base
-    return max(base, int(TARGET_PLANTS_PER_QUADRANT) * int(n_quad))
-
-
-def land_buy_wanted(
-    observation: Dict[str, Any],
-    *,
-    target: int = LAND_BUY_TARGET,
-    buffer: int = LAND_CASH_BUFFER,
-    cash_reserve: int = HIRE_CASH_RESERVE,
-) -> bool:
-    """True when one extra quadrant is affordable without starving hire/seed."""
-    labor = farm_labor_state(observation)
-    bought = unlocked_quadrant_count(observation) - 1
-    if bought >= int(target) or bought >= len(LAND_PRICES):
-        return False
-    if int(labor["day"]) < int(LAND_MIN_DAY):
-        return False
-    census = farm_plant_census(observation)
-    if int(census["plants"]) < int(LAND_MIN_PLANTS):
-        return False
-    # Need a working crew before expanding the field.
-    if int(labor["n_hands"]) < 4 and int(labor["hires_today"]) < 4:
-        return False
-    price = int(LAND_PRICES[bought])
-    need = max(
-        float(LAND_MIN_MONEY),
-        float(price) + float(buffer) + float(cash_reserve),
-    )
-    return float(labor["money"]) >= need
-
-
-def daily_hire_orders_wanted(
-    observation: Dict[str, Any],
-    *,
-    target: Optional[int] = None,
-    hour_limit: int = HIRE_HOUR_LIMIT,
-    cash_reserve: int = HIRE_CASH_RESERVE,
-    max_per_turn: int = MAX_HIRE_ORDERS_PER_TURN,
-) -> int:
-    """How many HIRE orders to emit this turn (early hours; fib + reserve)."""
-    labor = farm_labor_state(observation)
-    if int(labor["hour"]) > int(hour_limit):
-        return 0
-    already = int(labor["hires_today"])
-    have = int(labor["n_hands"])
-    if target is None:
-        cap = daily_hire_target_for_day(int(labor["day"]))
-    else:
-        cap = int(target)
-    cap = min(int(cap), int(CREW_HAND_CAP))
-    todo = max(0, min(cap - already, cap - have, int(CREW_HAND_CAP) - have))
-    todo = min(todo, int(max_per_turn))
-    money = float(labor["money"])
-    while todo > 0:
-        cost_sum = sum(hire_cost_today(already + i) for i in range(todo))
-        last_cost = hire_cost_today(already + todo - 1)
-        if last_cost <= int(HIRE_MAX_UNIT_COST) and money >= cost_sum + float(cash_reserve):
-            return todo
-        todo -= 1
-    return 0
-
-
-def plant_is_harvestable(tile: Any, day: int) -> bool:
-    """True when the engine will actually collect yield (not a HARVEST no-op)."""
-    if not isinstance(tile, dict) or tile.get("kind") != "PLANT":
-        return False
-    if int(tile.get("yield_units", 0) or 0) <= 0:
-        return False
-    crop = str(tile.get("crop") or "WHEAT")
-    info = CROP_GROWTH.get(crop) or CROP_GROWTH["WHEAT"]
-    planted = int(tile.get("planted_day", 0) or 0)
-    return int(day) - planted >= int(info["first_yield_day"])
-
-
-def plant_is_mature(tile: Any, day: int) -> bool:
-    """True when a one-shot crop has finished its watering bonus window."""
-    if not isinstance(tile, dict) or tile.get("kind") != "PLANT":
-        return False
-    crop = str(tile.get("crop") or "WHEAT")
-    info = CROP_GROWTH.get(crop) or CROP_GROWTH["WHEAT"]
-    planted = int(tile.get("planted_day", 0) or 0)
-    age = int(day) - planted
-    if info.get("ongoing"):
-        return plant_is_harvestable(tile, day)
-    units = int(tile.get("yield_units", 0) or 0)
-    cap = int(info.get("max_yield") or 0)
-    # Good-enough yield: don't wait for the last watering tick if already ≥3.
-    if units >= min(3, cap or 3):
-        return True
-    if cap and units >= cap:
-        return True
-    return age >= int(info["max_yield_day"])
-
-
-def farm_plant_census(observation: Dict[str, Any]) -> Dict[str, int]:
-    """Count plants, seeds, and standing-tile farm state for decode heuristics."""
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    private = observation.get("private") or {}
-    seeds = private.get("seeds") or {}
-    shed = private.get("shed") or {}
-    day = int(observation.get("day", 0) or 0)
-    tiles = farm.get("tiles") or []
-    farmer_pos = farm.get("farmer") or [0, 0]
-    fx = int(farmer_pos[0]) if len(farmer_pos) >= 1 else 0
-    fy = int(farmer_pos[1]) if len(farmer_pos) >= 2 else 0
-    plants = 0
-    harvestable = 0
-    mature = 0
-    standing = None
-    if 0 <= fy < len(tiles) and 0 <= fx < len(tiles[fy]):
-        standing = tiles[fy][fx]
-    for row in tiles:
-        for tile in row:
-            if isinstance(tile, dict) and tile.get("kind") == "PLANT":
-                plants += 1
-                if plant_is_harvestable(tile, day):
-                    harvestable += 1
-                if plant_is_mature(tile, day):
-                    mature += 1
-    seed_count = 0
-    if isinstance(seeds, dict):
-        seed_count = int(sum(int(v or 0) for v in seeds.values()))
-    shed_count = 0
-    if isinstance(shed, dict):
-        shed_count = int(sum(int(v or 0) for v in shed.values()))
-    standing_plant = isinstance(standing, dict) and standing.get("kind") == "PLANT"
-    standing_empty = standing is None
-    watered = bool(
-        isinstance(standing, dict)
-        and standing_plant
-        and standing.get("watered_today", False)
-    )
-    return {
-        "plants": plants,
-        "harvestable": harvestable,
-        "mature": mature,
-        "seed_count": seed_count,
-        "shed_count": shed_count,
-        "standing_plant": int(standing_plant),
-        "standing_empty": int(standing_empty),
-        "standing_watered": int(watered),
-        "standing_harvestable": int(plant_is_harvestable(standing, day)),
-        "standing_mature": int(plant_is_mature(standing, day)),
-        "day": day,
-        "farmer_x": fx,
-        "farmer_y": fy,
-    }
-
-
-def empty_neighbor_move_indices(
-    observation: Dict[str, Any],
-    pos: Optional[Tuple[int, int]] = None,
-) -> Tuple[int, ...]:
-    """Move verbs that step onto an unlocked empty tile (plant target)."""
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    tiles = farm.get("tiles") or []
-    if pos is None:
-        farmer_pos = farm.get("farmer") or [0, 0]
-        fx = int(farmer_pos[0]) if len(farmer_pos) >= 1 else 0
-        fy = int(farmer_pos[1]) if len(farmer_pos) >= 2 else 0
-    else:
-        fx, fy = int(pos[0]), int(pos[1])
-    hits = []
-    for dx, dy, idx in ((0, -1, 5), (0, 1, 6), (-1, 0, 7), (1, 0, 8)):
-        nx, ny = fx + dx, fy + dy
-        if ny < 0 or nx < 0 or ny >= len(tiles) or nx >= 10:
-            continue
-        if nx >= len(tiles[ny]):
-            continue
-        tile = tiles[ny][nx]
-        if tile is None:
-            hits.append(idx)
-    return tuple(hits)
-
-
-def _step_toward_move_index(fx: int, fy: int, tx: int, ty: int) -> Optional[int]:
-    """One Manhattan step, horizontal first (same as the reference ladder)."""
-    if fx != tx:
-        return FARMER_ACTIONS["EAST"] if tx > fx else FARMER_ACTIONS["WEST"]
-    if fy != ty:
-        return FARMER_ACTIONS["SOUTH"] if ty > fy else FARMER_ACTIONS["NORTH"]
-    return None
-
-
-def farm_tour_move_index(
-    observation: Dict[str, Any],
-    pos: Optional[Tuple[int, int]] = None,
-    claimed: Optional[set] = None,
-) -> Optional[int]:
-    """Step toward the nearest unwatered plant, else nearest mature crop."""
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    tiles = farm.get("tiles") or []
-    if pos is None:
-        farmer_pos = farm.get("farmer") or [0, 0]
-        fx = int(farmer_pos[0]) if len(farmer_pos) >= 1 else 0
-        fy = int(farmer_pos[1]) if len(farmer_pos) >= 2 else 0
-    else:
-        fx, fy = int(pos[0]), int(pos[1])
-    day = int(observation.get("day", 0) or 0)
-    skip = claimed or set()
-    unwatered = []
-    mature = []
-    for y, row in enumerate(tiles):
-        for x, tile in enumerate(row):
-            if not isinstance(tile, dict) or tile.get("kind") != "PLANT":
-                continue
-            if x == fx and y == fy:
-                continue
-            if (x, y) in skip:
-                continue
-            if not tile.get("watered_today", False):
-                unwatered.append((abs(x - fx) + abs(y - fy), y, x))
-            elif plant_is_mature(tile, day) and plant_is_harvestable(tile, day):
-                mature.append((abs(x - fx) + abs(y - fy), y, x))
-    if unwatered:
-        unwatered.sort()
-        _, ty, tx = unwatered[0]
-        return _step_toward_move_index(fx, fy, tx, ty)
-    if mature:
-        mature.sort()
-        _, ty, tx = mature[0]
-        return _step_toward_move_index(fx, fy, tx, ty)
-    return None
-
-
-def _hand_xy(hand: Any) -> Tuple[int, int]:
-    if isinstance(hand, (list, tuple)) and len(hand) >= 2:
-        return int(hand[0]), int(hand[1])
-    return 0, 0
-
-
-def select_hand_farm_verbs(
-    observation: Dict[str, Any],
-    *,
-    target_plants: Optional[int] = None,
-) -> List[int]:
-    """WATER / HARVEST / DIG / PLANT / tour MOVE for each hired hand."""
-    # Size to active crew (up to CREW_HAND_CAP); pad to NUM_HANDS for BC tensors.
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    tiles = farm.get("tiles") or []
-    hands = farm.get("hands") or []
-    n_out = max(int(NUM_HANDS), min(int(CREW_HAND_CAP), len(hands) if isinstance(hands, list) else 0))
-    verbs = [FARMER_ACTIONS["PASS"]] * n_out
-    if not isinstance(hands, list) or not hands:
-        return verbs
-    day = int(observation.get("day", 0) or 0)
-    census = farm_plant_census(observation)
-    seed_count = int(census["seed_count"])
-    plant_count = int(census["plants"])
-    plant_cap = int(target_plants) if target_plants is not None else target_plant_count(observation)
-    claimed: set = set()
-    farmer_pos = farm.get("farmer") or [0, 0]
-    if len(farmer_pos) >= 2:
-        claimed.add((int(farmer_pos[0]), int(farmer_pos[1])))
-
-    for i, hand in enumerate(hands):
-        if i >= int(CREW_HAND_CAP):
-            break
-        if i >= len(verbs):
-            verbs.append(FARMER_ACTIONS["PASS"])
-        hx, hy = _hand_xy(hand)
-        standing = None
-        if 0 <= hy < len(tiles) and 0 <= hx < len(tiles[hy]):
-            standing = tiles[hy][hx]
-        if isinstance(standing, dict) and standing.get("kind") == "PLANT":
-            if not standing.get("watered_today", False):
-                verbs[i] = FARMER_ACTIONS["WATER"]
-                claimed.add((hx, hy))
-                continue
-            if plant_is_mature(standing, day) and plant_is_harvestable(standing, day):
-                verbs[i] = FARMER_ACTIONS["HARVEST"]
-                claimed.add((hx, hy))
-                continue
-        if isinstance(standing, dict) and standing.get("kind") == "WEED":
-            verbs[i] = FARMER_ACTIONS["DIG"]
-            continue
-        if standing is None and seed_count > 0 and plant_count < plant_cap:
-            verbs[i] = FARMER_ACTIONS["PLANT"]
-            plant_count += 1
-            seed_count -= 1
-            continue
-        target = None
-        unwatered = []
-        mature = []
-        for y, row in enumerate(tiles):
-            for x, tile in enumerate(row):
-                if not isinstance(tile, dict) or tile.get("kind") != "PLANT":
-                    continue
-                if (x, y) in claimed or (x == hx and y == hy):
-                    continue
-                dist = abs(x - hx) + abs(y - hy)
-                if not tile.get("watered_today", False):
-                    unwatered.append((dist, y, x))
-                elif plant_is_mature(tile, day) and plant_is_harvestable(tile, day):
-                    mature.append((dist, y, x))
-        if unwatered:
-            unwatered.sort()
-            _, ty, tx = unwatered[0]
-            target = (tx, ty)
-        elif mature:
-            mature.sort()
-            _, ty, tx = mature[0]
-            target = (tx, ty)
-        if target is not None:
-            claimed.add(target)
-            step = _step_toward_move_index(hx, hy, target[0], target[1])
-            if step is not None:
-                verbs[i] = step
-            continue
-        expand = empty_neighbor_move_indices(observation, pos=(hx, hy))
-        if expand and seed_count > 0 and plant_count < plant_cap:
-            verbs[i] = expand[0]
-    return verbs
+SEED_COSTS = {"WHEAT": 10, "CARROT": 8, "TOMATO": 5, "STRAWBERRY": 3, "MELON": 2}
 
 
 def _normalize_action_op(raw_op: Any) -> str:
@@ -822,37 +388,8 @@ def encode_path_b_action(
     }
 
 
-def _crop_plant_counts(observation: Dict[str, Any]) -> Dict[str, int]:
-    """Standing plants per crop (for staple mix balancing)."""
-    counts = {c: 0 for c in CROPS}
-    player = int(observation.get("player", 0) or 0)
-    farms = observation.get("farms", []) or []
-    farm = _farm_mapping(farms[player] if len(farms) > player else {})
-    for row in farm.get("tiles") or []:
-        for tile in row:
-            if isinstance(tile, dict) and tile.get("kind") == "PLANT":
-                crop = str(tile.get("crop") or "")
-                if crop in counts:
-                    counts[crop] += 1
-    return counts
-
-
 def _best_plant_crop(observation: Dict[str, Any]) -> str:
     seeds = observation.get("private", {}).get("seeds", {}) or {}
-    # Spend wheat seeds first (cash crop); only plant carrot when wheat is gone
-    # or standing mix is short on carrot.
-    if seeds.get("WHEAT", 0) > 0:
-        mix_on = unlocked_quadrant_count(observation) > 1
-        if mix_on and seeds.get("CARROT", 0) > 0:
-            counts = _crop_plant_counts(observation)
-            total = sum(counts.get(c, 0) for c in STAPLE_CROPS) + 1e-6
-            carrot_share = float(counts.get("CARROT", 0)) / total
-            if carrot_share + 0.05 < float(STAPLE_SHARE.get("CARROT", 0.35)):
-                return "CARROT"
-        return "WHEAT"
-    for crop in STAPLE_CROPS:
-        if seeds.get(crop, 0) > 0:
-            return crop
     for crop in CROPS:
         if seeds.get(crop, 0) > 0:
             return crop
@@ -861,20 +398,10 @@ def _best_plant_crop(observation: Dict[str, Any]) -> str:
 
 def _best_sell_crop(observation: Dict[str, Any]) -> Optional[str]:
     shed = observation.get("private", {}).get("shed", {}) or {}
-    # Sell higher-value staples first when present.
-    for crop in ("TOMATO", "CARROT", "WHEAT", "STRAWBERRY", "MELON"):
-        if shed.get(crop, 0) > 0:
-            return crop
     for crop in CROPS:
         if shed.get(crop, 0) > 0:
             return crop
     return None
-
-
-def _sell_quantity(observation: Dict[str, Any], crop: str) -> int:
-    shed = observation.get("private", {}).get("shed", {}) or {}
-    have = int(shed.get(crop, 0) or 0)
-    return max(1, min(int(SELL_CHUNK), have))
 
 
 def _best_buy_seed_crop(observation: Dict[str, Any]) -> Optional[str]:
@@ -883,62 +410,10 @@ def _best_buy_seed_crop(observation: Dict[str, Any]) -> Optional[str]:
     player = observation.get("player", 0)
     if len(farms) > player:
         money = float(farms[player].get("money", 0.0))
-    mix_on = unlocked_quadrant_count(observation) > 1 and int(
-        observation.get("day", 0) or 0
-    ) >= 6
-    seeds = observation.get("private", {}).get("seeds", {}) or {}
-    # Don't buy more seed while inventory is already deep.
-    if int(sum(int(v or 0) for v in (seeds.values() if isinstance(seeds, dict) else []))) >= 8:
-        # Still allow top-up of the under-shared staple when nearly empty of it.
-        pass
-    if mix_on:
-        counts = _crop_plant_counts(observation)
-        seed_counts = {
-            c: int((seeds or {}).get(c, 0) or 0) for c in STAPLE_CROPS
-        }
-        total = sum(counts.get(c, 0) for c in STAPLE_CROPS) + 1e-6
-        best = None
-        best_gap = -1.0
-        for crop in STAPLE_CROPS:
-            cost = int(SEED_COSTS.get(crop, 999))
-            if money < cost:
-                continue
-            if seed_counts.get(crop, 0) >= 6:
-                continue
-            share = float(STAPLE_SHARE.get(crop, 0.0))
-            gap = share - (float(counts.get(crop, 0)) / total)
-            if gap > best_gap:
-                best_gap = gap
-                best = crop
-        if best is not None:
-            return best
-    # Default: wheat-only expansion (Finn/Walter/Rosa safe path).
-    if money >= SEED_COSTS.get("WHEAT", 10) and int((seeds or {}).get("WHEAT", 0) or 0) < 10:
-        return "WHEAT"
     for crop in CROPS:
         if money >= SEED_COSTS.get(crop, 999):
             return crop
     return None
-
-
-def _buy_seed_quantity(observation: Dict[str, Any], crop: str) -> int:
-    """Buy a small staple batch while expanding; never drain the hire reserve."""
-    census = farm_plant_census(observation)
-    labor = farm_labor_state(observation)
-    plant_cap = target_plant_count(observation)
-    gap = int(plant_cap) - int(census["plants"]) - int(census["seed_count"])
-    if gap <= 0:
-        return 1
-    unit = int(SEED_COSTS.get(crop, 10) or 10)
-    # Hold land buffer once we are close to buying NE.
-    reserve = float(HIRE_CASH_RESERVE)
-    bought = unlocked_quadrant_count(observation) - 1
-    if bought < int(LAND_BUY_TARGET) and bought < len(LAND_PRICES):
-        if int(labor["day"]) >= int(LAND_MIN_DAY) - 1:
-            reserve += float(LAND_CASH_BUFFER)
-    spendable = max(0.0, float(labor["money"]) - reserve)
-    afford = int(spendable // max(unit, 1))
-    return max(1, min(int(SEED_BUY_BATCH), gap, afford if afford > 0 else 1))
 
 
 def decode_farmer_verb(verb_idx: int, crop_idx: int, observation: Dict[str, Any]) -> List[Any]:
@@ -952,24 +427,11 @@ def decode_farmer_verb(verb_idx: int, crop_idx: int, observation: Dict[str, Any]
     return [verb]
 
 
-def decode_hand_verb(
-    hand_idx: int,
-    crop_idx: int = 0,
-    observation: Optional[Dict[str, Any]] = None,
-) -> List[Any]:
-    """Decode a hired hand the same way as the farmer (WATER/HARVEST/MOVE/PLANT)."""
+def decode_hand_verb(hand_idx: int) -> List[Any]:
     verb = FARMER_INDEX_TO_VERB[min(max(hand_idx, 0), NUM_HAND_ACTIONS - 1)]
-    if verb not in _HAND_VERBS:
-        return ["PASS"]
-    if verb == "PLANT":
-        obs = observation or {}
-        crop = CROPS[min(max(int(crop_idx), 0), len(CROPS) - 1)]
-        if obs.get("private", {}).get("seeds", {}).get(crop, 0) <= 0:
-            crop = _best_plant_crop(obs)
-        if not crop:
-            return ["PASS"]
-        return ["PLANT", crop]
-    return [verb]
+    if verb in ("NORTH", "SOUTH", "WEST", "EAST"):
+        return [verb]
+    return ["PASS"]
 
 
 def decode_market_verb(market_idx: int, observation: Dict[str, Any]) -> List[Any]:
@@ -981,14 +443,12 @@ def decode_market_verb(market_idx: int, observation: Dict[str, Any]) -> List[Any
     if verb == "BUY_SEED":
         crop = _best_buy_seed_crop(observation)
         if crop:
-            n = _buy_seed_quantity(observation, crop)
-            return [["BUY_SEED", crop, n]]
+            return [["BUY_SEED", crop, 1]]
         return []
     if verb == "SELL":
         crop = _best_sell_crop(observation)
         if crop:
-            n = _sell_quantity(observation, crop)
-            return [["SELL", crop, n]]
+            return [["SELL", crop, 5]]
         return []
     if verb == "HIRE":
         return [["HIRE"]]
@@ -1023,7 +483,7 @@ def decode_action(
     hands_out: List[List[Any]] = []
     for i in range(len(active_hands)):
         h_idx = int(hands_raw[i]) if i < len(hands_raw) else 0
-        hands_out.append(decode_hand_verb(h_idx, crop_idx, observation))
+        hands_out.append(decode_hand_verb(h_idx))
 
     market_indices = action_indices.get("market")
     market_orders: List[List[Any]] = []
@@ -1086,14 +546,11 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
             if tile.get("kind") == "PLANT":
                 if not tile.get("watered_today", False):
                     farmer_mask[2] = True  # WATER
-                # Wheat/carrot start with yield_units=1; the engine still
-                # no-ops HARVEST until first_yield_day. Mask that gap so
-                # decode can water / expand instead of spamming HARVEST.
-                if plant_is_harvestable(tile, int(observation.get("day", 0) or 0)):
+                if tile.get("yield_units", 0) > 0:
                     farmer_mask[4] = True  # HARVEST
-        elif tile is None and any(seeds.get(c, 0) > 0 for c in CROPS):
-            # Engine only accepts PLANT when the standing tile is empty (None).
-            farmer_mask[3] = True  # PLANT
+
+    if any(seeds.get(c, 0) > 0 for c in CROPS):
+        farmer_mask[3] = True  # PLANT
 
     for dx, dy, idx in [(0, -1, 5), (0, 1, 6), (-1, 0, 7), (1, 0, 8)]:
         nx, ny = fx + dx, fy + dy
@@ -1106,29 +563,17 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
         if seeds.get(crop, 0) > 0:
             crop_mask[i] = True
 
-    market = observation.get("market", {}) or {}
-    prices = market.get("prices", {}) or {}
-    fert_price = float(prices.get("FERTILIZER", DEFAULT_FERTILIZER_PRICE) or DEFAULT_FERTILIZER_PRICE)
-
     market_mask = np.zeros(NUM_MARKET_ACTIONS, dtype=bool)
-    market_mask[0] = True  # PASS
+    market_mask[0] = True
     for crop in CROPS:
-        if money >= SEED_COSTS.get(crop, 999) and seeds.get(crop, 0) < SHED_CAP:
+        if money >= SEED_COSTS.get(crop, 999):
             market_mask[1] = True  # BUY_SEED
             break
-    # Decoder emits BUY_PRODUCT FERTILIZER; indices 7–9 stay OTHER padding (False).
-    if money >= fert_price and shed.get("FERTILIZER", 0) < SHED_CAP:
-        market_mask[2] = True  # BUY_PRODUCT
     if any(shed.get(c, 0) > 0 for c in CROPS):
         market_mask[4] = True  # SELL
-    if money >= ANIMAL_MIN_COST:
+    if money >= 400:
         market_mask[3] = True  # BUY_ANIMAL
-    if money >= hire_cost_today(int(my_farm.get("hires_today", 0) or 0)):
         market_mask[5] = True  # HIRE
-    unlocked = my_farm.get("unlocked_quadrants") or []
-    bought = max(0, len(unlocked) - 1)
-    if bought < len(LAND_PRICES) and money >= LAND_PRICES[bought]:
-        market_mask[6] = True  # BUY_LAND
 
     return {
         "farmer_verb": farmer_mask,

@@ -35,7 +35,7 @@ import sys
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from kaggriculture_adapter import decode_path_b_action, parse_observation, select_hand_farm_verbs
+from kaggriculture_adapter import decode_path_b_action, parse_observation
 from kaggriculture_path_b_rebuild import (
     KaggricultureJSONParser,
     KaggricultureFeatureExtractor,
@@ -81,7 +81,7 @@ class Agent:
                 masked_q["market"] = farm_market
             verb_idx = int(masked_q["farmer_verb"].argmax(dim=-1).item())
             crop_idx = int(masked_q["crop_parameter"].argmax(dim=-1).item())
-            hands = select_hand_farm_verbs(agent_obs)
+            hands = [int(masked_q["hands"][i].argmax(dim=-1).item()) for i in range(self.net.num_hands)]
             market_seq = masked_q["market"].argmax(dim=-1).squeeze(0)
             market = [int(market_seq[t].item()) for t in range(self.net.max_market_orders)]
         return decode_path_b_action(verb_idx, crop_idx, hands, market, agent_obs)

@@ -582,7 +582,7 @@ def train_self_play(
             break_pass_spawn_deadlock,
             prefer_farm_invest_actions,
         )
-        from kaggriculture_adapter import decode_path_b_action, select_hand_farm_verbs
+        from kaggriculture_adapter import decode_path_b_action
 
         online_net.eval()
         parsed = parser.parse_observation(obs)
@@ -607,7 +607,10 @@ def train_self_play(
                 masked_q["market"] = farm_market
             verb_idx = int(masked_q["farmer_verb"].argmax(dim=-1).item())
             crop_idx = int(masked_q["crop_parameter"].argmax(dim=-1).item())
-            hands_indices = select_hand_farm_verbs(obs)
+            hands_indices = [
+                int(masked_q["hands"][i].argmax(dim=-1).item())
+                for i in range(online_net.num_hands)
+            ]
             market_seq = masked_q["market"].argmax(dim=-1).squeeze(0)
             market_indices = [int(market_seq[t].item()) for t in range(online_net.max_market_orders)]
         return decode_path_b_action(verb_idx, crop_idx, hands_indices, market_indices, obs)

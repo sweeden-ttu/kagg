@@ -358,8 +358,8 @@ def bootstrap_pass_fill_buffer(
                 logger.debug(
                     "Sample transition shapes: tiles=%s numeric=%s | actions verb=%s crop=%s "
                     "hands=%s market=%s | reward=%.4f done=%s",
-                    np.shape(sample["tiles"]),
-                    np.shape(sample["numeric"]),
+                    np.shape(sample.get("tiles")),
+                    np.shape(sample.get("numeric")),
                     sample.get("action_verb"),
                     sample.get("action_crop"),
                     sample.get("action_hands"),
@@ -1041,8 +1041,8 @@ def incremental_daily_bootstrap_bc(
                 reseed_days,
             )
             episodes_dir = None if is_kaggle_runtime() else Path(metadata_path).parent / "episodes"
-            reseed_losses: List[float] = []
-            reseed_transitions = 0
+            all_losses: List[float] = []
+            total_transitions = 0
             per_day_buffer_cap = buffer_seed_per_day
             if per_day_buffer_cap is None and hasattr(buffer, "capacity"):
                 per_day_buffer_cap = max(1, buffer.capacity // max(1, len(reseed_days)))
@@ -1077,8 +1077,8 @@ def incremental_daily_bootstrap_bc(
                     random_seed=random_seed + hash(day) % 10_000,
                     verbose=verbose,
                 )
-                reseed_losses.extend(day_losses)
-                reseed_transitions += day_transitions
+                all_losses.extend(day_losses)
+                total_transitions += day_transitions
                 seed_buffer_from_episode_files(
                     buffer,
                     day_files,
@@ -1087,11 +1087,11 @@ def incremental_daily_bootstrap_bc(
                     clear_buffer=False,
                 )
             return {
-                "epoch_losses": reseed_losses,
+                "epoch_losses": all_losses,
                 "new_days": [],
                 "reseeded_days": reseed_days,
                 "bootstrapped_dates": bootstrapped,
-                "total_transitions_loaded": reseed_transitions,
+                "total_transitions_loaded": total_transitions,
                 "bootstrap_mode": "daily_incremental",
             }
         logger.info(

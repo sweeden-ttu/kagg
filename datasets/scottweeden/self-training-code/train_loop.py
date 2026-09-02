@@ -20,7 +20,6 @@ import torch.optim as optim
 from environment import create_competitive_env
 from kaggriculture_path_b_rebuild import (
     HierarchicalActionMasker,
-    HierarchicalDQNBranching,
     apply_hierarchical_masks,
     break_pass_spawn_deadlock,
     prefer_farm_invest_actions,
@@ -30,7 +29,6 @@ from kaggriculture_adapter import (
     EPISODE_STEPS,
     decode_path_b_action,
     parse_observation,
-    select_hand_farm_verbs,
 )
 from checkpoints import _training_state_path, save_training_state
 from training_metrics import save_episode_metrics
@@ -39,8 +37,8 @@ logger = logging.getLogger(__name__)
 
 
 def run_self_play_training(
-    online_net: HierarchicalDQNBranching,
-    target_net: HierarchicalDQNBranching,
+    online_net: nn.Module,
+    target_net: nn.Module,
     optimizer: optim.Optimizer,
     learner,  # HierarchicalDoubleDQNLearner
     reward_shaper,  # CompetitiveRewardShaper
@@ -196,7 +194,10 @@ def run_self_play_training(
 
                     verb_idx = int(masked_q["farmer_verb"].argmax(dim=-1).item())
                     crop_idx = int(masked_q["crop_parameter"].argmax(dim=-1).item())
-                    hands_indices = select_hand_farm_verbs(obs_p0)
+
+                    hands_indices = []
+                    for h_i in range(online_net.num_hands):
+                        hands_indices.append(int(masked_q["hands"][h_i].argmax(dim=-1).item()))
 
                     market_indices = []
                     market_seq_argmax = masked_q["market"].argmax(dim=-1).squeeze(0) # (max_market_orders,)

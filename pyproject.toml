@@ -12,13 +12,13 @@ requires-python = ">=3.12"
 #   KAGG_PY="$(conda info --base)/envs/kagg/bin/python"
 #   uv pip install -e . --python "$KAGG_PY"
 dependencies = [
-  "torch",
-  "numpy",
+  "torch==2.13.0",
+  "numpy==2.5.2",
   "gymnasium",
-  "kaggle-environments",
-  "matplotlib",
-  "tqdm",
-  "tensorboard",
+  "kaggle-environments==1.32.7",
+  "matplotlib==3.11.1",
+  "tqdm==4.70.0",
+  "tensorboard==2.21.0",
 ]
 
 [project.optional-dependencies]

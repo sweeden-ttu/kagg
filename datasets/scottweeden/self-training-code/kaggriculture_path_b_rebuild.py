@@ -2,33 +2,20 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, List, Tuple, Any, Optional, TypedDict
+from typing import Dict, List, Tuple, Any, Optional
 
 from kaggriculture_adapter import (
     COMPETITION_TURNS_PER_DAY,
     CROPS,
-    DAILY_HIRE_TARGET,
     EPISODE_STEPS,
     FARMER_ACTIONS,
     MARKET_ACTIONS,
     NUM_FARMER_ACTIONS,
     NUM_HANDS,
     NUM_MARKET_ACTIONS,
-    TARGET_WHEAT_PLANTS,
-    daily_hire_orders_wanted,
     encode_path_b_observation,
-    empty_neighbor_move_indices,
-    farm_plant_census,
-    farm_tour_move_index,
     get_action_masks,
-    land_buy_wanted,
-    target_plant_count,
 )
-
-# Path B uses channel-encoded tiles (B, 9, 10, 10) + numeric (B, 55).
-# Do NOT import KaggricultureFeatureExtractor from kaggriculture_rl.dqn here —
-# that class expects a dict of tensors and one-hots tiles internally.
-
 
 # ==============================================================================
 # SECTION 1: SYSTEM OBSERVATION PARSER & FEATURE EXTRACTOR
@@ -49,11 +36,10 @@ class KaggricultureJSONParser:
         return encode_path_b_observation(obs, player_id=obs.get("player", 0))
 
 
-class PathBFeatureExtractor(nn.Module):
-    """Path B dual-branch extractor: channel tiles (B,9,10,10) + numeric (B,55).
-
-    Incompatible with ``kaggriculture_rl.dqn.KaggricultureFeatureExtractor``,
-    which expects a dict of tensors and one-hots ``tiles`` internally.
+class KaggricultureFeatureExtractor(nn.Module):
+    """
+    Dual-branch feature extractor mapping spatial observations (CNN) and global
+    normalized numerical context (MLP) into a high-capacity joint latent space.
     """
     def __init__(self, spatial_channels: int = 9, numeric_dim: int = 55, latent_dim: int = 512):
         super().__init__()
@@ -106,22 +92,9 @@ class PathBFeatureExtractor(nn.Module):
         return self.fusion(fused_input)
 
 
-# Backward-compatible alias. Prefer PathBFeatureExtractor in new code.
-# Distinct from kaggriculture_rl.dqn.KaggricultureFeatureExtractor (dict/one-hot).
-KaggricultureFeatureExtractor = PathBFeatureExtractor
-
-
 # ==============================================================================
 # SECTION 2: HIERARCHICAL ACTION DECODER NETWORK
 # ==============================================================================
-
-class HierarchicalQValues(TypedDict):
-    value: torch.Tensor
-    farmer_verb: torch.Tensor
-    crop_parameter: torch.Tensor
-    hands: List[torch.Tensor]
-    market: torch.Tensor
-
 
 class HierarchicalDQNBranching(nn.Module):
     """
@@ -133,7 +106,7 @@ class HierarchicalDQNBranching(nn.Module):
         of up to 10 market transactions per step.
     """
     def __init__(self, 
-                 extractor: PathBFeatureExtractor, 
+                 extractor: KaggricultureFeatureExtractor, 
                  latent_dim: int = 512, 
                  shared_dim: int = 256,
                  num_farmer_verbs: int = NUM_FARMER_ACTIONS,
@@ -207,7 +180,7 @@ class HierarchicalDQNBranching(nn.Module):
     def forward(self,
                 tiles: torch.Tensor,
                 numeric: torch.Tensor,
-                market_history: Optional[torch.Tensor] = None) -> HierarchicalQValues:
+                market_history: Optional[torch.Tensor] = None) -> Dict[str, torch.Tensor]:
         """
         Calculates joint state action Q-values across the hierarchical heads.
         """
@@ -278,26 +251,23 @@ class HierarchicalActionMasker:
     def get_dynamic_masks(obs: Dict[str, Any]) -> Dict[str, np.ndarray]:
         return get_action_masks(obs)
 
-def apply_hierarchical_masks(q_values: HierarchicalQValues,
+def apply_hierarchical_masks(q_values: Dict[str, torch.Tensor], 
                              masks: Dict[str, np.ndarray], 
-                             device: torch.device) -> HierarchicalQValues:
+                             device: torch.device) -> Dict[str, torch.Tensor]:
+    masked_q = {}
+    
     fv_mask_tensor = torch.as_tensor(masks["farmer_verb"], dtype=torch.bool, device=device)
+    masked_q["farmer_verb"] = torch.where(fv_mask_tensor, q_values["farmer_verb"], torch.tensor(-1e9, device=device))
+    
     cc_mask_tensor = torch.as_tensor(masks["crop_parameter"], dtype=torch.bool, device=device)
+    masked_q["crop_parameter"] = torch.where(cc_mask_tensor, q_values["crop_parameter"], torch.tensor(-1e9, device=device))
+    
+    masked_q["hands"] = q_values["hands"]
+    
     m_mask_tensor = torch.as_tensor(masks["market"], dtype=torch.bool, device=device).unsqueeze(0).unsqueeze(1)
-
-    masked_q: HierarchicalQValues = {
-        "farmer_verb": torch.where(
-            fv_mask_tensor, q_values["farmer_verb"], torch.tensor(-1e9, device=device)
-        ),
-        "crop_parameter": torch.where(
-            cc_mask_tensor, q_values["crop_parameter"], torch.tensor(-1e9, device=device)
-        ),
-        "hands": q_values["hands"],
-        "market": torch.where(
-            m_mask_tensor, q_values["market"], torch.tensor(-1e9, device=device)
-        ),
-        "value": q_values["value"],
-    }
+    masked_q["market"] = torch.where(m_mask_tensor, q_values["market"], torch.tensor(-1e9, device=device))
+    
+    masked_q["value"] = q_values["value"]
     return masked_q
 
 
@@ -331,11 +301,6 @@ _FARM_VERBS = (
     FARMER_ACTIONS["PLANT"],
     FARMER_ACTIONS["HARVEST"],
 )
-_GROW_VERBS = (
-    FARMER_ACTIONS["DIG"],
-    FARMER_ACTIONS["WATER"],
-    FARMER_ACTIONS["PLANT"],
-)
 _MOVE_VERBS = (
     FARMER_ACTIONS["NORTH"],
     FARMER_ACTIONS["SOUTH"],
@@ -351,235 +316,69 @@ def prefer_farm_invest_actions(
     market_mask: Optional[np.ndarray] = None,
     *,
     observation: Optional[Dict[str, Any]] = None,
-    grow_bonus: float = 10.0,
-    harvest_bonus: float = 12.0,
-    harvest_early_penalty: float = 10.0,
-    move_explore_bonus: float = 4.0,
-    move_expand_bonus: float = 9.0,
-    move_tour_bonus: float = 11.0,
+    farm_bonus: float = 8.0,
     buy_seed_bonus: float = 10.0,
     buy_seed_surplus_penalty: float = 15.0,
-    seed_surplus_threshold: int = 1,
-    target_plants: Optional[int] = None,
-    expensive_market_penalty: float = 20.0,
-    sell_bonus: float = 8.0,
-    hire_bonus: float = 24.0,
-    buy_land_bonus: float = 28.0,
-    daily_hire_target: Optional[int] = None,
+    seed_surplus_threshold: int = 3,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
-    """Soft-boost farm actions; morning HIRE; optional NE land; restock seed.
+    """Soft-boost legal farm actions; buy seeds only when inventory is empty.
 
-    Never skip an engine-legal mature HARVEST (that regressed Finn). While a
-    one-shot crop is still in its watering window, prefer WATER / expansion
-    MOVE over early HARVEST. Restock BUY_SEED while below the land-scaled
-    plant cap. Early-hour HIRE ramps 4→8 (fib, cash reserve); one BUY_LAND
-    is boosted when affordable. Animals stay penalized.
+    After leaving spawn, move-biased policies wander at the 3000-coin floor.
+    When DIG/WATER/PLANT/HARVEST is legal, nudge those Qs upward. BUY_SEED is
+    boosted only with zero seed stock; once seeds accumulate, penalize further
+    buys so the agent plants/harvests instead of burning the bank.
     """
     f_mask = np.asarray(farmer_verb_mask, dtype=bool)
     farmer_out = farmer_verb_q.clone()
-    census = (
-        farm_plant_census(observation)
-        if observation is not None
-        else {
-            "plants": 0,
-            "seed_count": 0,
-            "shed_count": 0,
-            "standing_plant": 0,
-            "standing_watered": 0,
-            "standing_harvestable": 0,
-            "standing_mature": 0,
-        }
-    )
-    seed_count = int(census["seed_count"])
-    shed_count = int(census["shed_count"])
-    plant_count = int(census["plants"])
-    if target_plants is None:
-        plant_cap = (
-            target_plant_count(observation)
-            if observation is not None
-            else int(TARGET_WHEAT_PLANTS)
-        )
-    else:
-        plant_cap = int(target_plants)
-    want_more_plants = plant_count < plant_cap
-
-    grow_legal = any(
-        idx < f_mask.shape[-1] and bool(f_mask[..., idx]) for idx in _GROW_VERBS
-    )
-    harvest = FARMER_ACTIONS["HARVEST"]
-    harvest_legal = harvest < f_mask.shape[-1] and bool(f_mask[..., harvest])
-    standing_mature = bool(census.get("standing_mature"))
-    standing_watered = bool(census.get("standing_watered"))
-    standing_plant = bool(census.get("standing_plant"))
-
-    for idx in _GROW_VERBS:
+    for idx in _FARM_VERBS:
         if idx < f_mask.shape[-1] and bool(f_mask[..., idx]):
-            farmer_out[..., idx] = farmer_out[..., idx] + grow_bonus
-    if harvest_legal:
-        if standing_mature or not standing_plant:
-            farmer_out[..., harvest] = farmer_out[..., harvest] + harvest_bonus
-        else:
-            # Engine-legal but still in the bonus window — keep watering /
-            # expanding rather than Walter-style day-2 1-unit cuts.
-            farmer_out[..., harvest] = farmer_out[..., harvest] - harvest_early_penalty
+            farmer_out[..., idx] = farmer_out[..., idx] + farm_bonus
 
-    # Leave a watered immature plant when we have a spare seed to plant.
-    expand_now = (
-        want_more_plants
-        and seed_count > 0
-        and standing_plant
-        and standing_watered
-        and not standing_mature
-    )
-    expand_dirs = (
-        empty_neighbor_move_indices(observation) if observation is not None else ()
-    )
-    tour_idx = farm_tour_move_index(observation) if observation is not None else None
-    if expand_now and expand_dirs:
-        for idx in expand_dirs:
-            if idx < f_mask.shape[-1] and bool(f_mask[..., idx]):
-                farmer_out[..., idx] = farmer_out[..., idx] + move_expand_bonus
-    elif (
-        tour_idx is not None
-        and standing_watered
-        and plant_count >= 2
-        and tour_idx < f_mask.shape[-1]
-        and bool(f_mask[..., tour_idx])
-    ):
-        farmer_out[..., tour_idx] = farmer_out[..., tour_idx] + move_tour_bonus
-    elif not expand_now and not grow_legal and not (harvest_legal and standing_mature):
-        for idx in _MOVE_VERBS:
-            if idx < f_mask.shape[-1] and bool(f_mask[..., idx]):
-                farmer_out[..., idx] = farmer_out[..., idx] + move_explore_bonus
+    seed_count = 0
+    if observation is not None:
+        seeds = (observation.get("private") or {}).get("seeds") or {}
+        if isinstance(seeds, dict):
+            seed_count = int(sum(int(v or 0) for v in seeds.values()))
 
     market_out: Optional[torch.Tensor] = None
     if market_q is not None:
         market_out = market_q.clone()
         buy_seed = MARKET_ACTIONS["BUY_SEED"]
-        land_idx = MARKET_ACTIONS["BUY_LAND"]
-        n_orders = int(market_out.shape[-2])
         buy_legal = True
-        land_legal = True
         if market_mask is not None:
             m_mask = np.asarray(market_mask, dtype=bool)
             if m_mask.ndim == 1 and buy_seed < m_mask.shape[0]:
                 buy_legal = bool(m_mask[buy_seed])
             elif m_mask.ndim >= 2 and buy_seed < m_mask.shape[-1]:
                 buy_legal = bool(m_mask[..., 0, buy_seed])
-            if m_mask.ndim == 1 and land_idx < m_mask.shape[0]:
-                land_legal = bool(m_mask[land_idx])
-            elif m_mask.ndim >= 2 and land_idx < m_mask.shape[-1]:
-                land_legal = bool(m_mask[..., 0, land_idx])
-
-        hire_idx = MARKET_ACTIONS["HIRE"]
-        hire_legal = True
-        if market_mask is not None:
-            m_mask = np.asarray(market_mask, dtype=bool)
-            if m_mask.ndim == 1 and hire_idx < m_mask.shape[0]:
-                hire_legal = bool(m_mask[hire_idx])
-            elif m_mask.ndim >= 2 and hire_idx < m_mask.shape[-1]:
-                hire_legal = bool(m_mask[..., 0, hire_idx])
-        hire_todo = 0
-        if hire_legal and observation is not None:
-            hire_kwargs = {}
-            if daily_hire_target is not None:
-                hire_kwargs["target"] = int(daily_hire_target)
-            hire_todo = daily_hire_orders_wanted(observation, **hire_kwargs)
-        want_land = bool(
-            land_legal and observation is not None and land_buy_wanted(observation)
-        )
-        # Liquidate shed before expanding: Hana-style chunked sells (up to 3).
-        sell_slots = 0
-        if shed_count > 0:
-            sell_slots = 1
-            if shed_count >= 30:
-                sell_slots = 2
-            if shed_count >= 60:
-                sell_slots = 3
-        cursor = sell_slots
-        land_slot = cursor if want_land else None
-        if want_land:
-            cursor += 1
-        # Keep room for a seed restock after hire burst (≤10 market orders).
-        hire_budget = max(0, n_orders - cursor - (1 if want_more_plants else 0))
-        hire_todo = min(hire_todo, hire_budget)
-        hire_start = cursor
-        seed_slot = hire_start + hire_todo
-        want_seeds = want_more_plants and seed_count < max(
-            1, plant_cap - plant_count, int(seed_surplus_threshold)
-        )
-        sell = MARKET_ACTIONS["SELL"]
-        for t in range(n_orders):
-            is_hire_slot = hire_todo > 0 and hire_start <= t < hire_start + hire_todo
-            is_land_slot = land_slot is not None and t == land_slot
-            is_sell_slot = t < sell_slots
-            if buy_legal and want_seeds and t == seed_slot:
-                market_out[..., t, buy_seed] = (
-                    market_out[..., t, buy_seed] + buy_seed_bonus
-                )
-            else:
-                market_out[..., t, buy_seed] = (
-                    market_out[..., t, buy_seed] - buy_seed_surplus_penalty
-                )
-            market_out[..., t, MARKET_ACTIONS["BUY_ANIMAL"]] = (
-                market_out[..., t, MARKET_ACTIONS["BUY_ANIMAL"]]
-                - expensive_market_penalty
+        if buy_legal and seed_count <= 0:
+            market_out[..., 0, buy_seed] = market_out[..., 0, buy_seed] + buy_seed_bonus
+        elif seed_count >= seed_surplus_threshold:
+            market_out[..., 0, buy_seed] = (
+                market_out[..., 0, buy_seed] - buy_seed_surplus_penalty
             )
-            if is_land_slot:
-                market_out[..., t, land_idx] = (
-                    market_out[..., t, land_idx] + buy_land_bonus
-                )
-                pass_idx = MARKET_ACTIONS["PASS"]
-                market_out[..., t, pass_idx] = (
-                    market_out[..., t, pass_idx] - buy_land_bonus * 0.5
-                )
-            else:
-                market_out[..., t, land_idx] = (
-                    market_out[..., t, land_idx] - expensive_market_penalty
-                )
-            if is_hire_slot:
-                market_out[..., t, hire_idx] = (
-                    market_out[..., t, hire_idx] + hire_bonus
-                )
-                pass_idx = MARKET_ACTIONS["PASS"]
-                market_out[..., t, pass_idx] = (
-                    market_out[..., t, pass_idx] - hire_bonus * 0.5
-                )
-            else:
-                market_out[..., t, hire_idx] = (
-                    market_out[..., t, hire_idx] - expensive_market_penalty
-                )
-            if is_sell_slot:
-                market_out[..., t, sell] = market_out[..., t, sell] + sell_bonus
-            else:
-                market_out[..., t, sell] = (
-                    market_out[..., t, sell] - expensive_market_penalty * 0.25
-                )
     return farmer_out, market_out
 
 
 def _bc_farmer_verb_weights(verb: torch.Tensor) -> torch.Tensor:
-    """Per-sample CE weights: mild PASS↓, farm↑ — avoid over-suppressing waits."""
-    w = torch.full_like(verb, 1.25, dtype=torch.float32)
-    w = torch.where(verb == FARMER_ACTIONS["PASS"], torch.full_like(w, 0.5), w)
+    """Per-sample CE weights: PASS↓, farm↑, moves moderate."""
+    w = torch.full_like(verb, 1.5, dtype=torch.float32)
+    w = torch.where(verb == FARMER_ACTIONS["PASS"], torch.full_like(w, 0.15), w)
     for idx in _FARM_VERBS:
-        w = torch.where(verb == idx, torch.full_like(w, 2.5), w)
+        w = torch.where(verb == idx, torch.full_like(w, 5.0), w)
     for idx in _MOVE_VERBS:
-        w = torch.where(verb == idx, torch.full_like(w, 1.0), w)
+        w = torch.where(verb == idx, torch.full_like(w, 0.9), w)
     return w
 
 
 def _bc_market_action_weights(m_act: torch.Tensor) -> torch.Tensor:
-    """Per-sample CE weights: mild PASS↓, BUY_SEED↑, animal/hire soft↓."""
+    """Per-sample CE weights: PASS↓, BUY_SEED↑, other invest/sell moderate."""
     w = torch.full_like(m_act, 1.25, dtype=torch.float32)
-    w = torch.where(m_act == MARKET_ACTIONS["PASS"], torch.full_like(w, 0.5), w)
-    w = torch.where(m_act == MARKET_ACTIONS["BUY_SEED"], torch.full_like(w, 2.5), w)
-    for key in ("BUY_PRODUCT", "BUY_LAND"):
-        w = torch.where(m_act == MARKET_ACTIONS[key], torch.full_like(w, 1.0), w)
-    # Animal/hire loops bankrupt seed-only policies that should clear Finn first.
-    for key in ("BUY_ANIMAL", "HIRE"):
-        w = torch.where(m_act == MARKET_ACTIONS[key], torch.full_like(w, 0.6), w)
-    w = torch.where(m_act == MARKET_ACTIONS["SELL"], torch.full_like(w, 2.0), w)
+    w = torch.where(m_act == MARKET_ACTIONS["PASS"], torch.full_like(w, 0.15), w)
+    w = torch.where(m_act == MARKET_ACTIONS["BUY_SEED"], torch.full_like(w, 5.0), w)
+    for key in ("BUY_PRODUCT", "BUY_ANIMAL", "BUY_LAND", "HIRE"):
+        w = torch.where(m_act == MARKET_ACTIONS[key], torch.full_like(w, 2.0), w)
+    w = torch.where(m_act == MARKET_ACTIONS["SELL"], torch.full_like(w, 2.5), w)
     return w
 
 
@@ -930,13 +729,8 @@ class CompetitiveRewardShaper:
         if my_money <= 0.0 and opp_money > 0.0:
             return float(np.clip(self.bankruptcy_penalty, -self.clip, self.clip))
 
-        margin = (my_money - opp_money) / self.margin_scale
         stake = max(1.0, (my_money + opp_money) / self.stake_reference)
-        # Amplify leads with stake; do not amplify deficits (avoids desperation).
-        if margin >= 0.0:
-            competitive_delta = stake * margin
-        else:
-            competitive_delta = margin
+        competitive_delta = stake * (my_money - opp_money) / self.margin_scale
         mix_bonus = self.trajectory_mix_bonus(
             obs,
             action_verb=action_verb,

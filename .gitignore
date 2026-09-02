@@ -4,6 +4,18 @@ datasets/kaggle/
 datasets/experiments/
 working/
 
+# Legacy full-tree mirror of self-training-code + working/run
+results/
+
+# Published training run snapshot (canonical code: datasets/scottweeden/self-training-code/*.py)
+datasets/scottweeden/self-training-code/training_artifacts/
+
+# Exported copies of read-only modules (canonical: datasets/scottweeden/self-training-code/)
+experiments/**/kaggriculture_adapter.py
+experiments/**/kaggriculture_path_b_rebuild.py
+**/training_artifacts/kaggriculture_adapter.py
+**/training_artifacts/kaggriculture_path_b_rebuild.py
+
 # Model weights and replay checkpoints (hosted on Kaggle datasets, not git)
 **/training_artifacts/checkpoints/
 **/training_artifacts/models/

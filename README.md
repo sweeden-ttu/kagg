@@ -101,11 +101,9 @@ conda activate kagg
 # uv drives all pip installs (pin env when another conda env is active)
 conda install -c conda-forge uv -y
 KAGG_PY="$(conda info --base)/envs/kagg/bin/python"
-uv pip install --python "$KAGG_PY" torch torchvision torchaudio
-uv pip install --python "$KAGG_PY" "stable-baselines3[extra]" kaggle-environments kagglehub jupyter ipykernel pytest
-
-# Editable install of this repo into the same conda env (no pip venv)
+# Core pins live in pyproject.toml; editable install applies them to this env
 uv pip install -e ".[dev]" --python "$KAGG_PY"
+uv pip install --python "$KAGG_PY" torchvision torchaudio kagglehub jupyter ipykernel
 
 # Register Jupyter kernel for notebooks in this repo
 python -m ipykernel install --user --name kagg --display-name "Python (kagg)"
