@@ -33,16 +33,10 @@ logger = logging.getLogger(__name__)
 
 DAILY_DATASET_PREFIX = "kaggriculture-episodes-"
 BOOTSTRAP_STATE_FILENAME = "bootstrap_state.json"
-_DEFAULT_REWARD_SHAPER = None
-
-
 def _default_reward_shaper() -> Any:
-    global _DEFAULT_REWARD_SHAPER
-    if _DEFAULT_REWARD_SHAPER is None:
-        from kaggriculture_path_b_rebuild import CompetitiveRewardShaper, KaggricultureJSONParser
+    from kaggriculture_path_b_rebuild import CompetitiveRewardShaper, KaggricultureJSONParser
 
-        _DEFAULT_REWARD_SHAPER = CompetitiveRewardShaper(KaggricultureJSONParser())
-    return _DEFAULT_REWARD_SHAPER
+    return CompetitiveRewardShaper(KaggricultureJSONParser())
 
 
 def _episode_date_from_path(path: Path) -> str:

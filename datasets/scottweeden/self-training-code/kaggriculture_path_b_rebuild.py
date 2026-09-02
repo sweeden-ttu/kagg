@@ -15,6 +15,7 @@ from kaggriculture_adapter import (
     NUM_MARKET_ACTIONS,
     encode_path_b_observation,
     get_action_masks,
+    daily_hire_orders_wanted,
 )
 
 # ==============================================================================
@@ -320,14 +321,9 @@ def prefer_farm_invest_actions(
     buy_seed_bonus: float = 10.0,
     buy_seed_surplus_penalty: float = 15.0,
     seed_surplus_threshold: int = 3,
+    hire_bonus: float = 12.0,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
-    """Soft-boost legal farm actions; buy seeds only when inventory is empty.
-
-    After leaving spawn, move-biased policies wander at the 3000-coin floor.
-    When DIG/WATER/PLANT/HARVEST is legal, nudge those Qs upward. BUY_SEED is
-    boosted only with zero seed stock; once seeds accumulate, penalize further
-    buys so the agent plants/harvests instead of burning the bank.
-    """
+    """Soft-boost legal farm actions; buy seeds only when inventory is empty; boost morning hires."""
     f_mask = np.asarray(farmer_verb_mask, dtype=bool)
     farmer_out = farmer_verb_q.clone()
     for idx in _FARM_VERBS:
@@ -344,19 +340,32 @@ def prefer_farm_invest_actions(
     if market_q is not None:
         market_out = market_q.clone()
         buy_seed = MARKET_ACTIONS["BUY_SEED"]
+        hire = MARKET_ACTIONS["HIRE"]
         buy_legal = True
+        hire_legal = True
         if market_mask is not None:
             m_mask = np.asarray(market_mask, dtype=bool)
-            if m_mask.ndim == 1 and buy_seed < m_mask.shape[0]:
-                buy_legal = bool(m_mask[buy_seed])
-            elif m_mask.ndim >= 2 and buy_seed < m_mask.shape[-1]:
-                buy_legal = bool(m_mask[..., 0, buy_seed])
+            if m_mask.ndim == 1:
+                if buy_seed < m_mask.shape[0]:
+                    buy_legal = bool(m_mask[buy_seed])
+                if hire < m_mask.shape[0]:
+                    hire_legal = bool(m_mask[hire])
+            elif m_mask.ndim >= 2:
+                if buy_seed < m_mask.shape[-1]:
+                    buy_legal = bool(m_mask[..., 0, buy_seed])
+                if hire < m_mask.shape[-1]:
+                    hire_legal = bool(m_mask[..., 0, hire])
         if buy_legal and seed_count <= 0:
             market_out[..., 0, buy_seed] = market_out[..., 0, buy_seed] + buy_seed_bonus
         elif seed_count >= seed_surplus_threshold:
             market_out[..., 0, buy_seed] = (
                 market_out[..., 0, buy_seed] - buy_seed_surplus_penalty
             )
+
+        if observation is not None and hire_legal:
+            wanted_hires = daily_hire_orders_wanted(observation)
+            for step in range(min(wanted_hires, market_out.shape[-2])):
+                market_out[..., step, hire] = market_out[..., step, hire] + hire_bonus
     return farmer_out, market_out
 
 
@@ -418,17 +427,17 @@ class HierarchicalDoubleDQNLearner:
         def _adv_component(q_head: torch.Tensor, actions: torch.Tensor) -> torch.Tensor:
             return q_head[arange, actions] - V
 
-        adv_sum = _adv_component(q_current["farmer_verb"], batch["action_verb"])
-        adv_sum = adv_sum + _adv_component(q_current["crop_parameter"], batch["action_crop"])
-        for i in range(self.online.num_hands):
-            adv_sum = adv_sum + _adv_component(
-                q_current["hands"][i], batch["action_hands"][:, i]
-            )
-        for step in range(self.online.max_market_orders):
-            adv_sum = adv_sum + _adv_component(
-                q_current["market"][:, step, :], batch["action_market"][:, step]
-            )
-        total_q_online = V + adv_sum
+        adv_farmer = _adv_component(q_current["farmer_verb"], batch["action_verb"])
+        adv_crop = _adv_component(q_current["crop_parameter"], batch["action_crop"])
+        adv_hands = sum(
+            _adv_component(q_current["hands"][i], batch["action_hands"][:, i])
+            for i in range(self.online.num_hands)
+        ) / max(1, self.online.num_hands)
+        adv_market = sum(
+            _adv_component(q_current["market"][:, step, :], batch["action_market"][:, step])
+            for step in range(self.online.max_market_orders)
+        ) / max(1, self.online.max_market_orders)
+        total_q_online = V + adv_farmer + adv_crop + adv_hands + adv_market
 
         with torch.no_grad():
             q_next_online = self.online(batch["next_tiles"], batch["next_numeric"])
@@ -445,15 +454,17 @@ class HierarchicalDoubleDQNLearner:
             def _tgt_adv(q_head: torch.Tensor, best: torch.Tensor) -> torch.Tensor:
                 return q_head[arange, best] - V_tgt
 
-            tgt_adv = _tgt_adv(q_next_target["farmer_verb"], best_verb)
-            tgt_adv = tgt_adv + _tgt_adv(q_next_target["crop_parameter"], best_crop)
-            for i in range(self.online.num_hands):
-                tgt_adv = tgt_adv + _tgt_adv(q_next_target["hands"][i], best_hands[i])
-            for step in range(self.online.max_market_orders):
-                tgt_adv = tgt_adv + _tgt_adv(
-                    q_next_target["market"][:, step, :], best_market[:, step]
-                )
-            total_target_next_q = V_tgt + tgt_adv
+            tgt_adv_farmer = _tgt_adv(q_next_target["farmer_verb"], best_verb)
+            tgt_adv_crop = _tgt_adv(q_next_target["crop_parameter"], best_crop)
+            tgt_adv_hands = sum(
+                _tgt_adv(q_next_target["hands"][i], best_hands[i])
+                for i in range(self.online.num_hands)
+            ) / max(1, self.online.num_hands)
+            tgt_adv_market = sum(
+                _tgt_adv(q_next_target["market"][:, step, :], best_market[:, step])
+                for step in range(self.online.max_market_orders)
+            ) / max(1, self.online.max_market_orders)
+            total_target_next_q = V_tgt + tgt_adv_farmer + tgt_adv_crop + tgt_adv_hands + tgt_adv_market
             td_target = batch["reward"] + self.gamma * (1.0 - batch["done"]) * total_target_next_q
 
         per_sample_loss = F.smooth_l1_loss(

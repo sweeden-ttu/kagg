@@ -32,4 +32,5 @@ results/kaggle_episodes/episodes/
 
 __pycache__/
 *.pyc
+*.egg-info/
 .DS_Store

@@ -14,8 +14,31 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import numpy as np
 import torch
 
-from kaggriculture_adapter import decode_action, encode_observation, encode_tiles, parse_observation
+from kaggriculture_adapter import (
+    decode_action,
+    encode_observation,
+    encode_tiles,
+    get_action_masks,
+    parse_observation,
+)
 from kaggriculture_rl.dqn import ActionMasker
+
+
+def _pick_legal(idx: int, mask: Any) -> int:
+    """Return idx if legal according to boolean mask; otherwise fallback to PASS or valid index."""
+    if mask is None:
+        return idx
+    mask_arr = np.asarray(mask, dtype=bool)
+    if mask_arr.size == 0:
+        return idx
+    if 0 <= idx < len(mask_arr) and bool(mask_arr[idx]):
+        return idx
+    if len(mask_arr) > 0 and bool(mask_arr[0]):
+        return 0
+    valid = np.where(mask_arr)[0]
+    if len(valid) > 0:
+        return int(valid[0])
+    return 0
 
 
 class KaggleEnvWrapper:
@@ -118,7 +141,7 @@ class KaggleEnvWrapper:
         self.total_episodes += 1
         self.current_reward = 0
 
-        return obs
+        return obs, {}
 
     def step(self, action: Dict[str, Any]) -> Tuple[
         Optional[Dict[str, torch.Tensor]], float, bool, bool, Dict[str, Any]
@@ -307,59 +330,38 @@ class KaggleEnvWrapper:
         return obs_tensors
 
     def _enforce_valid_actions(
-        self, action: Dict, obs: Optional[Dict]
+        self, action: Dict, obs: Optional[Dict] = None
     ) -> Dict:
-        """Enforce valid action masks.
+        """Enforce valid action masks."""
+        if not self.use_masking:
+            return action
 
-        Parameters
-        ----------
-        action : dict
-            Proposed action.
-        obs : dict or None
-            Current observation.
+        raw_obs = self._last_raw_obs
+        if raw_obs is None and obs is not None:
+            raw_obs = obs
 
-        Returns
-        -------
-        action : dict
-            Validated action.
-        """
-        if obs is None or not self.use_masking:
+        if raw_obs is None:
             return action
 
         try:
-            # Create observation dict for ActionMasker
-            obs_dict = {}
-            if "farms_p0_money" in obs:
-                obs_dict["farms"] = [{
-                    "money": obs["farms_p0_money"].item(),
-                    "tiles": [[0] * 10 for _ in range(10)],
-                    "farmer": [0, 0],
-                }]
-            if "seeds" in obs:
-                obs_dict["private"] = {
-                    "seeds": {},
-                    "shed": {},
-                }
-
-            # Get valid masks
-            farmer_mask = ActionMasker.get_valid_farmer_actions(obs_dict)
-            market_mask = ActionMasker.get_valid_market_actions(obs_dict)
-
-            # Clamp actions to valid range
-            if farmer_mask:
-                action["farmer"] = min(action["farmer"], len(farmer_mask) - 1)
-            if market_mask:
-                action["market"] = min(action["market"], len(market_mask) - 1)
-
-            # Clamp hand actions
-            for i in range(len(action.get("hands", []))):
-                action["hands"][i] = min(action["hands"][i], self.n_hand_actions - 1)
-
+            masks = get_action_masks(raw_obs)
+            fixed_action = copy.deepcopy(action)
+            if "farmer" in fixed_action and isinstance(fixed_action["farmer"], int):
+                fixed_action["farmer"] = _pick_legal(
+                    fixed_action["farmer"], masks.get("farmer_verb")
+                )
+            if "market" in fixed_action and isinstance(fixed_action["market"], int):
+                fixed_action["market"] = _pick_legal(
+                    fixed_action["market"], masks.get("market")
+                )
+            if "hands" in fixed_action and isinstance(fixed_action["hands"], list):
+                for i in range(len(fixed_action["hands"])):
+                    fixed_action["hands"][i] = min(
+                        max(int(fixed_action["hands"][i]), 0), self.n_hand_actions - 1
+                    )
+            return fixed_action
         except Exception:
-            # If masking fails, return original action
-            pass
-
-        return action
+            return action
 
     @property
     def observation_space(self) -> Dict[str, Any]:

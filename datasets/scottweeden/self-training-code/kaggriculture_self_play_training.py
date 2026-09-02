@@ -6,7 +6,7 @@ This module re-exports the public entry points for backward compatibility.
 
 from train_orchestrator import train_self_play
 from environment import KaggleCompetitiveEnv, create_competitive_env
-from replay_buffer import PrioritizedReplayBuffer
+from replay_buffer import PrioritizedReplayBuffer, SOURCE_BOOTSTRAP, SOURCE_SELFPLAY
 from agent_coordinator import SelfPlayCoordinator
 from agent_export import _export_path_b_agent
 from _resolve_code_src import _resolve_code_src
@@ -16,6 +16,8 @@ __all__ = [
     "KaggleCompetitiveEnv",
     "create_competitive_env",
     "PrioritizedReplayBuffer",
+    "SOURCE_BOOTSTRAP",
+    "SOURCE_SELFPLAY",
     "SelfPlayCoordinator",
     "_export_path_b_agent",
     "_resolve_code_src",

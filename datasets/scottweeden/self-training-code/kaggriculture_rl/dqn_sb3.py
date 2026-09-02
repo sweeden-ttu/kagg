@@ -471,6 +471,7 @@ class DQN:
             self.learner.epsilon_decay_steps = self.exploration_decay_steps
 
         # Progress bar setup
+        progress_iter = None
         if progress_bar:
             try:
                 from tqdm import tqdm
@@ -486,10 +487,12 @@ class DQN:
         if self.env is None:
             raise ValueError("DQN.learn() requires an environment passed to DQN(...)")
 
-        obs = self.env.reset()
+        _r = self.env.reset()
+        obs = _r[0] if isinstance(_r, tuple) else _r
         for timestep in range(total_timesteps):
             if obs is None:
-                obs = self.env.reset()
+                _r = self.env.reset()
+                obs = _r[0] if isinstance(_r, tuple) else _r
 
             obs, done, result = self.learner.act_and_train(self.env, obs)
 
