@@ -182,7 +182,7 @@ python scripts/sync_manifest.py sync --direction github-to-kaggle --dry-run
 python scripts/sync_manifest.py sync --direction github-to-kaggle --force github   # resolve conflicts
 ```
 
-Episode JSONs under `working/kaggle_episodes/` are not hash-tracked. §0 does **not** call the manifest CLI — run `scan` manually after promote or sync.
+Episode JSONs under `datasets/kaggle/kaggriculture-episodes-YYYY-MM-DD` are not hash-tracked. §0 does **not** call the manifest CLI — run `scan` manually after promote or sync.
 
 ---
 

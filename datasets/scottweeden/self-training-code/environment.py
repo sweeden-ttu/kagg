@@ -69,9 +69,11 @@ class KaggleCompetitiveEnv:
             parse_observation(states[0], player_id=0),
             parse_observation(states[1], player_id=1),
         ]
+        farms_p0 = self._obs[0].get("farms", [])
+        farms_p1 = self._obs[1].get("farms", [])
         self._prev_money = [
-            float(self._obs[0]["farms"][0].get("money", 0.0)) if self._obs[0].get("farms") else 0.0,
-            float(self._obs[1]["farms"][1].get("money", 0.0)) if len(self._obs[1].get("farms", [])) > 1 else 0.0,
+            float(farms_p0[0].get("money", 0.0)) if len(farms_p0) > 0 else 0.0,
+            float(farms_p1[1].get("money", 0.0)) if len(farms_p1) > 1 else 0.0,
         ]
         return self._obs[0]
 
@@ -95,7 +97,8 @@ class KaggleCompetitiveEnv:
         ]
         rewards: List[float] = []
         for p in range(2):
-            money = float(self._obs[p]["farms"][p].get("money", 0.0)) if self._obs[p].get("farms") else 0.0
+            farms = self._obs[p].get("farms", [])
+            money = float(farms[p].get("money", 0.0)) if len(farms) > p else 0.0
             rewards.append((money - self._prev_money[p]) / 100.0)
             self._prev_money[p] = money
         status = states[0].get("status", "ACTIVE")

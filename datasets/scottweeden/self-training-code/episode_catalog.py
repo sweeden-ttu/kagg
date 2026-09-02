@@ -33,7 +33,11 @@ DEFAULT_END_DATE = (date_cls.today() - timedelta(days=1)).isoformat()
 # Local cache (never download full daily datasets into datasets/kaggle/):
 #   ~/kagg/working/kaggle_episodes/episodes/{id}.json
 KAGGLE_INPUT_ROOT = Path("/kaggle/input")
-KAGGLE_DATASETS_ROOT = KAGGLE_INPUT_ROOT / "datasets/kaggle"
+KAGGLE_DATASETS_ROOT = (
+    KAGGLE_INPUT_ROOT / "datasets/kaggle"
+    if (KAGGLE_INPUT_ROOT / "datasets").exists()
+    else Path("~/kagg/datasets").expanduser()
+)
 DAILY_DATASET_PREFIX = "kaggriculture-episodes-"
 # Mounted daily episode JSONs: /kaggle/input/kaggriculture-episodes-YYYY-MM-DD/{id}.json
 KAGGLE_EPISODES_MOUNT_TEMPLATE = "/kaggle/input/kaggriculture-episodes-{date}"

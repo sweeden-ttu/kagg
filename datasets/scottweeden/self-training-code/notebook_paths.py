@@ -23,6 +23,16 @@ READ_ONLY_MODULES = frozenset(
 
 TRAINING_MODULES = (
     "kaggriculture_self_play_training.py",
+    "train_orchestrator.py",
+    "train_loop.py",
+    "agent_coordinator.py",
+    "agent_export.py",
+    "checkpoints.py",
+    "setup_experiment.py",
+    "replay_buffer.py",
+    "environment.py",
+    "cli.py",
+    "_resolve_code_src.py",
     "kaggriculture_dataset_publish.py",
     "episode_catalog.py",
     "path_b_bootstrap.py",
@@ -51,27 +61,82 @@ def dry_run_resume_requested() -> bool:
     return truthy_env("KAGGLE_RESUME")
 
 
+# ── README Mappings ────────────────────────────────────────────────────────
+# 1. ~/kagg = /kaggle/input
+# 2. ~/kagg/working = /kaggle/working & ~/kagg/experiments is player 1
+# 3. ~/kagg/datasets = /kaggle/input/dataset (or /kaggle/input/datasets)
+# 4. ~/kagg/opponents = adversarial opponents is player 2
+
+
 def kaggle_input_root() -> Path:
-    return (
-        Path("/kaggle/input") if Path("/kaggle/input").exists() else Path("~/kagg").expanduser()
-    ).resolve()
+    """Mapping 1: ~/kagg = /kaggle/input."""
+    if Path("/kaggle/input").exists():
+        return Path("/kaggle/input").resolve()
+    return Path("~/kagg").expanduser().resolve()
 
 
 def kaggle_working_root() -> Path:
-    return (
-        Path("/kaggle/working")
-        if Path("/kaggle/working").exists()
-        else Path("~/kagg/working").expanduser()
-    ).resolve()
+    """Mapping 2: ~/kagg/working = /kaggle/working."""
+    if Path("/kaggle/working").exists():
+        return Path("/kaggle/working").resolve()
+    return Path("~/kagg/working").expanduser().resolve()
+
+
+def kaggle_experiments_root() -> Path:
+    """Mapping 2 (Player 1): ~/kagg/experiments (or /kaggle/working/run)."""
+    if Path("/kaggle/working/run").exists():
+        return Path("/kaggle/working/run").resolve()
+    if Path("~/kagg/experiments").expanduser().exists():
+        return Path("~/kagg/experiments").expanduser().resolve()
+    if Path("/kaggle/working").exists():
+        return Path("/kaggle/working/run").resolve()
+    return Path("~/kagg/experiments").expanduser().resolve()
+
+
+def kaggle_datasets_root() -> Path:
+    """Mapping 3: ~/kagg/datasets = /kaggle/input/datasets or /kaggle/input/dataset."""
+    for candidate in (
+        Path("/kaggle/input/datasets"),
+        Path("/kaggle/input/dataset"),
+        Path("~/kagg/datasets").expanduser(),
+    ):
+        if candidate.exists():
+            return candidate.resolve()
+    return Path("~/kagg/datasets").expanduser().resolve()
+
+
+def kaggle_opponents_root() -> Path:
+    """Mapping 4 (Player 2): ~/kagg/opponents = /kaggle/input/opponents."""
+    for candidate in (
+        Path("/kaggle/input/opponents"),
+        Path("/kaggle/input/kaggriculture-reference-agents"),
+        Path("/kaggle/input/datasets/raykkretzschmar/kaggriculture-reference-agents"),
+        Path("/kaggle/input/dataset/raykkretzschmar/kaggriculture-reference-agents"),
+        Path("~/kagg/opponents").expanduser(),
+        Path("~/kagg/datasets/reference").expanduser(),
+    ):
+        if candidate.exists() and any(candidate.glob("*.py")):
+            return candidate.resolve()
+    return Path("~/kagg/opponents").expanduser().resolve()
 
 
 def code_src_candidates(kaggle_input: Optional[Path] = None) -> List[Path]:
-    root = kaggle_input or kaggle_input_root()
+    in_root = kaggle_input or kaggle_input_root()
+    ds_root = kaggle_datasets_root()
     candidates = [
-        root / "datasets" / "scottweeden" / "self-training-code",
-        root / "self-training-code",
+        ds_root / "scottweeden" / "self-training-code",
+        ds_root / "scottweeden" / "kaggriculture-self-training-code",
+        in_root / "datasets" / "scottweeden" / "self-training-code",
+        in_root / "datasets" / "scottweeden" / "kaggriculture-self-training-code",
+        in_root / "scottweeden" / "self-training-code",
+        in_root / "scottweeden" / "kaggriculture-self-training-code",
+        in_root / "self-training-code",
         Path("/kaggle/input/datasets/scottweeden/kaggriculture-self-training-code"),
+        Path("/kaggle/input/dataset/scottweeden/kaggriculture-self-training-code"),
         Path("/kaggle/input/kaggriculture-self-training-code"),
+        Path("~/kagg/datasets/scottweeden/self-training-code").expanduser(),
+        Path("~/kagg/datasets/scottweeden/kaggriculture-self-training-code").expanduser(),
+        Path(__file__).resolve().parent,
     ]
     seen: set[Path] = set()
     ordered: List[Path] = []
@@ -98,45 +163,56 @@ def deploy_training_code(
     code_src: Path,
     kaggle_working: Path,
 ) -> None:
-    """Copy writable training modules into ``/kaggle/working`` (or local mirror)."""
-    for name in READ_ONLY_MODULES:
-        if not (code_src / name).exists():
-            raise FileNotFoundError(f"Missing read-only module in code dataset: {code_src / name}")
-
+    """Copy all training modules into ``/kaggle/working`` (or local mirror)."""
     kaggle_working.mkdir(parents=True, exist_ok=True)
-    writable = [m for m in TRAINING_MODULES if m not in READ_ONLY_MODULES]
-    for name in writable:
+    for name in TRAINING_MODULES:
         src = code_src / name
         if not src.exists():
-            raise FileNotFoundError(f"Missing {src}")
-        shutil.copy2(src, kaggle_working / name)
-    shutil.copytree(code_src / "kaggriculture_rl", kaggle_working / "kaggriculture_rl", dirs_exist_ok=True)
+            continue
+        dst = kaggle_working / name
+        if src.resolve() != dst.resolve():
+            shutil.copy2(src, dst)
+    rl_src = code_src / "kaggriculture_rl"
+    rl_dst = kaggle_working / "kaggriculture_rl"
+    if rl_src.exists() and rl_src.resolve() != rl_dst.resolve():
+        shutil.copytree(rl_src, rl_dst, dirs_exist_ok=True)
 
 
 def configure_notebook_sys_path(code_src: Path, kaggle_working: Path) -> None:
     os.chdir(kaggle_working)
     for path in (kaggle_working, code_src):
-        path_str = str(path)
-        if path_str not in sys.path:
-            sys.path.insert(0, path_str)
+        path_str = str(path.resolve())
+        while path_str in sys.path:
+            sys.path.remove(path_str)
+        sys.path.insert(0, path_str)
 
 
 def bust_stale_modules() -> None:
-    for mod in (
-        "episode_catalog",
-        "kaggriculture_adapter",
-        "path_b_bootstrap",
-        "kaggriculture_dataset_publish",
-        "kaggriculture_path_b_rebuild",
-        "kaggle_env_wrapper",
-        "dataset_loader",
-        "eval_policy",
-        "training_metrics",
-        "visualize",
-        "kaggriculture_self_play_training",
-        "notebook_paths",
-    ):
-        sys.modules.pop(mod, None)
+    for mod in list(sys.modules.keys()):
+        if (
+            mod.startswith("kaggriculture")
+            or mod in (
+                "episode_catalog",
+                "path_b_bootstrap",
+                "kaggle_env_wrapper",
+                "dataset_loader",
+                "eval_policy",
+                "training_metrics",
+                "visualize",
+                "notebook_paths",
+                "train_orchestrator",
+                "train_loop",
+                "agent_coordinator",
+                "agent_export",
+                "checkpoints",
+                "setup_experiment",
+                "replay_buffer",
+                "environment",
+                "cli",
+                "_resolve_code_src",
+            )
+        ):
+            sys.modules.pop(mod, None)
 
 
 def ensure_sys_paths(*paths: Path) -> None:

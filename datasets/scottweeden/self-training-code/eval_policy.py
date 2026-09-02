@@ -53,7 +53,7 @@ def resolve_opponents_dir(
     *,
     code_src: Optional[str | Path] = None,
 ) -> Optional[Path]:
-    """Locate the reference ladder ``opponents/`` directory."""
+    """Locate the reference ladder ``opponents/`` directory (Player 2)."""
     if explicit:
         path = Path(explicit)
         return path.resolve() if path.is_dir() else None
@@ -64,10 +64,14 @@ def resolve_opponents_dir(
     candidates.extend(
         [
             Path("/kaggle/input/opponents"),
+            Path("~/kagg/opponents").expanduser(),
             Path("/kaggle/input/kaggriculture-reference-agents"),
             Path("/kaggle/input/datasets/raykkretzschmar/kaggriculture-reference-agents"),
+            Path("/kaggle/input/dataset/raykkretzschmar/kaggriculture-reference-agents"),
+            Path("~/kagg/datasets/raykkretzschmar/kaggriculture-reference-agents").expanduser(),
+            Path("~/kagg/datasets/reference/opponents").expanduser(),
+            Path("~/kagg/datasets/reference").expanduser(),
             _repo_root() / "opponents",
-            Path("~/kagg/opponents").expanduser(),
         ]
     )
     for candidate in candidates:

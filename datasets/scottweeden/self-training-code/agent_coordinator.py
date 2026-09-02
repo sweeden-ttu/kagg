@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -16,8 +17,8 @@ import torch.nn as nn
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 for _extra in (_SCRIPT_DIR, _SCRIPT_DIR / "artifacts", _SCRIPT_DIR / "scratch"):
-    if _extra.exists() and str(_extra) not in __import__("sys").path:
-        __import__("sys").path.insert(0, str(_extra))
+    if _extra.exists() and str(_extra) not in sys.path:
+        sys.path.insert(0, str(_extra))
 
 from kaggriculture_path_b_rebuild import (
     KaggricultureJSONParser,
@@ -62,6 +63,9 @@ class SelfPlayCoordinator:
         self.opponent_pool = []
         # Round-robin cursor for deterministic historical / online selection.
         self._opponent_select_i = 0
+        # Persistent cached network to avoid per-episode re-instantiation.
+        self._cached_opp_net: Optional[HierarchicalDQNBranching] = None
+        self._cached_opp_device: Optional[torch.device] = None
 
     def restore_opponent_pool(self, paths: Optional[List[str]] = None) -> None:
         """Rebuild opponent pool from saved paths or checkpoint directory."""
@@ -108,15 +112,25 @@ class SelfPlayCoordinator:
         Generates an agent execution policy function mapping observation to action.
 
         ``checkpoint_path`` may be ``None`` to clone the current online weights.
+        Reuses a cached opponent network instance to eliminate allocation churn.
         """
         parser = KaggricultureJSONParser()
 
-        # Instantiate opponent network
-        opp_extractor = KaggricultureFeatureExtractor(latent_dim=self.latent_dim)
-        opp_net = HierarchicalDQNBranching(opp_extractor, latent_dim=self.latent_dim, shared_dim=self.shared_dim).to(device)
+        # Lazily instantiate or reuse opponent network
+        if self._cached_opp_net is None or self._cached_opp_device != device:
+            opp_extractor = KaggricultureFeatureExtractor(latent_dim=self.latent_dim)
+            self._cached_opp_net = HierarchicalDQNBranching(
+                opp_extractor, latent_dim=self.latent_dim, shared_dim=self.shared_dim
+            ).to(device)
+            self._cached_opp_device = device
+
+        opp_net = self._cached_opp_net
 
         if checkpoint_path is not None and os.path.exists(checkpoint_path):
-            opp_net.load_state_dict(torch.load(checkpoint_path, map_location=device))
+            try:
+                opp_net.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
+            except TypeError:
+                opp_net.load_state_dict(torch.load(checkpoint_path, map_location=device))
         else:
             # Use active online network weights
             opp_net.load_state_dict(online_net.state_dict())

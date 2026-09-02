@@ -87,10 +87,18 @@ class KaggricultureFeatureExtractor(nn.Module):
         )
 
     def forward(self, tiles: torch.Tensor, numeric: torch.Tensor) -> torch.Tensor:
-        cnn_out = self.cnn_branch(tiles)
-        mlp_out = self.mlp_branch(numeric)
-        fused_input = torch.cat([cnn_out, mlp_out], dim=-1)
-        return self.fusion(fused_input)
+        was_training = False
+        if tiles.size(0) == 1 and self.training:
+            was_training = True
+            self.eval()
+        try:
+            cnn_out = self.cnn_branch(tiles)
+            mlp_out = self.mlp_branch(numeric)
+            fused_input = torch.cat([cnn_out, mlp_out], dim=-1)
+            return self.fusion(fused_input)
+        finally:
+            if was_training:
+                self.train()
 
 
 # ==============================================================================
@@ -185,60 +193,69 @@ class HierarchicalDQNBranching(nn.Module):
         """
         Calculates joint state action Q-values across the hierarchical heads.
         """
-        batch_size = tiles.size(0)
-        
-        # Extract and fuse state representations
-        latent_state = self.extractor(tiles, numeric)
-        shared_state = self.shared_dense(latent_state)
-        
-        # Compute uniform value baseline V(s)
-        V = self.value_stream(shared_state) # Shape: (B, 1)
-        
-        # --- FARMER BRANCH Q-VALUES ---
-        A_farmer_verb = self.farmer_verb_adv(shared_state) # (B, num_verbs)
-        Q_farmer_verb = V + (A_farmer_verb - A_farmer_verb.mean(dim=-1, keepdim=True))
-        
-        crop_input = torch.cat([shared_state, A_farmer_verb], dim=-1)
-        A_crop = self.crop_parameter_adv(crop_input) # (B, num_crops)
-        Q_crop = V + (A_crop - A_crop.mean(dim=-1, keepdim=True))
-        
-        # --- HAND BRANCHES Q-VALUES ---
-        Q_hands = []
-        for hand_head in self.hand_advs:
-            A_hand = hand_head(shared_state) # (B, num_hand_actions)
-            Q_h = V + (A_hand - A_hand.mean(dim=-1, keepdim=True))
-            Q_hands.append(Q_h)
+        was_training = False
+        if tiles.size(0) == 1 and self.training:
+            was_training = True
+            self.eval()
+
+        try:
+            batch_size = tiles.size(0)
             
-        # --- AUTOREGRESSIVE MARKET ORDER DECODER ---
-        Q_market_sequence = []
-        hx = shared_state # Initial cell state
-        proj_state = self.market_proj(shared_state) # Context vector: (B, 128)
-        prev_action = torch.zeros(batch_size, dtype=torch.long, device=tiles.device) # PASS token
-        
-        for t in range(self.max_market_orders):
-            prev_emb = self.market_action_embedding(prev_action)
-            gru_input = torch.cat([proj_state, prev_emb], dim=-1)
-
-            hx = self.market_gru_cell(gru_input, hx)
-
-            A_market_t = self.market_order_adv(hx)
-            Q_market_t = V + (A_market_t - A_market_t.mean(dim=-1, keepdim=True))
-            Q_market_sequence.append(Q_market_t)
-
-            if market_history is not None:
-                prev_action = market_history[:, t].long()
-            else:
-                prev_action = Q_market_t.argmax(dim=-1)
+            # Extract and fuse state representations
+            latent_state = self.extractor(tiles, numeric)
+            shared_state = self.shared_dense(latent_state)
             
-        Q_market = torch.stack(Q_market_sequence, dim=1) # (B, max_market_orders, num_market_actions)
+            # Compute uniform value baseline V(s)
+            V = self.value_stream(shared_state) # Shape: (B, 1)
+            
+            # --- FARMER BRANCH Q-VALUES ---
+            A_farmer_verb = self.farmer_verb_adv(shared_state) # (B, num_verbs)
+            Q_farmer_verb = V + (A_farmer_verb - A_farmer_verb.mean(dim=-1, keepdim=True))
+            
+            crop_input = torch.cat([shared_state, A_farmer_verb], dim=-1)
+            A_crop = self.crop_parameter_adv(crop_input) # (B, num_crops)
+            Q_crop = V + (A_crop - A_crop.mean(dim=-1, keepdim=True))
+            
+            # --- HAND BRANCHES Q-VALUES ---
+            Q_hands = []
+            for hand_head in self.hand_advs:
+                A_hand = hand_head(shared_state) # (B, num_hand_actions)
+                Q_h = V + (A_hand - A_hand.mean(dim=-1, keepdim=True))
+                Q_hands.append(Q_h)
+                
+            # --- AUTOREGRESSIVE MARKET ORDER DECODER ---
+            Q_market_sequence = []
+            hx = shared_state # Initial cell state
+            proj_state = self.market_proj(shared_state) # Context vector: (B, 128)
+            prev_action = torch.zeros(batch_size, dtype=torch.long, device=tiles.device) # PASS token
+            
+            for t in range(self.max_market_orders):
+                prev_emb = self.market_action_embedding(prev_action)
+                gru_input = torch.cat([proj_state, prev_emb], dim=-1)
 
-        return {
-            "value": V,
-            "farmer_verb": Q_farmer_verb,
-            "crop_parameter": Q_crop,
-            "hands": Q_hands,
-            "market": Q_market
-        }
+                hx = self.market_gru_cell(gru_input, hx)
+
+                A_market_t = self.market_order_adv(hx)
+                Q_market_t = V + (A_market_t - A_market_t.mean(dim=-1, keepdim=True))
+                Q_market_sequence.append(Q_market_t)
+
+                if market_history is not None:
+                    prev_action = market_history[:, t].long()
+                else:
+                    prev_action = Q_market_t.argmax(dim=-1)
+                
+            Q_market = torch.stack(Q_market_sequence, dim=1) # (B, max_market_orders, num_market_actions)
+
+            return {
+                "value": V,
+                "farmer_verb": Q_farmer_verb,
+                "crop_parameter": Q_crop,
+                "hands": Q_hands,
+                "market": Q_market
+            }
+        finally:
+            if was_training:
+                self.train()
 
 
 # ==============================================================================
