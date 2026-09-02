@@ -36,8 +36,13 @@ Guidelines for training and evaluating reinforcement learning agents in multi-ag
 8. **Dynamic Endgame Animal Harvesting**: Starting on **Day 27+**, drop animal harvest thresholds (`animal_harvest_at = 1`) to capture all single residual units of high-margin milk and wool before season end.
 9. **Endgame Feed Liquidation**: Halt feed purchases on Day 27 and daily feeding on Days 28–30 (when no further yield cycles can mature), liquidating all remaining shed wheat into pure cash gain.
 10. **Value-Sorted Liquidation Ordering**: Prioritize market selling queues strictly in descending order of commodity unit price (`['WOOL', 'MILK', 'MELON', 'CARROT', 'WHEAT']`) in 25-unit chunks to maximize revenue extraction before turn 720.
-11. **Seed Surplus Capping**: Hard-cap seed inventory ($\le 12$ units) and halt seed purchases after Day 24 to prevent cash hoarding traps.
-12. **Multi-Phase Land Succession**:
+11. **Market Queue Sells-Funding-Buys Invariant**: In index-by-index market resolution, sales fund subsequent purchases on the same turn. Reordering orders must only rearrange within existing sell slots, never displacing necessary purchase slots (feed, seeds, hires).
+12. **Price-Impact Order Priority**: Within dedicated sell slots, sort orders by gross price impact (`impact = price * quantity * glut_weight`) to front-run competitor sales on premium goods (`MELON`, `WOOL`, `STRAWBERRY`, `MILK`).
+13. **Turn-Start Promoted Sells Priority**: Setting `_SELLS_FIRST = True` places promoted high-margin sales ahead of buys and hires at the start of each turn, locking in top spot prices before competitor trades trigger market price erosion.
+14. **Competitor Feed Starvation via Gated Wheat Supply**: Deferring wheat sales while competitor public cash is low (`_PROMOTE_IF_OPP_MONEY = {'WHEAT': 200.0}`) maintains high feed costs, depriving struggling rivals of cheap herd bailouts during critical early windows.
+15. **Terminal Observation-Driven Harvesting**: In the final 8 turns (step $\ge 717$), switch to a reactive observation-driven controller that prioritizes harvesting, shed dropping, and selling to guarantee $0 stranded assets at step 720.
+16. **Seed Surplus Capping**: Hard-cap seed inventory ($\le 12$ units) and halt seed purchases after Day 24 to prevent cash hoarding traps.
+17. **Multi-Phase Land Succession**:
    - **Days 1–4**: Fast-turnaround crops (e.g. Carrot - 3-day maturity) to rapidly bootstrap capital.
    - **Days 5–16**: Dedicate majority acreage (65%) to premium fertilized crops (Melon) with fast-cycle fillers.
    - **Days 16–25**: Pivot all post-cutoff acreage into rapid 3-day turnaround crops (Carrot/Wheat) rather than leaving land idle.
