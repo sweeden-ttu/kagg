@@ -448,7 +448,11 @@ class HierarchicalDoubleDQNLearner:
             best_hands = [q_next_online["hands"][i].argmax(dim=-1) for i in range(self.online.num_hands)]
             best_market = q_next_online["market"].argmax(dim=-1)
 
-            q_next_target = self.target(batch["next_tiles"], batch["next_numeric"])
+            q_next_target = self.target(
+                batch["next_tiles"],
+                batch["next_numeric"],
+                market_history=best_market,
+            )
             V_tgt = q_next_target["value"].squeeze(-1)
 
             def _tgt_adv(q_head: torch.Tensor, best: torch.Tensor) -> torch.Tensor:

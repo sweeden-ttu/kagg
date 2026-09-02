@@ -329,22 +329,21 @@ def run_self_play_training(
         progress.record_self_play_episode(ep_row)
         save_episode_metrics(dirs["root"], episode_metrics)
 
-        # Periodically save models and append to Self-Play pool
-        if ep % checkpoint_interval == 0:
+        # Periodically save models, append to Self-Play pool, and persist full training state
+        if ep % checkpoint_interval == 0 or ep == total_episodes:
             online_net.eval()
             coordinator.save_checkpoint(online_net, episode=ep)
-
-        save_training_state(
-            _training_state_path(dirs["root"]),
-            last_completed_episode=ep,
-            online_net=online_net,
-            target_net=target_net,
-            optimizer=optimizer,
-            buffer=buffer,
-            coordinator=coordinator,
-            episode_metrics=episode_metrics,
-            config={**config, "last_completed_episode": ep},
-        )
+            save_training_state(
+                _training_state_path(dirs["root"]),
+                last_completed_episode=ep,
+                online_net=online_net,
+                target_net=target_net,
+                optimizer=optimizer,
+                buffer=buffer,
+                coordinator=coordinator,
+                episode_metrics=episode_metrics,
+                config={**config, "last_completed_episode": ep},
+            )
 
     with open(dirs["root"] / "config.json", "w", encoding="utf-8") as fh:
         json.dump({**config, "last_completed_episode": total_episodes}, fh, indent=2)
