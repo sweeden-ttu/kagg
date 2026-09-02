@@ -1,5 +1,0 @@
-Successfully imported Kaggriculture Path B components.
-FINN 0.0 2693.3333333333335 [2700.0, 2690.0, 2690.0, 2700.0, 2690.0, 2690.0] gate False
-Traceback (most recent call last):
-  File "<stdin>", line 27, in <module>
-AssertionError: Finn gate failed

@@ -6,6 +6,7 @@ Provides all checkpoint/resume/load functions.
 
 from __future__ import annotations
 
+import gzip
 import json
 import os
 import random
@@ -26,6 +27,23 @@ from kaggriculture_path_b_rebuild import HierarchicalDoubleDQNLearner
 
 TRAINING_STATE_FILENAME = "training_state_latest.pt"
 _CHECKPOINT_EP_PATTERN = re.compile(r"checkpoint_ep_(\d+)\.pt$")
+_GZIP_MAGIC = b"\x1f\x8b"
+
+
+def _open_state_file(path: Path, mode: str = "rb"):
+    """Open a checkpoint file, transparently wrapping gzip-compressed files.
+
+    torch.save/torch.load work on file-like objects, so both plain and
+    gzip'd checkpoints are supported regardless of file extension.
+    """
+    fh = open(path, mode)
+    if mode == "rb":
+        magic = fh.read(2)
+        fh.seek(0)
+        if magic == _GZIP_MAGIC:
+            fh.close()
+            return gzip.GzipFile(path, "rb")
+    return fh
 
 
 def _load_state_dict(path: Path, device: torch.device) -> Dict[str, Any]:
@@ -180,7 +198,8 @@ def load_training_state(
     coordinator: SelfPlayCoordinator,
 ) -> Tuple[int, List[Dict[str, float]], Dict[str, Any]]:
     """Load full training state; returns (last_completed_episode, metrics, config)."""
-    payload = torch.load(path, map_location=device, weights_only=False)
+    with _open_state_file(path) as fh:
+        payload = torch.load(fh, map_location=device, weights_only=False)
     online_net.load_state_dict(payload["online_net"])
     target_net.load_state_dict(payload["target_net"])
     optimizer.load_state_dict(payload["optimizer"])
