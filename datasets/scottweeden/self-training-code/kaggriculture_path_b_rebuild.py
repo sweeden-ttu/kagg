@@ -293,14 +293,10 @@ def break_pass_spawn_deadlock(
     farmer_verb_q: torch.Tensor,
     farmer_verb_mask: np.ndarray,
     *,
-    pass_penalty: float = 12.0,
+    observation: Optional[Dict[str, Any]] = None,
+    pass_penalty: float = 100.0,
 ) -> torch.Tensor:
-    """Soft-penalize PASS when locomotion is legal so the agent leaves spawn.
-
-    Early-game masks often allow only PASS + a couple of moves. A PASS-biased
-    policy then never moves, never unlocks DIG/PLANT, and ties Fallow Finn at
-    the 3000-coin floor for a full 720-step season.
-    """
+    """Penalize PASS when locomotion or farming is legal, routing farmer toward active farm tasks."""
     mask = np.asarray(farmer_verb_mask, dtype=bool)
     if mask.shape[-1] < 9 or not bool(mask[..., 0]):
         return farmer_verb_q
@@ -309,6 +305,66 @@ def break_pass_spawn_deadlock(
         return farmer_verb_q
     out = farmer_verb_q.clone()
     out[..., 0] = out[..., 0] - pass_penalty
+
+    if observation is not None:
+        player = observation.get("player", 0)
+        farms = observation.get("farms", []) or []
+        my_farm = farms[player] if len(farms) > player else {}
+        tiles = my_farm.get("tiles", []) or []
+        farmer_pos = my_farm.get("farmer", [0, 0]) or [0, 0]
+        fx = int(farmer_pos[0]) if len(farmer_pos) > 0 else 0
+        fy = int(farmer_pos[1]) if len(farmer_pos) > 1 else 0
+        private = observation.get("private", {}) or {}
+        seeds = private.get("seeds", {}) or {}
+        day = int(observation.get("day", 1) or 1)
+        has_seeds = any(int(seeds.get(c, 0) or 0) > 0 for c in CROPS) and day <= 25
+
+        best_target = None
+        best_prio = 999
+        min_d = 999
+
+        for ty in range(min(5, len(tiles))):
+            for tx in range(min(5, len(tiles[ty]))):
+                t = tiles[ty][tx]
+                if t == "LOCKED":
+                    continue
+                d = abs(tx - fx) + abs(ty - fy)
+                if d == 0:
+                    continue
+
+                prio = None
+                if isinstance(t, dict):
+                    if t.get("kind") == "PLANT":
+                        planted_day = int(t.get("planted_day", 0) or 0)
+                        y_units = int(t.get("yield_units", 0) or 0)
+                        if y_units >= 4 or ((day - planted_day) >= 4 and y_units > 0) or (day >= 28 and y_units > 0):
+                            prio = 1
+                        elif not t.get("watered_today", False) and day <= 28:
+                            prio = 2
+                    elif t.get("kind") == "WEED":
+                        prio = 4
+                    elif t.get("kind") not in ("LOCKED",) and has_seeds:
+                        prio = 3
+                elif t in ("EMPTY", "", None) and has_seeds:
+                    prio = 3
+
+                if prio is not None:
+                    if prio < best_prio or (prio == best_prio and d < min_d):
+                        best_prio = prio
+                        min_d = d
+                        best_target = (tx, ty)
+
+        if best_target:
+            tx, ty = best_target
+            if tx < fx and mask[..., FARMER_ACTIONS["WEST"]]:
+                out[..., FARMER_ACTIONS["WEST"]] = out[..., FARMER_ACTIONS["WEST"]] + 50.0
+            elif tx > fx and mask[..., FARMER_ACTIONS["EAST"]]:
+                out[..., FARMER_ACTIONS["EAST"]] = out[..., FARMER_ACTIONS["EAST"]] + 50.0
+            elif ty < fy and mask[..., FARMER_ACTIONS["NORTH"]]:
+                out[..., FARMER_ACTIONS["NORTH"]] = out[..., FARMER_ACTIONS["NORTH"]] + 50.0
+            elif ty > fy and mask[..., FARMER_ACTIONS["SOUTH"]]:
+                out[..., FARMER_ACTIONS["SOUTH"]] = out[..., FARMER_ACTIONS["SOUTH"]] + 50.0
+
     return out
 
 
@@ -334,13 +390,13 @@ def prefer_farm_invest_actions(
     market_mask: Optional[np.ndarray] = None,
     *,
     observation: Optional[Dict[str, Any]] = None,
-    farm_bonus: float = 8.0,
-    buy_seed_bonus: float = 10.0,
-    buy_seed_surplus_penalty: float = 15.0,
-    seed_surplus_threshold: int = 3,
+    farm_bonus: float = 20.0,
+    buy_seed_bonus: float = 100.0,
+    buy_seed_surplus_penalty: float = 50.0,
+    seed_surplus_threshold: int = 8,
     hire_bonus: float = 12.0,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
-    """Soft-boost legal farm actions; buy seeds only when inventory is empty; boost morning hires."""
+    """Soft-boost legal farm actions; buy seeds when inventory is empty; sell harvests; manage season end."""
     f_mask = np.asarray(farmer_verb_mask, dtype=bool)
     farmer_out = farmer_verb_q.clone()
     for idx in _FARM_VERBS:
@@ -348,41 +404,95 @@ def prefer_farm_invest_actions(
             farmer_out[..., idx] = farmer_out[..., idx] + farm_bonus
 
     seed_count = 0
+    shed_count = 0
+    day = 1
     if observation is not None:
+        player = observation.get("player", 0)
+        farms = observation.get("farms", []) or []
+        my_farm = farms[player] if len(farms) > player else {}
+        tiles = my_farm.get("tiles", []) or []
+        farmer_pos = my_farm.get("farmer", [0, 0]) or [0, 0]
+        fx = int(farmer_pos[0]) if len(farmer_pos) > 0 else 0
+        fy = int(farmer_pos[1]) if len(farmer_pos) > 1 else 0
         seeds = (observation.get("private") or {}).get("seeds") or {}
+        shed = (observation.get("private") or {}).get("shed") or {}
+        day = int(observation.get("day", 1) or 1)
         if isinstance(seeds, dict):
             seed_count = int(sum(int(v or 0) for v in seeds.values()))
+        if isinstance(shed, dict):
+            shed_count = int(sum(int(v or 0) for v in shed.values() if isinstance(v, (int, float))))
+
+        # Tile-specific action boosts on current tile
+        if 0 <= fy < len(tiles) and 0 <= fx < len(tiles[fy]):
+            tile = tiles[fy][fx]
+            if isinstance(tile, dict):
+                kind = tile.get("kind")
+                if kind == "PLANT":
+                    planted_day = int(tile.get("planted_day", 0) or 0)
+                    y_units = int(tile.get("yield_units", 0) or 0)
+                    if y_units >= 4 or ((day - planted_day) >= 4 and y_units > 0) or (day >= 28 and y_units > 0):
+                        if f_mask[..., FARMER_ACTIONS["HARVEST"]]:
+                            farmer_out[..., FARMER_ACTIONS["HARVEST"]] = torch.max(farmer_out) + 100.0
+                    elif not tile.get("watered_today", False):
+                        if f_mask[..., FARMER_ACTIONS["WATER"]]:
+                            farmer_out[..., FARMER_ACTIONS["WATER"]] = torch.max(farmer_out) + 100.0
+                elif kind == "WEED":
+                    if f_mask[..., FARMER_ACTIONS["DIG"]]:
+                        farmer_out[..., FARMER_ACTIONS["DIG"]] = torch.max(farmer_out) + 100.0
+                elif kind not in ("LOCKED",) and seed_count > 0 and day <= 25:
+                    if f_mask[..., FARMER_ACTIONS["PLANT"]]:
+                        farmer_out[..., FARMER_ACTIONS["PLANT"]] = torch.max(farmer_out) + 100.0
+            elif tile in ("EMPTY", "", None) and seed_count > 0 and day <= 25:
+                if f_mask[..., FARMER_ACTIONS["PLANT"]]:
+                    farmer_out[..., FARMER_ACTIONS["PLANT"]] = torch.max(farmer_out) + 100.0
 
     market_out: Optional[torch.Tensor] = None
     if market_q is not None:
         market_out = market_q.clone()
         buy_seed = MARKET_ACTIONS["BUY_SEED"]
+        sell = MARKET_ACTIONS["SELL"]
         hire = MARKET_ACTIONS["HIRE"]
         buy_legal = True
+        sell_legal = True
         hire_legal = True
         if market_mask is not None:
             m_mask = np.asarray(market_mask, dtype=bool)
             if m_mask.ndim == 1:
                 if buy_seed < m_mask.shape[0]:
                     buy_legal = bool(m_mask[buy_seed])
+                if sell < m_mask.shape[0]:
+                    sell_legal = bool(m_mask[sell])
                 if hire < m_mask.shape[0]:
                     hire_legal = bool(m_mask[hire])
             elif m_mask.ndim >= 2:
                 if buy_seed < m_mask.shape[-1]:
                     buy_legal = bool(m_mask[..., 0, buy_seed])
+                if sell < m_mask.shape[-1]:
+                    sell_legal = bool(m_mask[..., 0, sell])
                 if hire < m_mask.shape[-1]:
                     hire_legal = bool(m_mask[..., 0, hire])
-        if buy_legal and seed_count <= 0:
-            market_out[..., 0, buy_seed] = market_out[..., 0, buy_seed] + buy_seed_bonus
-        elif seed_count >= seed_surplus_threshold:
-            market_out[..., 0, buy_seed] = (
-                market_out[..., 0, buy_seed] - buy_seed_surplus_penalty
-            )
 
-        if observation is not None and hire_legal:
-            wanted_hires = daily_hire_orders_wanted(observation)
-            for step in range(min(wanted_hires, market_out.shape[-2])):
-                market_out[..., step, hire] = market_out[..., step, hire] + hire_bonus
+        max_m_val = torch.max(market_out[..., 0, :])
+        if sell_legal and shed_count > 0:
+            market_out[..., 0, sell] = max_m_val + 100.0
+        elif buy_legal and seed_count <= 0 and day <= 24:
+            market_out[..., 0, buy_seed] = max_m_val + buy_seed_bonus
+        elif seed_count >= seed_surplus_threshold or day >= 25:
+            market_out[..., 0, buy_seed] = market_out[..., 0, buy_seed] - buy_seed_surplus_penalty
+
+        if day >= 26:
+            # Endgame liquidation
+            market_out[..., :, buy_seed] = -1e9
+            market_out[..., :, hire] = -1e9
+            if MARKET_ACTIONS["BUY_ANIMAL"] < market_out.shape[-1]:
+                market_out[..., :, MARKET_ACTIONS["BUY_ANIMAL"]] = -1e9
+            if MARKET_ACTIONS["BUY_LAND"] < market_out.shape[-1]:
+                market_out[..., :, MARKET_ACTIONS["BUY_LAND"]] = -1e9
+            if MARKET_ACTIONS["BUY_PRODUCT"] < market_out.shape[-1]:
+                market_out[..., :, MARKET_ACTIONS["BUY_PRODUCT"]] = -1e9
+            if sell_legal and shed_count > 0:
+                market_out[..., 0, sell] = max_m_val + 150.0
+
     return farmer_out, market_out
 
 

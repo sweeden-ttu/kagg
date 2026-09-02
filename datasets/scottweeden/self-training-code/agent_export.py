@@ -67,7 +67,7 @@ class Agent:
             q_out = self.net(tiles_t, numeric_t)
             masked_q = apply_hierarchical_masks(q_out, masks, self.device)
             masked_q["farmer_verb"] = break_pass_spawn_deadlock(
-                masked_q["farmer_verb"], masks["farmer_verb"]
+                masked_q["farmer_verb"], masks["farmer_verb"], observation=agent_obs
             )
             farm_verb, farm_market = prefer_farm_invest_actions(
                 masked_q["farmer_verb"],

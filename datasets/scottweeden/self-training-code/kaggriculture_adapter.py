@@ -528,13 +528,16 @@ def decode_market_verb(market_idx: int, observation: Dict[str, Any]) -> List[Any
         crop = _best_buy_seed_crop(observation)
         if crop:
             seeds = observation.get("private", {}).get("seeds", {}) or {}
-            qty = 2 if seeds.get(crop, 0) == 0 else 1
+            qty = 4 if seeds.get(crop, 0) == 0 else 2
             return [["BUY_SEED", crop, qty]]
         return []
     if verb == "SELL":
         crop = _best_sell_crop(observation)
         if crop:
-            return [["SELL", crop, 5]]
+            shed = observation.get("private", {}).get("shed", {}) or {}
+            qty = min(5, int(shed.get(crop, 5) or 5))
+            if qty > 0:
+                return [["SELL", crop, qty]]
         return []
     if verb == "HIRE":
         return [["HIRE"]]
@@ -626,19 +629,22 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
 
     day = int(observation.get("day", 1) or 1)
 
+    has_seeds = any(seeds.get(c, 0) > 0 for c in CROPS)
     if 0 <= fy < len(tiles) and 0 <= fx < len(tiles[fy]):
         tile = tiles[fy][fx]
         if isinstance(tile, dict):
-            if tile.get("kind") == "WEED":
+            kind = tile.get("kind")
+            if kind == "WEED":
                 farmer_mask[1] = True  # DIG
-            if tile.get("kind") == "PLANT":
+            elif kind == "PLANT":
                 if not tile.get("watered_today", False):
                     farmer_mask[2] = True  # WATER
                 if plant_is_harvestable(tile, day):
                     farmer_mask[4] = True  # HARVEST
-
-    if any(seeds.get(c, 0) > 0 for c in CROPS):
-        farmer_mask[3] = True  # PLANT
+            elif kind not in ("LOCKED",) and has_seeds and day <= 26:
+                farmer_mask[3] = True  # PLANT
+        elif tile in ("EMPTY", "", None) and has_seeds and day <= 26:
+            farmer_mask[3] = True  # PLANT
 
     for dx, dy, idx in [(0, -1, 5), (0, 1, 6), (-1, 0, 7), (1, 0, 8)]:
         nx, ny = fx + dx, fy + dy
@@ -654,29 +660,29 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
     market_mask = np.zeros(NUM_MARKET_ACTIONS, dtype=bool)
     market_mask[0] = True
     for crop in CROPS:
-        if money >= SEED_COSTS.get(crop, 999):
+        if money >= SEED_COSTS.get(crop, 999) and day <= 25:
             market_mask[1] = True  # BUY_SEED
             break
     if any(shed.get(c, 0) > 0 for c in CROPS):
         market_mask[4] = True  # SELL
 
     fert_price = observation.get("market", {}).get("prices", {}).get("FERTILIZER", 100.0)
-    if isinstance(fert_price, (int, float)) and money >= fert_price:
+    if isinstance(fert_price, (int, float)) and money >= fert_price and day <= 20 and money >= 500:
         market_mask[MARKET_ACTIONS["BUY_PRODUCT"]] = True
 
     unlocked = my_farm.get("unlocked_quadrants", [])
     if isinstance(unlocked, list) and len(unlocked) < 4:
         land_idx = max(0, len(unlocked) - 1)
-        if land_idx < len(LAND_PRICES) and money >= LAND_PRICES[land_idx]:
+        if land_idx < len(LAND_PRICES) and money >= LAND_PRICES[land_idx] and day <= 20 and money >= 2000:
             market_mask[MARKET_ACTIONS["BUY_LAND"]] = True
 
     hires_today = int(my_farm.get("hires_today", 0) or 0)
     hire_cost = hire_cost_today(hires_today)
     hands = my_farm.get("hands", []) or []
-    if money >= hire_cost and len(hands) < 6:
+    if money >= hire_cost and len(hands) < 6 and day <= 24 and money >= 500:
         market_mask[MARKET_ACTIONS["HIRE"]] = True
 
-    if money >= 400:
+    if money >= 800 and day <= 20:
         market_mask[MARKET_ACTIONS["BUY_ANIMAL"]] = True
 
     return {

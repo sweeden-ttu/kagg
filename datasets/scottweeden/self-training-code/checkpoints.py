@@ -132,6 +132,8 @@ def save_training_state(
         "buffer": buffer.state_dict(),
         "opponent_pool": list(coordinator.opponent_pool),
         "opponent_select_i": int(coordinator._opponent_select_i),
+        "current_tier_idx": getattr(coordinator, "current_tier_idx", 0),
+        "tier_history": getattr(coordinator, "tier_history", {}),
         "episode_metrics": episode_metrics,
         "config": config,
         "rng_state": rng_state,
@@ -185,6 +187,10 @@ def load_training_state(
     buffer.load_state_dict(payload["buffer"])
     coordinator.restore_opponent_pool(payload.get("opponent_pool"))
     coordinator._opponent_select_i = int(payload.get("opponent_select_i", 0))
+    if "current_tier_idx" in payload:
+        coordinator.current_tier_idx = int(payload["current_tier_idx"])
+    if "tier_history" in payload and isinstance(payload["tier_history"], dict):
+        coordinator.tier_history = payload["tier_history"]
     _restore_rng_state(payload.get("rng_state", {}))
 
     return (

@@ -45,15 +45,23 @@ def setup_experiment_dirs(experiment_dir: Path) -> Dict[str, Path]:
     return subdirs
 
 
+from eval_policy import (
+    discover_reference_opponent_files,
+    load_kaggle_agent_policy,
+    resolve_opponents_dir,
+)
+
+
 class SelfPlayCoordinator:
     """
     Coordinates self-play training by managing an opponent pool of historical checkpoints
-    and selecting checkpoints to play against the current online model.
+    and enforcing a progressive tier-by-tier curriculum against benchmark opponents.
     """
     def __init__(self,
                  latent_dim: int = 512,
                  shared_dim: int = 256,
-                 checkpoint_dir: Optional[str] = None):
+                 checkpoint_dir: Optional[str] = None,
+                 opponents_dir: Optional[str] = None):
         self.latent_dim = latent_dim
         self.shared_dim = shared_dim
         if checkpoint_dir is None:
@@ -61,9 +69,26 @@ class SelfPlayCoordinator:
         self.checkpoint_dir = str(checkpoint_dir)
         os.makedirs(self.checkpoint_dir, exist_ok=True)
         self.opponent_pool = []
-        # Round-robin cursor for deterministic historical / online selection.
+
+        # Discover reference ladder opponents ordered strictly by tier (Tier 0 -> Tier 9)
+        self.opponents_dir = opponents_dir or (str(resolve_opponents_dir()) if resolve_opponents_dir() else None)
+        self.ladder_opponents: List[Tuple[str, int, str]] = []
+        if self.opponents_dir and os.path.isdir(self.opponents_dir):
+            entries = discover_reference_opponent_files(self.opponents_dir)
+            self.ladder_opponents = [(slug, tier, str(p)) for slug, tier, p in entries]
+            if self.ladder_opponents:
+                tiers_str = ", ".join(f"T{t}:{s}" for s, t, _ in self.ladder_opponents)
+                print(f"[Curriculum] Discovered {len(self.ladder_opponents)} tiered reference opponents: [{tiers_str}]")
+
+        # Progressive Tier-by-Tier Curriculum State
+        self.current_tier_idx: int = 0
+        self.tier_history: Dict[str, List[Dict[str, Any]]] = {
+            s: [] for s, _, _ in self.ladder_opponents
+        }
+        self.tier_clear_wins_target: int = 2  # Requires 2 wins to promote
+
+        # Round-robin cursor for deterministic historical / online / reference selection.
         self._opponent_select_i = 0
-        # Persistent cached network to avoid per-episode re-instantiation.
         self._cached_opp_net: Optional[HierarchicalDQNBranching] = None
         self._cached_opp_device: Optional[torch.device] = None
 
@@ -88,19 +113,93 @@ class SelfPlayCoordinator:
         print(f"[Self-Play] Opponent pool size: {len(self.opponent_pool)}")
         return path
 
-    def select_opponent(self) -> Optional[str]:
-        """Pick the next opponent checkpoint deterministically.
+    def record_match_result(
+        self, opponent_path: str, won: bool, p0_money: float, p1_money: float
+    ) -> bool:
+        """Record match result against an opponent and evaluate tier promotion."""
+        if not self.ladder_opponents:
+            return False
 
-        Schedule (repeats): four historical round-robin picks, then one online
-        (``None`` = current weights). Empty pool always returns ``None``.
+        opp_p = Path(opponent_path).resolve()
+        # Find matching ladder entry
+        matched_idx = None
+        for idx, (slug, tier, path_str) in enumerate(self.ladder_opponents):
+            if Path(path_str).resolve() == opp_p:
+                matched_idx = idx
+                break
+
+        if matched_idx is None:
+            return False
+
+        slug, tier, _ = self.ladder_opponents[matched_idx]
+        if slug not in self.tier_history:
+            self.tier_history[slug] = []
+        self.tier_history[slug].append({
+            "won": won,
+            "p0_money": p0_money,
+            "p1_money": p1_money,
+        })
+
+        # Only evaluate promotion if playing the active tier boss
+        if matched_idx == self.current_tier_idx:
+            history = self.tier_history[slug]
+            wins = sum(1 for h in history if h["won"])
+            total = len(history)
+            win_rate = wins / total if total > 0 else 0.0
+
+            # Promote if at least target wins and win rate >= 60%, or last 2 consecutive wins
+            consecutive_wins = len(history) >= 2 and history[-1]["won"] and history[-2]["won"]
+            if (wins >= self.tier_clear_wins_target and win_rate >= 0.60) or consecutive_wins:
+                if self.current_tier_idx + 1 < len(self.ladder_opponents):
+                    self.current_tier_idx += 1
+                    next_slug, next_tier, _ = self.ladder_opponents[self.current_tier_idx]
+                    print(
+                        f"\n{'='*70}\n"
+                        f"🏆 [CURRICULUM PROMOTION] Defeated Tier {tier} ({slug})! "
+                        f"(Record: {wins}W-{total-wins}L, {win_rate:.0%})\n"
+                        f"🚀 Unlocking active training target: Tier {next_tier} ({next_slug})\n"
+                        f"{'='*70}\n"
+                    )
+                    return True
+        return False
+
+    def select_opponent(self) -> Optional[str]:
+        """Pick the next opponent following the progressive tier curriculum.
+
+        Curriculum:
+        - When reference opponents exist:
+          - Every 4th or 5th step, fight the active tier boss (or occasionally review a prior cleared tier).
+          - Other steps: online self-play (None) or historical checkpoint (.pt).
+        - If checkpoint pool is empty, exclusively trains against the active tier boss!
         """
-        if not self.opponent_pool:
-            return None
         step = self._opponent_select_i
         self._opponent_select_i = step + 1
-        # Fixed 4:1 historical:online (replaces former 80%/20% chance).
+
+        if self.ladder_opponents:
+            active_slug, active_tier, active_path = self.ladder_opponents[self.current_tier_idx]
+
+            # If no historical checkpoints exist, focus on active tier boss
+            if not self.opponent_pool:
+                # 80% active tier, 20% prior cleared tier (if any)
+                if self.current_tier_idx > 0 and step % 5 == 0:
+                    prior_idx = (step // 5) % self.current_tier_idx
+                    return self.ladder_opponents[prior_idx][2]
+                return active_path
+
+            # With historical checkpoints: every 4th step plays the ladder boss
+            if step % 4 == 0:
+                if self.current_tier_idx > 0 and (step // 4) % 4 == 0:
+                    prior_idx = (step // 16) % self.current_tier_idx
+                    return self.ladder_opponents[prior_idx][2]
+                return active_path
+
+        if not self.opponent_pool:
+            return None
+
+        # Every 5th non-boss step is online self-play (None)
         if step % 5 == 4:
             return None
+
         hist_step = step - (step // 5)
         return self.opponent_pool[hist_step % len(self.opponent_pool)]
 
@@ -111,9 +210,12 @@ class SelfPlayCoordinator:
         """
         Generates an agent execution policy function mapping observation to action.
 
+        If ``checkpoint_path`` is a Python script (ends in .py), loads the opponent directly.
         ``checkpoint_path`` may be ``None`` to clone the current online weights.
-        Reuses a cached opponent network instance to eliminate allocation churn.
         """
+        if checkpoint_path is not None and checkpoint_path.endswith(".py") and os.path.exists(checkpoint_path):
+            return load_kaggle_agent_policy(checkpoint_path)
+
         parser = KaggricultureJSONParser()
 
         # Lazily instantiate or reuse opponent network

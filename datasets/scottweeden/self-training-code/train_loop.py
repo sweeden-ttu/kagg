@@ -312,6 +312,28 @@ def run_self_play_training(
             "Shaped Reward: %.2f | Avg Loss: %.5f",
             ep, total_episodes, eps, len(buffer), ep_raw_reward, ep_shaped_reward, avg_loss,
         )
+
+        # Record match results vs reference ladder opponents for curriculum promotion
+        if opp_path and opp_path.endswith(".py"):
+            farms_p0 = obs_p0.get("farms", []) if isinstance(obs_p0, dict) else []
+            farms_p1 = obs_p1.get("farms", []) if isinstance(obs_p1, dict) else []
+            p0_m = float(farms_p0[0].get("money", 0.0)) if len(farms_p0) > 0 else 0.0
+            p1_m = float(farms_p1[1].get("money", 0.0)) if len(farms_p1) > 1 else 0.0
+            won = p0_m > p1_m
+            coordinator.record_match_result(opp_path, won, p0_m, p1_m)
+            opp_name = Path(opp_path).name
+            cur_tier_slug = (
+                coordinator.ladder_opponents[coordinator.current_tier_idx][0]
+                if coordinator.ladder_opponents else "N/A"
+            )
+            logger.info(
+                "Curriculum match vs %s: %s (P0 $%.1f vs P1 $%.1f) | Active Target: %s",
+                opp_name,
+                "WIN" if won else ("TIE" if p0_m == p1_m else "LOSS"),
+                p0_m,
+                p1_m,
+                cur_tier_slug,
+            )
         ep_row = {
             "episode": ep,
             "epsilon": eps,

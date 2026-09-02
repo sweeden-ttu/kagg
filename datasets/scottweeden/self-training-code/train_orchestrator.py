@@ -246,7 +246,10 @@ def train_self_play(
     with open(dirs["root"] / "config.json", "w", encoding="utf-8") as fh:
         json.dump(config, fh, indent=2)
     buffer = PrioritizedReplayBuffer(capacity=buffer_capacity)
-    coordinator = SelfPlayCoordinator(checkpoint_dir=str(dirs["checkpoints"]))
+    coordinator = SelfPlayCoordinator(
+        checkpoint_dir=str(dirs["checkpoints"]),
+        opponents_dir=opponents_dir,
+    )
 
     start_episode = 0
     episode_metrics: List[Dict[str, float]] = []

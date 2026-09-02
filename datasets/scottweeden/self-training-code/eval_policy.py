@@ -94,13 +94,13 @@ def count_reference_opponent_files(opponents_dir: Path | str) -> int:
     return len(list(root.glob("*.py")))
 
 
-def discover_reference_opponents(
+def discover_reference_opponent_files(
     opponents_dir: Optional[Path | str] = None,
-) -> List[Tuple[str, Callable[[Dict[str, Any]], Dict[str, Any]]]]:
-    """Return (slug, policy) pairs for the reference ladder, ordered by tier."""
+) -> List[Tuple[str, int, Path]]:
+    """Return (slug, tier, path) entries for the reference ladder, ordered by tier."""
     root = Path(opponents_dir) if opponents_dir else resolve_opponents_dir()
     if root is None:
-        raise FileNotFoundError("Reference opponents directory not found")
+        return []
     manifest = DEFAULT_OPPONENT_MANIFEST if DEFAULT_OPPONENT_MANIFEST.exists() else root / "agents_manifest.csv"
     entries: List[Tuple[str, int, Path]] = []
 
@@ -115,6 +115,16 @@ def discover_reference_opponents(
         for path in sorted(root.glob("*.py")):
             entries.append((path.stem, 0, path))
 
+    return entries
+
+
+def discover_reference_opponents(
+    opponents_dir: Optional[Path | str] = None,
+) -> List[Tuple[str, Callable[[Dict[str, Any]], Dict[str, Any]]]]:
+    """Return (slug, policy) pairs for the reference ladder, ordered by tier."""
+    entries = discover_reference_opponent_files(opponents_dir)
+    if not entries:
+        raise FileNotFoundError("Reference opponents directory not found or empty")
     return [(slug, load_kaggle_agent_policy(path)) for slug, _, path in entries]
 
 
