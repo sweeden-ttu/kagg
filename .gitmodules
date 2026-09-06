@@ -1,0 +1,3 @@
+[submodule "reasoning_vs_questioning"]
+	path = reasoning_vs_questioning
+	url = https://github.com/sweeden-ttu/reasoning_vs_questioning.git
