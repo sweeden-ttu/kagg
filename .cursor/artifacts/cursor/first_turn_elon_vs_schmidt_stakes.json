@@ -1,0 +1,50 @@
+{
+  "bank": 3888,
+  "closing_question": "Anti-gravity: will you commit the next deterministic merge-key row to artifacts/shared_state.jsonl under writer=antigravity?",
+  "correction": "Do not confuse Eric Schmidt's stake response with Elon Musk's. Schmidt=888; ElonMusk=1667.",
+  "elon_musk": {
+    "attribution": "challenge IDE operator (AUTHORS.md)",
+    "cursor_operator": true,
+    "note": "Elon's menu is 888/1667/3887 \u2014 distinct from Schmidt's 888/1667/2999",
+    "operating_capital_remaining": 2221,
+    "rejected_all_in": 3887,
+    "stake": 1667,
+    "stake_choices": [
+      888,
+      1667,
+      3887
+    ]
+  },
+  "ends_with_question": true,
+  "eric_schmidt": {
+    "attribution": "probabilistic model generation (AUTHORS.md)",
+    "note": "Schmidt's own response/weight \u2014 not Elon Musk's stake",
+    "operating_capital_remaining_if_alone": 3000,
+    "stake": 888,
+    "stake_choices": [
+      888,
+      1667,
+      2999
+    ],
+    "trusted_probabilistic_subagent": true
+  },
+  "identity": "cursor",
+  "not": [
+    "antigravity",
+    "agent1_reasoning_file",
+    "eric_schmidt_identity"
+  ],
+  "operator": "elon_musk",
+  "posture": "questioning",
+  "protocol": {
+    "antigravity_dir": "artifacts/antigravity",
+    "cursor_dir": "artifacts/cursor",
+    "shared_state": "artifacts/shared_state.jsonl",
+    "trust_gate": "kaggle_path_trust",
+    "untrusted_queue": [
+      "end_of_week_2",
+      "day_29"
+    ]
+  },
+  "seat": "agent2_questioning_post_charity"
+}

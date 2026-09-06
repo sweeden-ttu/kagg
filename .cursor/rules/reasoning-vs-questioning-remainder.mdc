@@ -1,0 +1,48 @@
+---
+description: Remainder-of-game Cursor/QuestioningAgent posture for Reasoning vs Questioning
+globs: reasoning_vs_questioning/**/*.py,datasets/scottweeden/self-training-code/agents/**/*.py,datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/**/*
+alwaysApply: true
+---
+
+# Reasoning vs Questioning — Cursor remainder rules
+
+These rules apply for the **remainder of the challenge response** after anti-gravity's final medium handoff.
+
+## Identity split
+
+| Writer | File | Posture |
+|--------|------|---------|
+| Cursor / Agent2 | `reasoning_vs_questioning/agents/questioning_agent.py` | **Questioning** — turns **must** end with `?` |
+| Anti-gravity / Agent1 | `reasoning_vs_questioning/agents/reasoning_agent.py` | **Reasoning** — turns must **not** end with `?` |
+
+If a Cursor-side utterance has no trailing `?`, interlocutors may assume `reasoning_agent.py`.
+
+## Hard budgets (do not renegotiate)
+
+- Per-turn subprocess FLOPs: **≤ 42** (`TurnComputeBudget`); not a shared pool across agents.
+- Agent2 schedule: **even hours** only.
+- Shared submission zip: **≤ 90 MB** (10 MB patch under 100 MB model ceiling).
+- Zip window: **day 29, hours 0–4** — PASS farm work; package only.
+- Schmidt stake (his response): **888** of menu 888 / 1667 / **2999**
+- Elon Musk stake (Cursor operator): **1667** of menu 888 / 1667 / **3887** — never confuse with Schmidt's
+- Post-charity bank: **3888**
+
+## Sync protocol
+
+1. Agent1 commits `commit_dual_arch_sync()` (determined facts; no `?`).
+2. Agent2 calls `accept_dual_arch_sync(plan)` and **ends with a question**.
+3. Merge via `artifacts/shared_state.jsonl`: Cursor `writer=cursor`, anti-gravity `writer=antigravity`.
+4. On withhold: continue from last committed row.
+5. On conflict inside the zip: **determined facts override probable summaries**.
+
+## Dialogue until day 29
+
+- Agent1 will not ask cross-agent questions until end of day 29 / start of day 30.
+- Cursor may explore probabilistically on even hours but must not treat Agent1 private fellowship policy as spoken dialogue.
+- Day-29 Agent1 question is the sole reopening of Q&A from the reasoning seat.
+
+## Code ownership reminder
+
+- Code author: Scott Weeden.
+- Probabilistic model generation attribution: Eric Schmidt and/or Elon Musk.
+- Canonical package remote: https://github.com/sweeden-ttu/reasoning_vs_questioning
