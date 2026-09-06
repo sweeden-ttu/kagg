@@ -1,7 +1,10 @@
 # Kaggriculture self-training / dual-agent experiment dependencies
 # Install into conda env `kagg` (never a separate pip venv):
 #   KAGG_PY="$(conda info --base)/envs/kagg/bin/python"
-#   uv pip install -r requirements.txt --python "$KAGG_PY"
+#   uv pip install --find-links wheels/pyahocorasick -r requirements.txt --python "$KAGG_PY"
+#
+# Offline (vendored wheels only — covers Linux x86_64 + aarch64, macOS universal2):
+#   uv pip install --find-links wheels/pyahocorasick --no-index pyahocorasick==2.3.1 --python "$KAGG_PY"
 
 torch==2.13.0
 numpy==2.5.2
@@ -11,5 +14,7 @@ matplotlib==3.11.1
 tqdm==4.70.0
 tensorboard==2.21.0
 
-# Aho-Corasick automata (import name: ahocorasick) for linear-time Kaggle path trust matching
+# Aho-Corasick (import: ahocorasick). Prefer wheels under wheels/pyahocorasick/
+# (manylinux x86_64 + aarch64, plus macOS universal2). See that directory README.
+--find-links=wheels/pyahocorasick
 pyahocorasick==2.3.1

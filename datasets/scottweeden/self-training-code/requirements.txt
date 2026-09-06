@@ -1,5 +1,8 @@
 # Self-training-code / Reasoning vs Questioning experiment extras
 # Parent repo also lists these in /requirements.txt and pyproject.toml.
+#
+# Dual-arch vendored wheels (Linux x86_64 + aarch64; macOS universal2):
+#   ../../../wheels/pyahocorasick/
 
-# Aho-Corasick automata — import as `ahocorasick`
+--find-links=../../../wheels/pyahocorasick
 pyahocorasick==2.3.1
