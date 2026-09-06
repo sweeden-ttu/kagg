@@ -1,0 +1,100 @@
+{
+  "max_directory_subagents": 10,
+  "count": 10,
+  "name_rule": "letters_and_numbers_only",
+  "name_pattern": "^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]+$",
+  "static_eleventh": "antigravity",
+  "static_path": "/Users/sweeden/kagg/.antigravity/antigravity",
+  "subagents": [
+    {
+      "id": "detslot01",
+      "role": "deterministic_rules",
+      "static": false,
+      "slot": 1,
+      "embedding_dim": 64,
+      "name_has_letters_and_numbers": true,
+      "directory_capped_at": 10
+    },
+    {
+      "id": "detslot02",
+      "role": "crop_first_yield",
+      "static": false,
+      "slot": 2,
+      "embedding_dim": 64,
+      "name_has_letters_and_numbers": true,
+      "directory_capped_at": 10
+    },
+    {
+      "id": "detslot03",
+      "role": "hire_fib_cost",
+      "static": false,
+      "slot": 3,
+      "embedding_dim": 64,
+      "name_has_letters_and_numbers": true,
+      "directory_capped_at": 10
+    },
+    {
+      "id": "detslot04",
+      "role": "market_mask",
+      "static": false,
+      "slot": 4,
+      "embedding_dim": 64,
+      "name_has_letters_and_numbers": true,
+      "directory_capped_at": 10
+    },
+    {
+      "id": "detslot05",
+      "role": "water_feed_care",
+      "static": false,
+      "slot": 5,
+      "embedding_dim": 64,
+      "name_has_letters_and_numbers": true,
+      "directory_capped_at": 10
+    },
+    {
+      "id": "detslot06",
+      "role": "land_unlock",
+      "static": false,
+      "slot": 6,
+      "embedding_dim": 64,
+      "name_has_letters_and_numbers": true,
+      "directory_capped_at": 10
+    },
+    {
+      "id": "detslot07",
+      "role": "shed_inventory",
+      "static": false,
+      "slot": 7,
+      "embedding_dim": 64,
+      "name_has_letters_and_numbers": true,
+      "directory_capped_at": 10
+    },
+    {
+      "id": "detslot08",
+      "role": "flop_budget_42",
+      "static": false,
+      "slot": 8,
+      "embedding_dim": 64,
+      "name_has_letters_and_numbers": true,
+      "directory_capped_at": 10
+    },
+    {
+      "id": "detslot09",
+      "role": "day29_judgment",
+      "static": false,
+      "slot": 9,
+      "embedding_dim": 64,
+      "name_has_letters_and_numbers": true,
+      "directory_capped_at": 10
+    },
+    {
+      "id": "detslot10",
+      "role": "slot10_fellowship_anchor",
+      "static": false,
+      "slot": 10,
+      "embedding_dim": 64,
+      "name_has_letters_and_numbers": true,
+      "directory_capped_at": 10
+    }
+  ]
+}

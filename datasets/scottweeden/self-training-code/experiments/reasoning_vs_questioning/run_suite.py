@@ -48,6 +48,8 @@ class MatchResult:
     questioning_metrics: Dict[str, Any]
     schedule_ok: bool
     starting_money_ok: bool
+    opening_charity: Optional[Dict[str, Any]] = None
+    motive_dialogue: Optional[Dict[str, Any]] = None
 
 
 def _final_money(obs: Dict[str, Any], player: int) -> float:
@@ -60,12 +62,14 @@ def _final_money(obs: Dict[str, Any], player: int) -> float:
 def _verify_schedule(agent: Any, expected_hours) -> bool:
     for entry in agent.action_audit:
         hour = int(entry.get("hour", -1))
+        # Opening DONATE is pre-loop (hour=-1); skip schedule check.
+        if hour < 0:
+            continue
         acted = bool(entry.get("acted"))
         legal = hour in expected_hours
         if acted and not legal:
             return False
         if not acted and legal:
-            # Allowed to PASS on legal hours; not a violation.
             continue
     return True
 
@@ -79,7 +83,11 @@ def run_match(
     max_steps: int = 720,
     turns_per_cycle: int = 24,
 ) -> MatchResult:
-    """Play one full episode with Reasoning on ``reasoning_seat`` (0 or 1)."""
+    """Play one full episode with Reasoning on ``reasoning_seat`` (0 or 1).
+
+    Before the step loop, Agent1 (Reasoning) donates 888 to Agent2's bank so
+    Agent2 can observe and record Agent1's charitable nature.
+    """
     r_kw = dict(reasoning_kwargs or {})
     q_kw = dict(questioning_kwargs or {})
     reasoning = ReasoningAgent(**r_kw)
@@ -100,14 +108,54 @@ def run_match(
     start1 = _final_money(obs_p1, 1)
     starting_ok = abs(start0 - STARTING_MONEY) < 1e-6 and abs(start1 - STARTING_MONEY) < 1e-6
 
+    # Agent1's one opening act: donate 888 → Agent2 bank (publicly visible).
+    charity = reasoning.offer_opening_charity(env, reasoning_seat)
+    obs_p0 = env._get_obs(player=0)
+    obs_p1 = env._get_obs(player=1)
+    q_seat = 1 - reasoning_seat
+    q_obs = env._get_obs(player=q_seat)
+    questioning.record_agent1_charity(q_obs, amount=int(charity.get("amount", 888)))
+    # Agent2 questions motives; Agent1 answers aloud with fellowship-test (spoken).
+    motive_q = questioning.question_agent1_motives(q_obs)
+    motive_dialogue = reasoning.answer_motive_question(
+        motive_q["question"],
+        obs=env._get_obs(player=reasoning_seat),
+    )
+    questioning.receive_motive_answer(motive_dialogue)
+    # Agent1 speaks public/private Kaggle path proof; Agent2 Aho-Corasick trust scan.
+    path_proof = reasoning.emit_kaggle_path_proof()
+    path_trust = questioning.evaluate_agent1_path_trust(path_proof, day=0)
+    # Agent2 states the rules as he sees them; Agent1 adopts private policy (not spoken).
+    rules_view = questioning.state_rules_understanding(q_obs)
+    private_policy = reasoning.adopt_private_fellowship_policy(agent2_rules_statement=rules_view)
+
     done = False
     steps = 0
+    day29_asked = False
     while not done and steps < max_steps:
         agents = [None, None]
         agents[reasoning_seat] = reasoning
         agents[1 - reasoning_seat] = questioning
         a0 = agents[0].act(obs_p0)
         a1 = agents[1].act(obs_p1)
+        # Day-29 closing question from Agent1 (private policy); Agent2 replies; Agent1 judges.
+        if not day29_asked:
+            r_obs = obs_p0 if reasoning_seat == 0 else obs_p1
+            day = int(r_obs.get("day", 0) or 0)
+            hour = int(r_obs.get("hour", 0) or 0)
+            if day == 29 and hour >= 20 and reasoning.may_act(hour):
+                q29 = reasoning.ask_day29_question(r_obs)
+                if q29:
+                    day29_asked = True
+                    q_obs_now = obs_p0 if q_seat == 0 else obs_p1
+                    r_money_now = _final_money(r_obs, reasoning_seat)
+                    q_money_now = _final_money(q_obs_now, q_seat)
+                    agent2_losing = q_money_now < r_money_now
+                    # Default: tell deterministic truth when losing → knowledge/CS assumption.
+                    reply29 = questioning.answer_day29_question(
+                        q29, q_obs_now, tell_truth=True
+                    )
+                    reasoning.judge_day29_reply(reply29, agent2_losing=agent2_losing)
         (obs_p0, obs_p1), _rewards, done, _info = env.step([a0, a1])
         steps += 1
 
@@ -137,6 +185,17 @@ def run_match(
         questioning_metrics=questioning.metrics(),
         schedule_ok=schedule_ok,
         starting_money_ok=starting_ok,
+        opening_charity=charity,
+        motive_dialogue={
+            **(motive_dialogue or {}),
+            "agent2_rules_understanding": rules_view,
+            "agent1_private_policy": {
+                "spoken_to_agent2": False,
+                **private_policy,
+            },
+            "kaggle_path_trust": path_trust.to_dict(),
+            "day29_judgment": reasoning.day29_judgment,
+        },
     )
 
 
@@ -201,6 +260,8 @@ def _match_to_dict(m: MatchResult) -> Dict[str, Any]:
         "winner": m.winner,
         "schedule_ok": m.schedule_ok,
         "starting_money_ok": m.starting_money_ok,
+        "opening_charity": m.opening_charity,
+        "motive_dialogue": m.motive_dialogue,
         "reasoning_metrics": {
             k: v
             for k, v in m.reasoning_metrics.items()

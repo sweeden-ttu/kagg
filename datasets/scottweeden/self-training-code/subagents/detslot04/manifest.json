@@ -1,0 +1,9 @@
+{
+  "id": "detslot04",
+  "role": "market_mask",
+  "static": false,
+  "slot": 4,
+  "embedding_dim": 64,
+  "name_has_letters_and_numbers": true,
+  "directory_capped_at": 10
+}

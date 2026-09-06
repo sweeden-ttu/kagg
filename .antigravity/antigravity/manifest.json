@@ -1,0 +1,11 @@
+{
+  "id": "antigravity",
+  "role": "static_deterministic_correctness_and_completion",
+  "static": true,
+  "slot": 11,
+  "embedding_dim": 64,
+  "name_has_letters_and_numbers": false,
+  "directory_capped_at": null,
+  "outside_directory_cap": true,
+  "note": "Static 11th subagent; not counted in subagents/ directory limit of 10."
+}

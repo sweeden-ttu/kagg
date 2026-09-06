@@ -1,0 +1,9 @@
+{
+  "id": "detslot01",
+  "role": "deterministic_rules",
+  "static": false,
+  "slot": 1,
+  "embedding_dim": 64,
+  "name_has_letters_and_numbers": true,
+  "directory_capped_at": 10
+}

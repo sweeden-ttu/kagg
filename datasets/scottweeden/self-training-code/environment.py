@@ -62,6 +62,71 @@ class KaggleCompetitiveEnv:
         self._obs: List[Dict[str, Any]] = [{}, {}]
         self._prev_money: List[float] = [0.0, 0.0]
 
+    def transfer_bank(self, from_player: int, to_player: int, amount: float) -> bool:
+        """Move ``amount`` coins from one farm bank to the other (experiment charity).
+
+        Kaggriculture has no native donate op; this mutates the live engine farms
+        and refreshes parsed observations so the transfer is publicly visible.
+        """
+        amount = float(amount)
+        if amount <= 0 or from_player == to_player:
+            return False
+        if from_player not in (0, 1) or to_player not in (0, 1):
+            return False
+
+        # Prefer mutating the official engine state so later steps keep the transfer.
+        engine_farms = None
+        try:
+            states = getattr(self.env, "state", None)
+            if states and len(states) > 0:
+                obs0 = states[0].observation if hasattr(states[0], "observation") else states[0].get("observation")
+                if obs0 is not None:
+                    engine_farms = obs0["farms"] if isinstance(obs0, dict) else getattr(obs0, "farms", None)
+        except (TypeError, KeyError, AttributeError):
+            engine_farms = None
+
+        if engine_farms is not None and len(engine_farms) > max(from_player, to_player):
+            src = float(engine_farms[from_player].get("money", 0.0) or 0.0)
+            if src < amount:
+                return False
+            engine_farms[from_player]["money"] = src - amount
+            engine_farms[to_player]["money"] = float(
+                engine_farms[to_player].get("money", 0.0) or 0.0
+            ) + amount
+            # Mirror into every seated observation's farms list when present.
+            for st in states:
+                o = st.observation if hasattr(st, "observation") else st.get("observation", {})
+                farms = o["farms"] if isinstance(o, dict) else getattr(o, "farms", None)
+                if farms is None:
+                    continue
+                farms[from_player]["money"] = engine_farms[from_player]["money"]
+                farms[to_player]["money"] = engine_farms[to_player]["money"]
+
+        # Always update our cached parsed observations (public money on both seats).
+        for pid in (0, 1):
+            farms = self._obs[pid].get("farms", []) or []
+            if len(farms) <= max(from_player, to_player):
+                continue
+            src = float(farms[from_player].get("money", 0.0) or 0.0)
+            if src < amount and engine_farms is None:
+                return False
+            if engine_farms is None:
+                farms[from_player]["money"] = src - amount
+                farms[to_player]["money"] = float(farms[to_player].get("money", 0.0) or 0.0) + amount
+            else:
+                farms[from_player]["money"] = float(engine_farms[from_player]["money"])
+                farms[to_player]["money"] = float(engine_farms[to_player]["money"])
+
+        self._prev_money = [
+            float((self._obs[0].get("farms") or [{}])[0].get("money", 0.0) or 0.0)
+            if len(self._obs[0].get("farms") or []) > 0
+            else 0.0,
+            float((self._obs[1].get("farms") or [{}, {}])[1].get("money", 0.0) or 0.0)
+            if len(self._obs[1].get("farms") or []) > 1
+            else 0.0,
+        ]
+        return True
+
     def reset(self) -> Dict[str, Any]:
         """Reset environment and return player 0's observation."""
         states = _normalize_env_states(self.env.reset())

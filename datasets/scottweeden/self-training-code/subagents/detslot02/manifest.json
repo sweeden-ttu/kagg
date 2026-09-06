@@ -1,0 +1,9 @@
+{
+  "id": "detslot02",
+  "role": "crop_first_yield",
+  "static": false,
+  "slot": 2,
+  "embedding_dim": 64,
+  "name_has_letters_and_numbers": true,
+  "directory_capped_at": 10
+}

@@ -1,0 +1,5 @@
+# Self-training-code / Reasoning vs Questioning experiment extras
+# Parent repo also lists these in /requirements.txt and pyproject.toml.
+
+# Aho-Corasick automata — import as `ahocorasick`
+pyahocorasick==2.3.1

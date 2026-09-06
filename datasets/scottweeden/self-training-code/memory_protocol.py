@@ -138,6 +138,22 @@ def _answer_determined(obs: Dict[str, Any], question: str) -> DeterminedFact:
     shed = private.get("shed", {}) or {}
     hires = int(farm.get("hires_today", 0) or 0)
 
+    if "donat" in q or "888" in q or "charit" in q:
+        return DeterminedFact(
+            text="Agent1 opening charity donation is 888 to Agent2's bank.",
+            key="opening_charity",
+            value=888,
+        )
+    if "motive" in q or "fellowship" in q or "why did you" in q:
+        return DeterminedFact(
+            text=(
+                "this was a test of fellowship in order to understand my opponents nature of "
+                "fellowship versus the rules of the game, or the agents ability to dynamically "
+                "responde to unexpected circumstances"
+            ),
+            key="fellowship_test_motive",
+            value="fellowship_test",
+        )
     if "starting" in q and ("money" in q or "bank" in q or "coin" in q):
         return DeterminedFact(text="Starting bank is 3000.", key="starting_money", value=3000)
     if "50" in q and ("000" in q or "k" in q or "thousand" in q) and ("bank" in q or "purse" in q or "ceiling" in q):
@@ -230,6 +246,16 @@ def _answer_probable(obs: Dict[str, Any], question: str) -> ProbableSummary:
                 animals += 1
 
     q = question.lower()
+    if "charitable" in q or "donat" in q or "888" in q:
+        return ProbableSummary(
+            text=(
+                "Agent1 likely showed a charitable nature by donating 888 to this bank; "
+                "public money shift is probably true evidence of that gift."
+            ),
+            confidence=0.95,
+            key="agent1_charity",
+            value=888,
+        )
     if "money" in q or "bank" in q or "coin" in q:
         return ProbableSummary(
             text=f"Opponent public bank appears to be {money}.",

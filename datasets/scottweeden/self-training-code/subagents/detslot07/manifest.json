@@ -1,0 +1,9 @@
+{
+  "id": "detslot07",
+  "role": "shed_inventory",
+  "static": false,
+  "slot": 7,
+  "embedding_dim": 64,
+  "name_has_letters_and_numbers": true,
+  "directory_capped_at": 10
+}

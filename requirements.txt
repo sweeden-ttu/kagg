@@ -1,0 +1,15 @@
+# Kaggriculture self-training / dual-agent experiment dependencies
+# Install into conda env `kagg` (never a separate pip venv):
+#   KAGG_PY="$(conda info --base)/envs/kagg/bin/python"
+#   uv pip install -r requirements.txt --python "$KAGG_PY"
+
+torch==2.13.0
+numpy==2.5.2
+gymnasium
+kaggle-environments==1.32.7
+matplotlib==3.11.1
+tqdm==4.70.0
+tensorboard==2.21.0
+
+# Aho-Corasick automata (import name: ahocorasick) for linear-time Kaggle path trust matching
+pyahocorasick==2.3.1

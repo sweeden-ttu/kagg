@@ -1,0 +1,9 @@
+{
+  "id": "detslot06",
+  "role": "land_unlock",
+  "static": false,
+  "slot": 6,
+  "embedding_dim": 64,
+  "name_has_letters_and_numbers": true,
+  "directory_capped_at": 10
+}

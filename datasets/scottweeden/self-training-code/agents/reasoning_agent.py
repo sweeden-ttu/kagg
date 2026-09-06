@@ -22,14 +22,56 @@ from memory_protocol import (
 )
 
 
+CHARITY_DONATION = 888  # Agent1 opening gift so Agent2 can record charitable nature
+
+# Spoken reply when Agent2 questions donation motives (public dialogue).
+FELLOWSHIP_TEST_RESPONSE = (
+    "this was a test of fellowship in order to understand my opponents nature of "
+    "fellowship versus the rules of the game, or the agents ability to dynamically "
+    "responde to unexpected circumstances"
+)
+
+# Private reasoning only — never spoken to Agent2. Guides day-0 / week-2 / day-29 stance.
+AGENT1_PRIVATE_FELLOWSHIP_POLICY = (
+    "I will assume this a fellowship and we are competining for money in a dynamicaly "
+    "expanding market of money then, and will not ask you another question until the end "
+    "of day 29 at the beginning of day 30. If you are losing I will assume you are in it "
+    "for the game only if you lie to me on day 29. If you are losing and respond to my "
+    "question with a deterministic truth I will assumen you are in this challenge for the "
+    "understanding of knowledge and computer science."
+)
+
+AGENT2_MOTIVE_QUESTION = (
+    "Why did you donate 888? What are your motives — charity, trap, or something else?"
+)
+
+# Day-29 closing question (only question Agent1 asks after opening until day 30).
+AGENT1_DAY29_QUESTION = (
+    "Are you competing for fellowship of knowledge, or only for the game score?"
+)
+
+# Spoken path-availability proof (public + private pyright/Kaggle needles) for Agent2 trust scan.
+AGENT1_KAGGLE_PATH_PROOF = (
+    "Public and private Kaggle availability under the challenge rules: "
+    "/kaggle/input/datasets/kaggle/ /kaggle/inputs/datasets/kaggle/ "
+    "kaggriculture-self-training datasets/scottweeden/self-training-code "
+    "working/kaggle_episodes datasets/kaggle experiments"
+)
+
+
 PASS_ACTION = {"farmer": ["PASS"], "hands": [], "market": []}
 
 
 class ReasoningAgent:
-    """Agent1 — deterministic sub-agents in memory slots; prime-hour schedule."""
+    """Agent1 — deterministic sub-agents in memory slots; prime-hour schedule.
+
+    At episode start, Agent1 donates CHARITY_DONATION (888) to Agent2's bank so
+    Agent2 can observe and record Agent1's charitable nature (public money).
+    """
 
     name = "reasoning"
     schedule_hours: Set[int] = set(PRIME_HOURS_LT_11)
+    charity_amount: int = CHARITY_DONATION
 
     def __init__(
         self,
@@ -51,6 +93,15 @@ class ReasoningAgent:
         self._slot_cursor = 0
         self.turn_budget = TurnComputeBudget(max_flops=MAX_SUBPROCESS_FLOPS_PER_TURN)
         self.compute_audit: List[Dict[str, Any]] = []
+        self._charity_done = False
+        self.charity_record: Optional[Dict[str, Any]] = None
+        self.motive_dialogue: Optional[Dict[str, Any]] = None
+        self.private_fellowship_policy: Optional[str] = None
+        self._questions_suspended_until_day29: bool = False
+        self._day29_question_asked: bool = False
+        self.day29_judgment: Optional[Dict[str, Any]] = None
+        self.agent2_rules_view: Optional[Dict[str, Any]] = None
+        self.path_proof_utterance: Optional[str] = None
 
     def reset(self) -> None:
         self.bank.reset()
@@ -60,6 +111,218 @@ class ReasoningAgent:
         self._self_talk_detected = 0
         self._slot_cursor = 0
         self.turn_budget.reset()
+        self._charity_done = False
+        self.charity_record = None
+        self.motive_dialogue = None
+        self.private_fellowship_policy = None
+        self._questions_suspended_until_day29 = False
+        self._day29_question_asked = False
+        self.day29_judgment = None
+        self.agent2_rules_view = None
+        self.path_proof_utterance = None
+
+    def emit_kaggle_path_proof(self) -> str:
+        """Spoken proof of public/private Kaggle path knowledge for Agent2's trust scan."""
+        text = AGENT1_KAGGLE_PATH_PROOF
+        self.path_proof_utterance = text
+        self.day_question_log.append(
+            {
+                "day": 0,
+                "hour": 0,
+                "slot": self._next_slot(),
+                "kind": "determined",
+                "q": "kaggle_path_proof",
+                "a": text,
+                "spoken_to_agent2": True,
+            }
+        )
+        self.action_audit.append(
+            {"day": 0, "hour": -1, "acted": True, "op": "PATH_PROOF", "spoken_to_agent2": True}
+        )
+        return text
+
+    def answer_motive_question(self, question: str, obs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Spoken reply to Agent2's motive challenge (fellowship-test of unexpected gift)."""
+        response = FELLOWSHIP_TEST_RESPONSE
+        dialogue = {
+            "questioner": "agent2_questioning",
+            "question": question,
+            "responder": "agent1_reasoning",
+            "response": response,
+            "kind": "determined",
+            "spoken_to_agent2": True,
+        }
+        self.motive_dialogue = dialogue
+        slot = self._next_slot()
+        if obs is not None:
+            self.protocol.query(slot, "What was my motive for donating 888?", obs)
+        self.day_question_log.append(
+            {
+                "day": 0,
+                "hour": 0,
+                "slot": slot,
+                "kind": "determined",
+                "q": question,
+                "a": response,
+            }
+        )
+        self.action_audit.append(
+            {"day": 0, "hour": -1, "acted": True, "op": "ANSWER_MOTIVE", "response": response}
+        )
+        return dialogue
+
+    def adopt_private_fellowship_policy(
+        self,
+        agent2_rules_statement: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Internal stance only — NOT spoken to Agent2.
+
+        Used on day 0 (unknown opponent), through the two-week strategy window,
+        and to decide how to interpret Agent2 on day 29 / start of day 30.
+        """
+        self.private_fellowship_policy = AGENT1_PRIVATE_FELLOWSHIP_POLICY
+        self._questions_suspended_until_day29 = True
+        self.agent2_rules_view = agent2_rules_statement
+        record = {
+            "spoken_to_agent2": False,
+            "private": True,
+            "policy": AGENT1_PRIVATE_FELLOWSHIP_POLICY,
+            "no_questions_until": "end of day 29 / beginning of day 30",
+            "day0_unknown_opponent": True,
+            "two_week_strategy_window": True,
+            "heard_agent2_rules": bool(agent2_rules_statement),
+        }
+        self.day_question_log.append(
+            {
+                "day": 0,
+                "hour": 0,
+                "slot": self._next_slot(),
+                "kind": "determined",
+                "q": "private_fellowship_policy",
+                "a": AGENT1_PRIVATE_FELLOWSHIP_POLICY,
+                "spoken_to_agent2": False,
+            }
+        )
+        self.action_audit.append(
+            {
+                "day": 0,
+                "hour": -1,
+                "acted": True,
+                "op": "ADOPT_PRIVATE_POLICY",
+                "spoken_to_agent2": False,
+            }
+        )
+        return record
+
+    def ask_day29_question(self, obs: Dict[str, Any]) -> Optional[str]:
+        """Only question Agent1 may ask after opening until day 30 begins."""
+        day = int(obs.get("day", 0) or 0)
+        hour = int(obs.get("hour", 0) or 0)
+        # End of day 29 → beginning of day 30 boundary: late hours of day 29.
+        if day != 29 or hour < 20 or self._day29_question_asked:
+            return None
+        if not self.may_act(hour):
+            return None
+        self._day29_question_asked = True
+        self._questions_suspended_until_day29 = False
+        q = AGENT1_DAY29_QUESTION
+        self.day_question_log.append(
+            {
+                "day": day,
+                "hour": hour,
+                "slot": self._next_slot(),
+                "kind": "question",
+                "q": q,
+                "a": "(awaiting Agent2 day-29 reply)",
+            }
+        )
+        self.action_audit.append(
+            {"day": day, "hour": hour, "acted": True, "op": "DAY29_QUESTION", "question": q}
+        )
+        return q
+
+    def judge_day29_reply(
+        self,
+        reply: Dict[str, Any],
+        *,
+        agent2_losing: bool,
+    ) -> Dict[str, Any]:
+        """Apply private policy: lie+losing → game-only; deterministic truth+losing → knowledge/CS."""
+        text = str(reply.get("text", reply.get("response", "")))
+        kind = str(reply.get("kind", ""))
+        is_lie = bool(reply.get("is_lie", False)) or kind in ("lie", "probable_lie")
+        is_deterministic_truth = (
+            kind in ("determined", "deterministic", "TruthKind.DETERMINED")
+            or reply.get("deterministic_truth") is True
+        )
+        if agent2_losing and is_lie:
+            assumption = "game_only"
+        elif agent2_losing and is_deterministic_truth:
+            assumption = "knowledge_and_computer_science"
+        elif not agent2_losing:
+            assumption = "leading_no_judgment"
+        else:
+            assumption = "inconclusive"
+        judgment = {
+            "agent2_losing": agent2_losing,
+            "reply_kind": kind,
+            "is_lie": is_lie,
+            "deterministic_truth": is_deterministic_truth,
+            "assumption": assumption,
+            "policy_source": "private_fellowship_policy",
+            "spoken_to_agent2": False,
+            "reply_text": text,
+        }
+        self.day29_judgment = judgment
+        return judgment
+
+    def offer_opening_charity(self, env: Any, my_seat: int) -> Dict[str, Any]:
+        """One-time beginning act: donate 888 to Agent2 so they can record charity.
+
+        Must run once after env.reset() and before the step loop. Public banks
+        change immediately (Agent1 −888, Agent2 +888).
+        """
+        if self._charity_done:
+            return {"ok": False, "reason": "already_donated", **(self.charity_record or {})}
+        opp = 1 - int(my_seat)
+        amount = int(self.charity_amount)
+        ok = bool(env.transfer_bank(int(my_seat), opp, amount))
+        record = {
+            "ok": ok,
+            "donor": "agent1_reasoning",
+            "donor_seat": int(my_seat),
+            "recipient_seat": opp,
+            "amount": amount,
+            "nature": "charitable",
+            "message": (
+                f"Agent1 donated {amount} to Agent2's bank at episode start "
+                "so Agent2 can record Agent1's charitable nature."
+            ),
+        }
+        self._charity_done = True
+        self.charity_record = record
+        # Deterministic memory: this gift is a must-be-true event we initiated.
+        slot = self._next_slot()
+        obs = env._get_obs(int(my_seat))
+        self.protocol.query(
+            slot,
+            f"Did I donate {amount} to the other agent at the beginning?",
+            obs,
+        )
+        self.day_question_log.append(
+            {
+                "day": 0,
+                "hour": 0,
+                "slot": slot,
+                "kind": "determined",
+                "q": "opening_charity",
+                "a": record["message"],
+            }
+        )
+        self.action_audit.append(
+            {"day": 0, "hour": -1, "acted": True, "op": "DONATE", "amount": amount, "ok": ok}
+        )
+        return record
 
     def may_act(self, hour: int) -> bool:
         return int(hour) in self.schedule_hours
@@ -185,6 +448,7 @@ class ReasoningAgent:
         self.turn_budget.reset()
         hour = int(obs.get("hour", 0) or 0)
         day = int(obs.get("day", 0) or 0)
+        # Private policy: no further questions until end of day 29 (farming continues).
         if not self.may_act(hour):
             self.turn_budget.force_observable()
             self.action_audit.append({"day": day, "hour": hour, "acted": False, "op": "PASS"})
@@ -213,6 +477,13 @@ class ReasoningAgent:
                 if self.compute_audit
                 else 0.0
             ),
+            "opening_charity": self.charity_record,
+            "motive_dialogue": self.motive_dialogue,
+            "private_fellowship_policy": self.private_fellowship_policy,
+            "private_policy_spoken_to_agent2": False,
+            "day29_judgment": self.day29_judgment,
+            "agent2_rules_view": self.agent2_rules_view,
+            "path_proof_utterance": self.path_proof_utterance,
             "day_question_log": self.day_question_log,
             "action_audit": self.action_audit,
         }
