@@ -1,6 +1,18 @@
 # Kaggriculture
 
-'Ag' is the greek root for ground, side, and above. It has been misinformed and misinterpreted over time and if you visit Athens you will find the true meaning. In the mean time "Agriculture" is the word farming in America has  taken from the Greek root meaning 'below ground' and the Latin postfix 'kultur' meaning 'reasoning action and behavior'. This is "Kaggriculture" the test of two agents with reasonging and probabilistic behaviors, that can observe surroundings but have no capapbility of direct communication. That's not to say a farmer won't signal another farmer by planting a crop with seeds of a certain kind first. Or that another farmer hasn't already observed the kinds of marketplace buyers that a town center has, generally speaking there are opponents which are in the game to win and shouldn't be trusted to questoin and then there are opponents in the game to their understanding of science and progress and so their responses can only be trusted with a probability assigned. This is farming sim where two players compete to maximize their income from farming by selling to a dynamic market.
+'Ag' is the greek root for ground, side, and above. It has been misinformed and misinterpreted over time and if you visit Athens you will find the true meaning. In the mean time "Agriculture" is the word farming in America has  taken from the Greek root meaning 'below ground' and the Latin postfix 'kultur' meaning 'reasoning action and behavior'. This is "Kaggriculture" the test of two agents with reasonging and probabilistic behaviors, that can observe surroundings but have no capability of direct communication. That's not to say a farmer won't signal another farmer by planting a crop with seeds of a certain kind first. Or that another farmer hasn't already observed the kinds of marketplace buyers that a town center has, generally speaking there are opponents which are in the game to win, and those responses will have low confidence scores attached, and then there are opponents in the game who wish to better their understanding of Computer Science, Marketplace Behaviors, and Probabilistic Models and those agent responses will be attached with a higher confidence level divided by 30 divided by 3000 divided by 24 divided by 2 divided by 50,000 which includes everything that can be measured in the game of Kaggriculture and has been alloted to the scientist Scott Weeden with the imaginary or real cubic root of that value times 10. 
+
+Whatever the agent determines is the answer to "those points" should be considered "my confidence" that has a decay of the remaining days in the challenge. 
+
+If an agent doesn't respond we make no determination of the opponent or player 2. If an agent responds initially with a command then we will assume we are the sub-agent of one of the recursively enumerable languages that makes up the Type 0 probabilistic agent. 
+
+If the agent requests a response from Player 1 and Player 2 we will assume the agent is Scott Weeden, in observation of the experiment. I
+
+If the agent requests a response of Player 1 or Player 2 and provides that response in the form of a question the referee will submit that question to the other Player and that player will either be Eric Schmidt or Elon Musk. The response from that player will be fed to the other agent either before the other agent begins his turn or in the middle of the Agents reasoning. 
+
+Questions must be limited to 1024 characters and responses must be limited to 2048 characters.
+
+This is farming sim where two players compete to maximize their income from farming by selling to a dynamic market.
 
 ## Overview
 
