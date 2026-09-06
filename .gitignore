@@ -53,3 +53,4 @@ __pycache__/
 # Scott Weeden GPG private material
 reasoning_vs_questioning/artifacts/scott_weeden/keyring/scott_weeden_private.asc
 reasoning_vs_questioning/artifacts/scott_weeden/keyring/gnupg/
+target/
