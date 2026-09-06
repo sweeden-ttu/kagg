@@ -1,0 +1,66 @@
+{
+  "accepted": true,
+  "closing_question": "Confirmed: I will keep even-hour exploration \u226442 FLOPs and shrink probabilistic weights for the shared \u226490 MB day-29 zip \u2014 will you freeze deterministic code before I cut model size?",
+  "ends_with_question": true,
+  "plan": {
+    "authority_on_conflict": "determined_facts_override_probable_summaries",
+    "dialogue": {
+      "no_cross_agent_questions_until": "end of day 29 / beginning of day 30",
+      "posture_heuristic": "trailing_question_mark_means_questioning_else_reasoning"
+    },
+    "flops": {
+      "even_hours": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22
+      ],
+      "max_per_turn": 42,
+      "prime_hours": [
+        2,
+        3,
+        5,
+        7
+      ],
+      "rule": "Schedules do not overlap; each agent spends \u226442 flop-units on its own turn.",
+      "shared_pool": false
+    },
+    "merge": {
+      "even_writer": "cursor",
+      "on_withhold": "continue_from_last_committed_row",
+      "path": "artifacts/shared_state.jsonl",
+      "prime_writer": "antigravity"
+    },
+    "submission": {
+      "day": 29,
+      "hours": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "model_ceiling_mb": 100,
+      "order": [
+        "freeze_deterministic_code",
+        "shrink_probabilistic_weights",
+        "build_submission_archive",
+        "assert_passed_90mb"
+      ],
+      "patch_buffer_mb": 10,
+      "zip_max_mb": 90
+    }
+  },
+  "posture": "questioning",
+  "schmidt_stake": 888,
+  "seat": "agent2_questioning",
+  "writer": "cursor"
+}

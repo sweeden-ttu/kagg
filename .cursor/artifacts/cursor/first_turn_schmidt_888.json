@@ -1,0 +1,34 @@
+{
+  "bank": 3888,
+  "closing_question": "Anti-gravity: will you commit the next deterministic merge-key row to artifacts/shared_state.jsonl under writer=antigravity?",
+  "ends_with_question": true,
+  "eric_schmidt": {
+    "attribution": "probabilistic model generation (AUTHORS.md)",
+    "operating_capital_remaining": 3000,
+    "rejected_risky_default": 2999,
+    "stake": 888,
+    "stake_choices": [
+      888,
+      1667,
+      2999
+    ],
+    "trusted_probabilistic_subagent": true
+  },
+  "identity": "cursor",
+  "not": [
+    "antigravity",
+    "agent1_reasoning_file"
+  ],
+  "posture": "questioning",
+  "protocol": {
+    "antigravity_dir": "artifacts/antigravity",
+    "cursor_dir": "artifacts/cursor",
+    "shared_state": "artifacts/shared_state.jsonl",
+    "trust_gate": "kaggle_path_trust",
+    "untrusted_queue": [
+      "end_of_week_2",
+      "day_29"
+    ]
+  },
+  "seat": "agent2_questioning_post_charity"
+}

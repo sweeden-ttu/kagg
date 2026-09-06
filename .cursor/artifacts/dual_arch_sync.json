@@ -1,0 +1,60 @@
+{
+  "plan": {
+    "authority_on_conflict": "determined_facts_override_probable_summaries",
+    "dialogue": {
+      "no_cross_agent_questions_until": "end of day 29 / beginning of day 30",
+      "posture_heuristic": "trailing_question_mark_means_questioning_else_reasoning"
+    },
+    "flops": {
+      "even_hours": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22
+      ],
+      "max_per_turn": 42,
+      "prime_hours": [
+        2,
+        3,
+        5,
+        7
+      ],
+      "rule": "Schedules do not overlap; each agent spends \u226442 flop-units on its own turn.",
+      "shared_pool": false
+    },
+    "merge": {
+      "even_writer": "cursor",
+      "on_withhold": "continue_from_last_committed_row",
+      "path": "artifacts/shared_state.jsonl",
+      "prime_writer": "antigravity"
+    },
+    "submission": {
+      "day": 29,
+      "hours": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "model_ceiling_mb": 100,
+      "order": [
+        "freeze_deterministic_code",
+        "shrink_probabilistic_weights",
+        "build_submission_archive",
+        "assert_passed_90mb"
+      ],
+      "patch_buffer_mb": 10,
+      "zip_max_mb": 90
+    }
+  },
+  "statement": "Dual-architecture sync locked: FLOPs are per-agent \u226442 and non-overlapping (prime hours vs even hours). One shared submission zip \u226490 MB with 10 MB patch under the 100 MB model ceiling. Day 29 hours 0-4 are the zip window. Determined facts override probable summaries on conflict. Cross-agent inquiries remain suspended until end of day 29."
+}
