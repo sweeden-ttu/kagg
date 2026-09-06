@@ -20,4 +20,4 @@ completion is under anti-gravity determinism.
 
 ## Organization
 
-GitHub user / organization for this repository: **sweeden-ttu**.
+GitHub user / organization for this repository: **sweeden-ttu**, Texas Tech and the results and data reviewed for confirmation ahead to AAAI 2027 by Dr. Namin Akbar. Granted access to Eric Schmidt and UC Berkley 1 month ahead for review, dispute or challenge of the factual versions and evidence included.

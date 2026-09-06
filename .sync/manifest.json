@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-01T18:24:20.676972+00:00",
-  "root": "${HOME:-~}/kagg",
+  "generated_at": "2026-09-06T05:38:23.277388+00:00",
+  "root": "/Users/sweeden/kagg",
   "entries": [
     {
       "path": "input_requirements.txt",
@@ -8,21 +8,21 @@
       "github": "kaggriculture-self-training",
       "kaggle": "working/scottweeden-kaggriculture-self-training",
       "github_sha256": "a624110ff208a1fd19c83cfde1c4742e656ddd69e59e328f51a8218fe9941710",
-      "kaggle_sha256": "a624110ff208a1fd19c83cfde1c4742e656ddd69e59e328f51a8218fe9941710",
+      "kaggle_sha256": null,
       "github_mtime": "2026-09-01T18:24:16.226003+00:00",
-      "kaggle_mtime": "2026-08-30T03:23:55.583549+00:00",
-      "status": "equal"
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "kaggriculture-self-training.ipynb",
       "pair": "training_kernel",
       "github": "kaggriculture-self-training",
       "kaggle": "working/scottweeden-kaggriculture-self-training",
-      "github_sha256": "a4a03a2067ebcf9e36dfbea04f7b841de61dd43ac931b1d86bc1faf51fec3960",
-      "kaggle_sha256": "a4a03a2067ebcf9e36dfbea04f7b841de61dd43ac931b1d86bc1faf51fec3960",
-      "github_mtime": "2026-09-01T18:24:16.223188+00:00",
-      "kaggle_mtime": "2026-09-01T18:23:25.146770+00:00",
-      "status": "equal"
+      "github_sha256": "f2e3d784d514b0c062371948f1ddbf2c43d3f6d43122f65889f7cd8c43454739",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T04:28:53.663794+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "kernel-metadata.json",
@@ -30,10 +30,10 @@
       "github": "kaggriculture-self-training",
       "kaggle": "working/scottweeden-kaggriculture-self-training",
       "github_sha256": "23e64f81dc876c096c5731b8ea85e1b7eff0071ff6b2f39cd62a44a51814bc3c",
-      "kaggle_sha256": "23e64f81dc876c096c5731b8ea85e1b7eff0071ff6b2f39cd62a44a51814bc3c",
-      "github_mtime": "2026-09-01T18:24:16.220288+00:00",
-      "kaggle_mtime": "2026-09-01T18:23:25.147341+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T03:32:28.289976+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "pip_install.sh",
@@ -41,41 +41,85 @@
       "github": "kaggriculture-self-training",
       "kaggle": "working/scottweeden-kaggriculture-self-training",
       "github_sha256": "aaaec92f49f3a629b94717725b94799268729bcd4f59d5784928761f89be4dd6",
-      "kaggle_sha256": "aaaec92f49f3a629b94717725b94799268729bcd4f59d5784928761f89be4dd6",
+      "kaggle_sha256": null,
       "github_mtime": "2026-09-01T18:24:16.228415+00:00",
-      "kaggle_mtime": "2026-08-30T03:23:55.584048+00:00",
-      "status": "equal"
+      "kaggle_mtime": null,
+      "status": "github_only"
+    },
+    {
+      "path": "traced_local_execution.ipynb",
+      "pair": "training_kernel",
+      "github": "kaggriculture-self-training",
+      "kaggle": "working/scottweeden-kaggriculture-self-training",
+      "github_sha256": "ca602b5caaf43a65d784b56db2fc5d7feca0b2d01f61c70f8c8073767d7575a2",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T03:58:57.941523+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "_resolve_code_src.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "d1463ca4842c5cf555ee54efe7661261560f6c3f39e1083932d6e973f7464494",
-      "kaggle_sha256": null,
-      "github_mtime": "2026-09-01T18:23:44.718174+00:00",
-      "kaggle_mtime": null,
-      "status": "github_only"
+      "github_sha256": "f1dd5b8e47f8c60d3767f88fb0a0ebfd72c318da295dd7d9e5be6d6b45732bae",
+      "kaggle_sha256": "f1dd5b8e47f8c60d3767f88fb0a0ebfd72c318da295dd7d9e5be6d6b45732bae",
+      "github_mtime": "2026-09-02T02:31:50.161923+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.588028+00:00",
+      "status": "equal"
     },
     {
       "path": "agent_coordinator.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "10cac59062fb2354967a7613a5a01a62daf844bd969f0482573eb5cffb8fc470",
-      "kaggle_sha256": null,
-      "github_mtime": "2026-09-01T18:23:44.718734+00:00",
-      "kaggle_mtime": null,
-      "status": "github_only"
+      "github_sha256": "0f3ad7ca4f3dc7db00c262fb7c5c29e04a4d74f6f8131fe478972abb34ad23dc",
+      "kaggle_sha256": "0f3ad7ca4f3dc7db00c262fb7c5c29e04a4d74f6f8131fe478972abb34ad23dc",
+      "github_mtime": "2026-09-02T04:28:25.716920+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.588350+00:00",
+      "status": "equal"
     },
     {
       "path": "agent_export.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "13bd73fb9b23720904c90e31fb103a4da88bf8c5587417865306ef0117716752",
+      "github_sha256": "870e660788135a1819933ee537c80951915e0d53005e88af6721645744b5a716",
+      "kaggle_sha256": "1b3e9901473f22a6855e923148a7a79d7d0a7429e0db09e3367ba3fc719d73fe",
+      "github_mtime": "2026-09-06T00:39:33.045230+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.588601+00:00",
+      "status": "github_ahead"
+    },
+    {
+      "path": "agents/__init__.py",
+      "pair": "code_modules",
+      "github": "datasets/scottweeden/self-training-code",
+      "kaggle": "working",
+      "github_sha256": "df424a7033a514bc418ada61c6c8eeecc82d9ac09f6ccc818bea9a0e21c1854c",
       "kaggle_sha256": null,
-      "github_mtime": "2026-09-01T18:23:44.719045+00:00",
+      "github_mtime": "2026-09-06T00:16:19.174623+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
+    },
+    {
+      "path": "agents/questioning_agent.py",
+      "pair": "code_modules",
+      "github": "datasets/scottweeden/self-training-code",
+      "kaggle": "working",
+      "github_sha256": "d18b5aefb8d8a68b9a87fe212a489a90974b530bdbd9aedf4eb1b2d7f7a8f70c",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-06T02:02:53.115051+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
+    },
+    {
+      "path": "agents/reasoning_agent.py",
+      "pair": "code_modules",
+      "github": "datasets/scottweeden/self-training-code",
+      "kaggle": "working",
+      "github_sha256": "d3497389e87a31819cee123ff504efcbac1d7ffd40856d9ca5e81ea7f37e8ecf",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-06T02:02:53.064612+00:00",
       "kaggle_mtime": null,
       "status": "github_only"
     },
@@ -84,11 +128,11 @@
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "40e2a277af815b22f2b9939c060247c9b00148dd157038185ef54dec147f8887",
-      "kaggle_sha256": null,
-      "github_mtime": "2026-09-01T18:23:44.719367+00:00",
-      "kaggle_mtime": null,
-      "status": "github_only"
+      "github_sha256": "429cedc592686c344eb64c246c39f54050425b0bc45bd2e49d944a7ee7a36320",
+      "kaggle_sha256": "6828f57c2b1d191dd940f1a9a6da554b782d3ab08bd03a2f6c6792d18542aaab",
+      "github_mtime": "2026-09-02T08:24:38.327015+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.588880+00:00",
+      "status": "github_ahead"
     },
     {
       "path": "cli.py",
@@ -96,10 +140,10 @@
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
       "github_sha256": "7742ab43bee8c6505a6a22bb2b50970d04d404b92e3084d36c206045d83c2e4a",
-      "kaggle_sha256": null,
-      "github_mtime": "2026-09-01T18:23:44.719624+00:00",
-      "kaggle_mtime": null,
-      "status": "github_only"
+      "kaggle_sha256": "7742ab43bee8c6505a6a22bb2b50970d04d404b92e3084d36c206045d83c2e4a",
+      "github_mtime": "2026-09-02T01:51:25.397029+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.589135+00:00",
+      "status": "equal"
     },
     {
       "path": "dataset_loader.py",
@@ -107,54 +151,87 @@
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
       "github_sha256": "7768fb95d741d0a2d76f256fe2e1d0b32ee97a7e264b21840cbb70cd3b92a810",
-      "kaggle_sha256": "e45ed233302897a26002a12a2a1783de9843a4cb4092f6273580d376f4081ea1",
-      "github_mtime": "2026-09-01T18:23:44.719903+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:51.618359+00:00",
-      "status": "github_ahead"
+      "kaggle_sha256": "7768fb95d741d0a2d76f256fe2e1d0b32ee97a7e264b21840cbb70cd3b92a810",
+      "github_mtime": "2026-09-02T01:51:25.449571+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.589581+00:00",
+      "status": "equal"
     },
     {
       "path": "environment.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "85c42357fcf86434ff8741e8c2b090ea886a7c0ffff0aad4f2e0d0d119a83e75",
-      "kaggle_sha256": null,
-      "github_mtime": "2026-09-01T18:23:44.720189+00:00",
-      "kaggle_mtime": null,
-      "status": "github_only"
+      "github_sha256": "7ad195ddca27bb39d4cc2667b60eadba7a733cc82ba34685e24f3525a85ffea5",
+      "kaggle_sha256": "e78889c9a47a3e76ebd6bb104d5e37fbe995bea87eda282c03d4bd6bf39c6780",
+      "github_mtime": "2026-09-06T02:02:53.204967+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.589890+00:00",
+      "status": "github_ahead"
     },
     {
       "path": "episode_catalog.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "5d124ca03e40303f64096e1bd1f8c193643380a6c7f6726ca93987f17b80b518",
-      "kaggle_sha256": "e1e59d50844c15fe3b2aa19ec5dd1716f3967361e7df70f94fea53e8aa266b24",
-      "github_mtime": "2026-09-01T18:23:44.720812+00:00",
-      "kaggle_mtime": "2026-08-30T04:44:02.721275+00:00",
-      "status": "github_ahead"
+      "github_sha256": "9c4e072106c38fb00ea80008343c70cd3cbecc2e664ffd42ea04777df3e52942",
+      "kaggle_sha256": "9c4e072106c38fb00ea80008343c70cd3cbecc2e664ffd42ea04777df3e52942",
+      "github_mtime": "2026-09-02T02:32:10.242696+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.590456+00:00",
+      "status": "equal"
     },
     {
       "path": "eval_policy.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "0bc93e040a01bfb2db20c0d2b363678a11e5e5d3b585ab3ecb43dc1407319bcb",
-      "kaggle_sha256": "0bc93e040a01bfb2db20c0d2b363678a11e5e5d3b585ab3ecb43dc1407319bcb",
-      "github_mtime": "2026-09-01T18:23:44.721295+00:00",
-      "kaggle_mtime": "2026-08-30T11:08:37.051216+00:00",
+      "github_sha256": "8d15a60b698181d7dd8b587a86a545f1a0eab088effe15fad372dba4bc26db03",
+      "kaggle_sha256": "8d15a60b698181d7dd8b587a86a545f1a0eab088effe15fad372dba4bc26db03",
+      "github_mtime": "2026-09-02T04:28:10.787967+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.590843+00:00",
       "status": "equal"
+    },
+    {
+      "path": "experiments/reasoning_vs_questioning/run_suite.py",
+      "pair": "code_modules",
+      "github": "datasets/scottweeden/self-training-code",
+      "kaggle": "working",
+      "github_sha256": "c560118c1c95c5b761205c587a7462514b27c1f078265538c60bda6f65dcb7b7",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-06T02:02:53.164965+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
+    },
+    {
+      "path": "hard_limits.py",
+      "pair": "code_modules",
+      "github": "datasets/scottweeden/self-training-code",
+      "kaggle": "working",
+      "github_sha256": "b7046eea79598218cb99d880f2c210e53a0203a7348fb6a14fe02785576c45b9",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-06T00:37:44.126797+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "kaggle_env_wrapper.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "b8a2c0aa1a975e30fd3f35e1cd378c0a6094912458cccfa501647670b9401e53",
-      "kaggle_sha256": "7cac8aec1ddf72cbcc478fd1f1ca74adfbd87cf57c15bdb6543c762207753965",
-      "github_mtime": "2026-09-01T18:23:44.721714+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:51.619775+00:00",
-      "status": "github_ahead"
+      "github_sha256": "c074ed2b5110d5eefd006aa369ded23cdf5c1d22bd6dfd8700e4d8fd15767533",
+      "kaggle_sha256": "c074ed2b5110d5eefd006aa369ded23cdf5c1d22bd6dfd8700e4d8fd15767533",
+      "github_mtime": "2026-09-02T02:15:34.701081+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.591119+00:00",
+      "status": "equal"
+    },
+    {
+      "path": "kaggle_path_trust.py",
+      "pair": "code_modules",
+      "github": "datasets/scottweeden/self-training-code",
+      "kaggle": "working",
+      "github_sha256": "d696e3ca9358b03e48124f8254a391cd60f5b28561463aa655a1fff1c04fe94d",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-06T02:02:53.326649+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "kaggriculture-self-training-code-publish/_resolve_code_src.py",
@@ -164,7 +241,7 @@
       "github_sha256": null,
       "kaggle_sha256": "d1463ca4842c5cf555ee54efe7661261560f6c3f39e1083932d6e973f7464494",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.072443+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.262967+00:00",
       "status": "kaggle_only"
     },
     {
@@ -175,7 +252,7 @@
       "github_sha256": null,
       "kaggle_sha256": "10cac59062fb2354967a7613a5a01a62daf844bd969f0482573eb5cffb8fc470",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.094229+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.306462+00:00",
       "status": "kaggle_only"
     },
     {
@@ -184,9 +261,9 @@
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
       "github_sha256": null,
-      "kaggle_sha256": "13bd73fb9b23720904c90e31fb103a4da88bf8c5587417865306ef0117716752",
+      "kaggle_sha256": "8c2c4a41c9bc27a44a1b1d769a189d71052882f864dd3f8e2bb2524e6d77dc62",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:50:28.819489+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.323483+00:00",
       "status": "kaggle_only"
     },
     {
@@ -197,29 +274,7 @@
       "github_sha256": null,
       "kaggle_sha256": "40e2a277af815b22f2b9939c060247c9b00148dd157038185ef54dec147f8887",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.128406+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-publish/cli.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "7742ab43bee8c6505a6a22bb2b50970d04d404b92e3084d36c206045d83c2e4a",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.144680+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-publish/dataset_loader.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "7768fb95d741d0a2d76f256fe2e1d0b32ee97a7e264b21840cbb70cd3b92a810",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.177335+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.339616+00:00",
       "status": "kaggle_only"
     },
     {
@@ -230,7 +285,7 @@
       "github_sha256": null,
       "kaggle_sha256": "85c42357fcf86434ff8741e8c2b090ea886a7c0ffff0aad4f2e0d0d119a83e75",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.194211+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.463786+00:00",
       "status": "kaggle_only"
     },
     {
@@ -241,7 +296,7 @@
       "github_sha256": null,
       "kaggle_sha256": "5d124ca03e40303f64096e1bd1f8c193643380a6c7f6726ca93987f17b80b518",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.226125+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.469816+00:00",
       "status": "kaggle_only"
     },
     {
@@ -252,7 +307,7 @@
       "github_sha256": null,
       "kaggle_sha256": "0bc93e040a01bfb2db20c0d2b363678a11e5e5d3b585ab3ecb43dc1407319bcb",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.246654+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.486906+00:00",
       "status": "kaggle_only"
     },
     {
@@ -263,7 +318,7 @@
       "github_sha256": null,
       "kaggle_sha256": "b8a2c0aa1a975e30fd3f35e1cd378c0a6094912458cccfa501647670b9401e53",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.279767+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.501137+00:00",
       "status": "kaggle_only"
     },
     {
@@ -272,20 +327,9 @@
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
       "github_sha256": null,
-      "kaggle_sha256": "f67e76f2529479bf7394e2161c878f904ef9a4721eb70ccee3914108b37d9d0c",
+      "kaggle_sha256": "57b1292125538ec3ba5517a16174757a823082b8b083380f590ad4716e1c9e0c",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T14:06:36.687382+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-publish/kaggriculture_dataset_publish.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "8b9aa079f8630e245855277081fd2632bf29d6e90cb0eb1629a179cf4cbc9bfd",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.313872+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.515099+00:00",
       "status": "kaggle_only"
     },
     {
@@ -294,31 +338,9 @@
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
       "github_sha256": null,
-      "kaggle_sha256": "f5968e1ab19d5008dd3dd43d1af7f2f61eb541215d0462004bddc79dd345f4d5",
+      "kaggle_sha256": "c80f858e3136bec7abbffbf77905bca7a4defeca05e103dd253250f92efc5bdc",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T14:00:08.073027+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-publish/kaggriculture_rl/__init__.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "420e06d2c66ca5df3d3b51d9cc9765b47a5f0dc470d55521046dec22f61d69a1",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.374325+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-publish/kaggriculture_rl/_lsp_import_smoke.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "e7d89827adbc1dca53e3ef621709012206df7b202a508103ee2a12526f990e84",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.376841+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.551362+00:00",
       "status": "kaggle_only"
     },
     {
@@ -329,7 +351,7 @@
       "github_sha256": null,
       "kaggle_sha256": "ba2ff3906b49892dc85b3e703ab894aa2c72bae0c600721c633d4f07fd753ec6",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.377252+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.574764+00:00",
       "status": "kaggle_only"
     },
     {
@@ -340,7 +362,7 @@
       "github_sha256": null,
       "kaggle_sha256": "f08d9cdd2c29b579cdee350b66cfc2edc2339daa8c0428662937039b6d1bb821",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.377900+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.575381+00:00",
       "status": "kaggle_only"
     },
     {
@@ -351,7 +373,7 @@
       "github_sha256": null,
       "kaggle_sha256": "6def9e8c59b6ee3872d88d7c596f1019204af20f0d108dbcd77b3871590bfaef",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.423171+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.589090+00:00",
       "status": "kaggle_only"
     },
     {
@@ -362,7 +384,7 @@
       "github_sha256": null,
       "kaggle_sha256": "5afae42a4cb9f80f77638cee55d9f4291ece3c5972a8d1bcf69cc9e731539d8c",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.460471+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.594119+00:00",
       "status": "kaggle_only"
     },
     {
@@ -373,7 +395,7 @@
       "github_sha256": null,
       "kaggle_sha256": "0f7afae0bdb01b5003a1c8a9ec16c179ae22f10454cb52d813e3e2faccbbc60e",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.493306+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.615036+00:00",
       "status": "kaggle_only"
     },
     {
@@ -384,18 +406,7 @@
       "github_sha256": null,
       "kaggle_sha256": "5a849a4c6d21c72e1dbda8c49c485c71896e9cbb074d2e51663e399b978ad387",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.511616+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-publish/setup_experiment.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "6f0d16a06fa0b829d0ab94ab357c12cc1f3a9b9f6da3bf0726e2ebdf9193809b",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:25.530107+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.620730+00:00",
       "status": "kaggle_only"
     },
     {
@@ -404,9 +415,9 @@
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
       "github_sha256": null,
-      "kaggle_sha256": "06d92d1c85a5b61d7a4334a4b4f8c5ad2833a4cc4a000ed7b62c3f1b0d988164",
+      "kaggle_sha256": "383ce60096eb3f4e564d82dda1191f60973bedd44878c893dc9d087d8332afbc",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:50:22.804317+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.654456+00:00",
       "status": "kaggle_only"
     },
     {
@@ -415,9 +426,9 @@
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
       "github_sha256": null,
-      "kaggle_sha256": "74ced9925ef026f48f65782d5fb04a932a5f2867a94dbed9157aa11ab2ee42fa",
+      "kaggle_sha256": "818d8b948d1a28ba4a8cf2ba29349202b8d76aa9bf8680e71afb6651b512aee3",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:50:25.663544+00:00",
+      "kaggle_mtime": "2026-09-02T01:51:25.676185+00:00",
       "status": "kaggle_only"
     },
     {
@@ -428,7 +439,7 @@
       "github_sha256": null,
       "kaggle_sha256": "38f75656f6956c2950caef792e7be2f4eb95567578b54ecb3e4ba5dd0d729e4d",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:49:57.606837+00:00",
+      "kaggle_mtime": "2026-09-02T01:54:16.573169+00:00",
       "status": "kaggle_only"
     },
     {
@@ -439,7 +450,7 @@
       "github_sha256": null,
       "kaggle_sha256": "f67e76f2529479bf7394e2161c878f904ef9a4721eb70ccee3914108b37d9d0c",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T14:06:36.688393+00:00",
+      "kaggle_mtime": "2026-09-02T01:54:16.570962+00:00",
       "status": "kaggle_only"
     },
     {
@@ -450,29 +461,7 @@
       "github_sha256": null,
       "kaggle_sha256": "f5968e1ab19d5008dd3dd43d1af7f2f61eb541215d0462004bddc79dd345f4d5",
       "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T14:06:36.688954+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-publish/training_metrics.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "71ec6c64c83b86e10c697faa8f06ac8016a1bbd187aff46c5954471d8cf68967",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:27.295247+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-publish/visualize.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "f315284d5b700649dffd0abc8ef1f889860063469ab1fd92c1045cd4cded7189",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-08-30T13:47:27.342181+00:00",
+      "kaggle_mtime": "2026-09-02T01:54:16.562245+00:00",
       "status": "kaggle_only"
     },
     {
@@ -517,28 +506,6 @@
       "kaggle_sha256": "40e2a277af815b22f2b9939c060247c9b00148dd157038185ef54dec147f8887",
       "github_mtime": null,
       "kaggle_mtime": "2026-09-01T18:23:44.719367+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-staging/cli.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "7742ab43bee8c6505a6a22bb2b50970d04d404b92e3084d36c206045d83c2e4a",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-09-01T18:23:44.719624+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-staging/dataset_loader.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "7768fb95d741d0a2d76f256fe2e1d0b32ee97a7e264b21840cbb70cd3b92a810",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-09-01T18:23:44.719903+00:00",
       "status": "kaggle_only"
     },
     {
@@ -597,17 +564,6 @@
       "status": "kaggle_only"
     },
     {
-      "path": "kaggriculture-self-training-code-staging/kaggriculture_dataset_publish.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "8b9aa079f8630e245855277081fd2632bf29d6e90cb0eb1629a179cf4cbc9bfd",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-09-01T18:23:44.722411+00:00",
-      "status": "kaggle_only"
-    },
-    {
       "path": "kaggriculture-self-training-code-staging/kaggriculture_path_b_rebuild.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
@@ -616,28 +572,6 @@
       "kaggle_sha256": "f5968e1ab19d5008dd3dd43d1af7f2f61eb541215d0462004bddc79dd345f4d5",
       "github_mtime": null,
       "kaggle_mtime": "2026-09-01T18:23:44.722775+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-staging/kaggriculture_rl/__init__.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "420e06d2c66ca5df3d3b51d9cc9765b47a5f0dc470d55521046dec22f61d69a1",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-09-01T18:23:44.723386+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-staging/kaggriculture_rl/_lsp_import_smoke.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "e7d89827adbc1dca53e3ef621709012206df7b202a508103ee2a12526f990e84",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-09-01T18:23:44.723557+00:00",
       "status": "kaggle_only"
     },
     {
@@ -707,17 +641,6 @@
       "status": "kaggle_only"
     },
     {
-      "path": "kaggriculture-self-training-code-staging/setup_experiment.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "6f0d16a06fa0b829d0ab94ab357c12cc1f3a9b9f6da3bf0726e2ebdf9193809b",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-09-01T18:23:44.725950+00:00",
-      "status": "kaggle_only"
-    },
-    {
       "path": "kaggriculture-self-training-code-staging/train_loop.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
@@ -773,36 +696,14 @@
       "status": "kaggle_only"
     },
     {
-      "path": "kaggriculture-self-training-code-staging/training_metrics.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "71ec6c64c83b86e10c697faa8f06ac8016a1bbd187aff46c5954471d8cf68967",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-09-01T18:23:46.052002+00:00",
-      "status": "kaggle_only"
-    },
-    {
-      "path": "kaggriculture-self-training-code-staging/visualize.py",
-      "pair": "code_modules",
-      "github": "datasets/scottweeden/self-training-code",
-      "kaggle": "working",
-      "github_sha256": null,
-      "kaggle_sha256": "f315284d5b700649dffd0abc8ef1f889860063469ab1fd92c1045cd4cded7189",
-      "github_mtime": null,
-      "kaggle_mtime": "2026-09-01T18:23:46.052119+00:00",
-      "status": "kaggle_only"
-    },
-    {
       "path": "kaggriculture_adapter.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "f67e76f2529479bf7394e2161c878f904ef9a4721eb70ccee3914108b37d9d0c",
-      "kaggle_sha256": "1ffdd896fdc9805c2b87ae7cab67febdf8d6d0939b63e93bea733589938010a8",
-      "github_mtime": "2026-09-01T18:23:44.722108+00:00",
-      "kaggle_mtime": "2026-08-30T02:35:47.079707+00:00",
+      "github_sha256": "60a2ad78c864385020e09172da0471ee8250d5d756de0b5238a8966ba4ad956c",
+      "kaggle_sha256": "8fa15ad8972d4520444f46df3e92164e9b11815152a718b2a7709e4eea3ba9f0",
+      "github_mtime": "2026-09-06T00:14:09.930956+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.591709+00:00",
       "status": "github_ahead"
     },
     {
@@ -812,8 +713,8 @@
       "kaggle": "working",
       "github_sha256": "8b9aa079f8630e245855277081fd2632bf29d6e90cb0eb1629a179cf4cbc9bfd",
       "kaggle_sha256": "8b9aa079f8630e245855277081fd2632bf29d6e90cb0eb1629a179cf4cbc9bfd",
-      "github_mtime": "2026-09-01T18:23:44.722411+00:00",
-      "kaggle_mtime": "2026-08-30T10:57:30.913064+00:00",
+      "github_mtime": "2026-09-02T01:51:25.520728+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.591986+00:00",
       "status": "equal"
     },
     {
@@ -821,10 +722,10 @@
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "f5968e1ab19d5008dd3dd43d1af7f2f61eb541215d0462004bddc79dd345f4d5",
-      "kaggle_sha256": "c80f858e3136bec7abbffbf77905bca7a4defeca05e103dd253250f92efc5bdc",
-      "github_mtime": "2026-09-01T18:23:44.722775+00:00",
-      "kaggle_mtime": "2026-08-30T11:24:42.633330+00:00",
+      "github_sha256": "d9a2f2b00886d8b69463719483c369c5383929fde075b1e0053da34e082998ce",
+      "kaggle_sha256": "e777c96357fae4adae2005fb43ff0687e2c9c13160fa5c414b952d40e0e4ba64",
+      "github_mtime": "2026-09-06T00:14:14.337276+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.592458+00:00",
       "status": "github_ahead"
     },
     {
@@ -832,21 +733,32 @@
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "6def9e8c59b6ee3872d88d7c596f1019204af20f0d108dbcd77b3871590bfaef",
-      "kaggle_sha256": "076b605d8ce3c1ee8c91ee225109dc8cc6ff57ed4c6ae3457b417f45394c69b4",
-      "github_mtime": "2026-09-01T18:23:44.724262+00:00",
-      "kaggle_mtime": "2026-08-30T11:50:44.761954+00:00",
-      "status": "github_ahead"
+      "github_sha256": "90c5b9f78b764131eedddc29aaaa4a0614af470c76de39688d8947c9b1df6180",
+      "kaggle_sha256": "90c5b9f78b764131eedddc29aaaa4a0614af470c76de39688d8947c9b1df6180",
+      "github_mtime": "2026-09-02T02:14:14.511364+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.592681+00:00",
+      "status": "equal"
+    },
+    {
+      "path": "memory_protocol.py",
+      "pair": "code_modules",
+      "github": "datasets/scottweeden/self-training-code",
+      "kaggle": "working",
+      "github_sha256": "678a682010cb3db559818720db2a8c8e82aa89275e48b6a7022a71964fef8a41",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-06T02:02:53.029837+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "notebook_paths.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "5afae42a4cb9f80f77638cee55d9f4291ece3c5972a8d1bcf69cc9e731539d8c",
-      "kaggle_sha256": "5afae42a4cb9f80f77638cee55d9f4291ece3c5972a8d1bcf69cc9e731539d8c",
-      "github_mtime": "2026-09-01T18:23:44.724713+00:00",
-      "kaggle_mtime": "2026-08-30T04:44:43.023498+00:00",
+      "github_sha256": "e6ceffa7c22a0ff2ec78ea5e285d673c65ffca4ae19ffb32794c0be50a6a7ce1",
+      "kaggle_sha256": "e6ceffa7c22a0ff2ec78ea5e285d673c65ffca4ae19ffb32794c0be50a6a7ce1",
+      "github_mtime": "2026-09-02T02:37:21.576512+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.592914+00:00",
       "status": "equal"
     },
     {
@@ -854,22 +766,22 @@
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "0f7afae0bdb01b5003a1c8a9ec16c179ae22f10454cb52d813e3e2faccbbc60e",
-      "kaggle_sha256": "0f7afae0bdb01b5003a1c8a9ec16c179ae22f10454cb52d813e3e2faccbbc60e",
-      "github_mtime": "2026-09-01T18:23:44.725250+00:00",
-      "kaggle_mtime": "2026-08-30T11:50:45.095880+00:00",
-      "status": "equal"
+      "github_sha256": "b62a9fd71d2da6d3a2bebcc252d745569ac3129b5ea3e3cc89a40aea089612d5",
+      "kaggle_sha256": "93d6a34224dc474a1e381da763b41d824fbd88ce88ac1fd25e6bb4be9f85fd1f",
+      "github_mtime": "2026-09-02T10:14:24.548710+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.593314+00:00",
+      "status": "github_ahead"
     },
     {
       "path": "replay_buffer.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "5a849a4c6d21c72e1dbda8c49c485c71896e9cbb074d2e51663e399b978ad387",
-      "kaggle_sha256": null,
-      "github_mtime": "2026-09-01T18:23:44.725730+00:00",
-      "kaggle_mtime": null,
-      "status": "github_only"
+      "github_sha256": "18dd4e249e19e92eb8a9ea5cd0249f56d660aa643c1293a5785a7701e7e7f521",
+      "kaggle_sha256": "d0c2664500017f7e3648a16975f818b8d25d50142d068cd82d408ed1c67f9214",
+      "github_mtime": "2026-09-02T10:13:12.948911+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.593549+00:00",
+      "status": "github_ahead"
     },
     {
       "path": "setup_experiment.py",
@@ -877,8 +789,19 @@
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
       "github_sha256": "6f0d16a06fa0b829d0ab94ab357c12cc1f3a9b9f6da3bf0726e2ebdf9193809b",
+      "kaggle_sha256": "6f0d16a06fa0b829d0ab94ab357c12cc1f3a9b9f6da3bf0726e2ebdf9193809b",
+      "github_mtime": "2026-09-02T01:51:25.646516+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.593764+00:00",
+      "status": "equal"
+    },
+    {
+      "path": "subagent_embeddings.py",
+      "pair": "code_modules",
+      "github": "datasets/scottweeden/self-training-code",
+      "kaggle": "working",
+      "github_sha256": "331b6f9fa0e8663715b3831a07e86b7b45656f62af2761d8da7f81f81a8a9b14",
       "kaggle_sha256": null,
-      "github_mtime": "2026-09-01T18:23:44.725950+00:00",
+      "github_mtime": "2026-09-06T01:44:24.229012+00:00",
       "kaggle_mtime": null,
       "status": "github_only"
     },
@@ -887,22 +810,22 @@
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "06d92d1c85a5b61d7a4334a4b4f8c5ad2833a4cc4a000ed7b62c3f1b0d988164",
-      "kaggle_sha256": null,
-      "github_mtime": "2026-09-01T18:23:44.726322+00:00",
-      "kaggle_mtime": null,
-      "status": "github_only"
+      "github_sha256": "0b71b54ccf20be10115f7720c54f9552c96ce147023240d256d7e423b1a17ae8",
+      "kaggle_sha256": "8e9c98fe509779613c8820ea4bd3f0d2aabd4ec2573dba2408733164d723d10a",
+      "github_mtime": "2026-09-06T00:14:17.344779+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.594020+00:00",
+      "status": "github_ahead"
     },
     {
       "path": "train_orchestrator.py",
       "pair": "code_modules",
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
-      "github_sha256": "74ced9925ef026f48f65782d5fb04a932a5f2867a94dbed9157aa11ab2ee42fa",
-      "kaggle_sha256": null,
-      "github_mtime": "2026-09-01T18:23:44.726615+00:00",
-      "kaggle_mtime": null,
-      "status": "github_only"
+      "github_sha256": "51eac3c3fe78372e89d602a6c683fa8baf1922d77dc3806d7470dfa362ca4b18",
+      "kaggle_sha256": "0adf97faf88276518982f908d04c325c6db379786d1eb40924aa59e6848682d9",
+      "github_mtime": "2026-09-06T00:14:23.736267+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.594268+00:00",
+      "status": "github_ahead"
     },
     {
       "path": "training_metrics.py",
@@ -911,8 +834,8 @@
       "kaggle": "working",
       "github_sha256": "71ec6c64c83b86e10c697faa8f06ac8016a1bbd187aff46c5954471d8cf68967",
       "kaggle_sha256": "71ec6c64c83b86e10c697faa8f06ac8016a1bbd187aff46c5954471d8cf68967",
-      "github_mtime": "2026-09-01T18:23:46.052002+00:00",
-      "kaggle_mtime": "2026-08-30T11:24:44.667277+00:00",
+      "github_mtime": "2026-09-02T01:51:27.301656+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.594532+00:00",
       "status": "equal"
     },
     {
@@ -921,54 +844,54 @@
       "github": "datasets/scottweeden/self-training-code",
       "kaggle": "working",
       "github_sha256": "f315284d5b700649dffd0abc8ef1f889860063469ab1fd92c1045cd4cded7189",
-      "kaggle_sha256": "6b42f074f165acaf597b0995aa62c1cef4218520c66e6ce4c1447fb20b712d59",
-      "github_mtime": "2026-09-01T18:23:46.052119+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:52.901188+00:00",
-      "status": "github_ahead"
+      "kaggle_sha256": "f315284d5b700649dffd0abc8ef1f889860063469ab1fd92c1045cd4cded7189",
+      "github_mtime": "2026-09-02T01:51:27.326082+00:00",
+      "kaggle_mtime": "2026-09-02T04:28:47.595011+00:00",
+      "status": "equal"
     },
     {
       "path": "logs/self_play_training.log",
       "pair": "training_artifacts",
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
-      "github_sha256": "ab1f6f2475176d7bcae4f7ac6f9c07d5ace9e28d9d94d23f22bad67618d5e998",
-      "kaggle_sha256": "ab1f6f2475176d7bcae4f7ac6f9c07d5ace9e28d9d94d23f22bad67618d5e998",
-      "github_mtime": "2026-09-01T18:23:46.030166+00:00",
-      "kaggle_mtime": "2026-08-30T09:40:40.777005+00:00",
-      "status": "equal"
+      "github_sha256": "5e10aa6649bfcdc34b7a8818503fcd2c93d063da1567927925baba8ce76238de",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T04:11:47.966883+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "metrics/bc_pretrain.json",
       "pair": "training_artifacts",
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
-      "github_sha256": "00b9752cf9afee5ed1df0f358869cf9cd4422c489b9150314df07c74008aa939",
-      "kaggle_sha256": "083cb3356f790e1236aad1ced7f27f9448e67991a25b85517dc34b3b9e51f2a8",
-      "github_mtime": "2026-09-01T18:23:46.030387+00:00",
-      "kaggle_mtime": "2026-08-30T09:40:18.808854+00:00",
-      "status": "github_ahead"
+      "github_sha256": "083cb3356f790e1236aad1ced7f27f9448e67991a25b85517dc34b3b9e51f2a8",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.257089+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "metrics/bootstrap_state.json",
       "pair": "training_artifacts",
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
-      "github_sha256": "c26ba0f24a1906df36ef59415f7e213c43dc790a42692300418d459cd0d36cf9",
-      "kaggle_sha256": "be5020e1a63809242849b0046d081020d0cb1051a93d566c805b654a503d2bf2",
-      "github_mtime": "2026-09-01T18:23:46.030493+00:00",
-      "kaggle_mtime": "2026-08-30T09:40:16.722850+00:00",
-      "status": "github_ahead"
+      "github_sha256": "3f6541daf172e4b1db56e0f6c0f22611b520c4f3b62acc3c8d7561191545d984",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T02:44:33.625310+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "metrics/episode_metrics.json",
       "pair": "training_artifacts",
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
-      "github_sha256": "84c603ee48d3be6a2ecd373245ce04b740dce3085163cee0e46e5a4116ac8a18",
-      "kaggle_sha256": "84c603ee48d3be6a2ecd373245ce04b740dce3085163cee0e46e5a4116ac8a18",
-      "github_mtime": "2026-09-01T18:23:46.030586+00:00",
-      "kaggle_mtime": "2026-08-30T09:40:40.775932+00:00",
-      "status": "equal"
+      "github_sha256": "4f4bc559596084b554dc0ad672e690e4488c3892981dcc78806237a1728ebb6f",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T02:52:16.079095+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "metrics/ladder_eval.json",
@@ -976,21 +899,32 @@
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
       "github_sha256": "305b2070502d934d1dd64ef1548ad1c426088e67b027ab8912262829da19568d",
-      "kaggle_sha256": "305b2070502d934d1dd64ef1548ad1c426088e67b027ab8912262829da19568d",
-      "github_mtime": "2026-09-01T18:23:46.030685+00:00",
-      "kaggle_mtime": "2026-08-30T09:40:40.773127+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.258475+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
+    },
+    {
+      "path": "metrics/run_stats_summary.json",
+      "pair": "training_artifacts",
+      "github": "datasets/scottweeden/self-training-code/training_artifacts",
+      "kaggle": "working/run",
+      "github_sha256": "ca3e78dd8e057058632cedb24b56016282769a5ef4d7fae915e746793d824762",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T02:43:43.324953+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "metrics/training_progress.json",
       "pair": "training_artifacts",
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
-      "github_sha256": "bc843b9b037e266a2fe2537a94d2363684dd192adefa716528dab9a607cad2f8",
-      "kaggle_sha256": "1f467c78a5325ecafd4fab2beef3b1aaca92b3a11245ee499bad999525ee6e4b",
-      "github_mtime": "2026-09-01T18:23:46.030808+00:00",
-      "kaggle_mtime": "2026-08-30T09:40:40.776912+00:00",
-      "status": "github_ahead"
+      "github_sha256": "c4060c5351bb38caecc12c2a0371f8e5d56d6b3b2b92a8a66178c7899d221a84",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T04:09:11.609486+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "metrics/win_rate_eval.json",
@@ -998,21 +932,21 @@
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
       "github_sha256": "65b72f06053fdb04dde70850bd6bee46da1c524509a44567a680d75aa0d91c1d",
-      "kaggle_sha256": "65b72f06053fdb04dde70850bd6bee46da1c524509a44567a680d75aa0d91c1d",
-      "github_mtime": "2026-09-01T18:23:46.030895+00:00",
-      "kaggle_mtime": "2026-08-30T09:40:31.874265+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.258771+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "models/model.pth",
       "pair": "training_artifacts",
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
-      "github_sha256": "7ac6921076786385c40d3f19c3a138886d95057e02d9084fec8c865b6d2118cf",
-      "kaggle_sha256": "33245265c59ea94bc5b5d198a3132ef0267dd582be75ddffac06d765dec4bc43",
-      "github_mtime": "2026-09-01T18:23:46.046970+00:00",
-      "kaggle_mtime": "2026-08-30T09:40:30.096934+00:00",
-      "status": "github_ahead"
+      "github_sha256": "e06e9fc67baafd4d4b3f0f1be8be2ca593b7b540cffd6c4cca2c43882cd6ccce",
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T04:25:21.072546+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "plots/bc_pretrain_loss.png",
@@ -1020,10 +954,10 @@
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
       "github_sha256": "5a5c817f388a0ded4e88d99d5b0e0178a21699494c678a6c57e172833adc4d98",
-      "kaggle_sha256": "5a5c817f388a0ded4e88d99d5b0e0178a21699494c678a6c57e172833adc4d98",
-      "github_mtime": "2026-09-01T18:23:46.048023+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:52.899310+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.273082+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "plots/run_buffer_size.png",
@@ -1031,10 +965,10 @@
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
       "github_sha256": "0794b17bc695ef7bf4b05728a5d1b555b661434c53f861747f503039154cd909",
-      "kaggle_sha256": "0794b17bc695ef7bf4b05728a5d1b555b661434c53f861747f503039154cd909",
-      "github_mtime": "2026-09-01T18:23:46.048227+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:52.899550+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.274135+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "plots/run_epsilon_decay.png",
@@ -1042,10 +976,10 @@
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
       "github_sha256": "8d8de80dbace2021facc0e1c01d6a4aa82abd6b4c1a8871304c9c5f59dad9914",
-      "kaggle_sha256": "8d8de80dbace2021facc0e1c01d6a4aa82abd6b4c1a8871304c9c5f59dad9914",
-      "github_mtime": "2026-09-01T18:23:46.048440+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:52.899798+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.274654+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "plots/run_eval_rewards.png",
@@ -1053,10 +987,10 @@
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
       "github_sha256": "07566306a61aea18cd6569b4a5a2563b7e9d23987aa1289e26b8e54b559a0bfd",
-      "kaggle_sha256": "07566306a61aea18cd6569b4a5a2563b7e9d23987aa1289e26b8e54b559a0bfd",
-      "github_mtime": "2026-09-01T18:23:46.048738+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:52.900078+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.275158+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "plots/run_final_rewards.png",
@@ -1064,10 +998,10 @@
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
       "github_sha256": "47a1ad27d6ad05be4af9659ab4e32693604fcf5fd1d34a816c03bbe32d842c87",
-      "kaggle_sha256": "47a1ad27d6ad05be4af9659ab4e32693604fcf5fd1d34a816c03bbe32d842c87",
-      "github_mtime": "2026-09-01T18:23:46.051064+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:52.900330+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.275674+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "plots/run_self_play_episodes.png",
@@ -1075,10 +1009,10 @@
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
       "github_sha256": "4e54cec34b2df17b949d32b335af8808ea36ecab44d750ddce0d87d1773205ec",
-      "kaggle_sha256": "4e54cec34b2df17b949d32b335af8808ea36ecab44d750ddce0d87d1773205ec",
-      "github_mtime": "2026-09-01T18:23:46.051444+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:52.900711+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.276632+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "plots/run_training_loss.png",
@@ -1086,10 +1020,10 @@
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
       "github_sha256": "7084261e04c14fb40c2a77ed311dc05cf6598bb7327c03492ec711168441a74d",
-      "kaggle_sha256": "7084261e04c14fb40c2a77ed311dc05cf6598bb7327c03492ec711168441a74d",
-      "github_mtime": "2026-09-01T18:23:46.051629+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:52.900902+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.277054+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     },
     {
       "path": "plots/run_win_rate_eval.png",
@@ -1097,10 +1031,10 @@
       "github": "datasets/scottweeden/self-training-code/training_artifacts",
       "kaggle": "working/run",
       "github_sha256": "1a3cb1db34a6c7d905dfc088c190b15c5e8398ecc0edab8c1f5d6428c0f9f05e",
-      "kaggle_sha256": "1a3cb1db34a6c7d905dfc088c190b15c5e8398ecc0edab8c1f5d6428c0f9f05e",
-      "github_mtime": "2026-09-01T18:23:46.051785+00:00",
-      "kaggle_mtime": "2026-08-29T21:53:52.901054+00:00",
-      "status": "equal"
+      "kaggle_sha256": null,
+      "github_mtime": "2026-09-02T01:51:27.277584+00:00",
+      "kaggle_mtime": null,
+      "status": "github_only"
     }
   ]
 }

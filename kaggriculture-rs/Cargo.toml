@@ -1,0 +1,18 @@
+[package]
+name = "kaggriculture-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["Scott Weeden <sweeden@ttu.edu>"]
+description = "High-performance Rust implementation of the 10 memory-slot sub-agents for Kaggriculture"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[lib]
+name = "kaggriculture_rs"
+path = "src/lib.rs"
+
+[[bin]]
+name = "kagg_agents"
+path = "src/main.rs"
