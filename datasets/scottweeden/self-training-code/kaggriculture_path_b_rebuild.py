@@ -666,7 +666,11 @@ class HierarchicalDoubleDQNLearner:
                 for step in range(self.online.max_market_orders)
             ) / max(1, self.online.max_market_orders)
             total_target_next_q = V_tgt + tgt_adv_farmer + tgt_adv_crop + tgt_adv_hands + tgt_adv_market
+            # Clip bootstrapped next-Q to keep TD targets in a stable range.
+            # Pathological self-play runs saw avg_loss explode to 1e5+ without this.
+            total_target_next_q = torch.clamp(total_target_next_q, -50.0, 50.0)
             td_target = batch["reward"] + self.gamma * (1.0 - batch["done"]) * total_target_next_q
+            td_target = torch.clamp(td_target, -100.0, 100.0)
 
         per_sample_loss = F.smooth_l1_loss(
             total_q_online, td_target, beta=self.huber_delta, reduction="none"
@@ -776,7 +780,8 @@ class CompetitiveRewardShaper:
             FARMER_ACTIONS["DIG"],
             FARMER_ACTIONS["BUILD_COOP"],
             FARMER_ACTIONS["BUILD_PASTURE"],
-            FARMER_ACTIONS["BUY_ANIMAL"],
+            FARMER_ACTIONS["FERTILIZE"],
+            FARMER_ACTIONS["FEED"],
         }
         self._invest_market = {
             MARKET_ACTIONS["BUY_SEED"],

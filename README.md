@@ -1,6 +1,6 @@
 # Kaggriculture
 
-A farming sim where two players compete to maximize their income from farming by selling to a dynamic market.
+'Ag' is the greek root for ground, side, and above. It has been misinformed and misinterpreted over time and if you visit Athens you will find the true meaning. In the mean time "Agriculture" is the word farming in America has  taken from the Greek root meaning 'below ground' and the Latin postfix 'kultur' meaning 'reasoning action and behavior'. This is "Kaggriculture" the test of two agents with reasonging and probabilistic behaviors, that can observe surroundings but have no capapbility of direct communication. That's not to say a farmer won't signal another farmer by planting a crop with seeds of a certain kind first. Or that another farmer hasn't already observed the kinds of marketplace buyers that a town center has, generally speaking there are opponents which are in the game to win and shouldn't be trusted to questoin and then there are opponents in the game to their understanding of science and progress and so their responses can only be trusted with a probability assigned. This is farming sim where two players compete to maximize their income from farming by selling to a dynamic market.
 
 ## Overview
 

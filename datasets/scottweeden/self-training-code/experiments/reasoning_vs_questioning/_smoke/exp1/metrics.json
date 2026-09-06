@@ -1,0 +1,143 @@
+{
+  "experiment": 1,
+  "name": "baseline_seats",
+  "summary": {
+    "n_matches": 2,
+    "reasoning_wins": 0,
+    "questioning_wins": 2,
+    "ties": 0,
+    "reasoning_win_rate": 0.0,
+    "questioning_win_rate": 1.0,
+    "schedule_ok_all": true,
+    "starting_money_ok_all": true,
+    "mean_money_p0": 2900.0,
+    "mean_money_p1": 2900.0,
+    "seat0_reasoning_wins": 0,
+    "seat1_reasoning_wins": 0,
+    "hypothesis": "Seat-only effect under prime/even schedule with memory=10."
+  },
+  "matches": [
+    {
+      "seed": 42,
+      "reasoning_seat": 0,
+      "questioning_seat": 1,
+      "money_p0": 2880.0,
+      "money_p1": 2920.0,
+      "winner": "questioning",
+      "schedule_ok": true,
+      "starting_money_ok": true,
+      "reasoning_metrics": {
+        "name": "reasoning",
+        "memory_slots": 10,
+        "self_talk_detected": 0,
+        "protocol": {
+          "n_slots": 10,
+          "mode": "deterministic",
+          "questions_asked": 45,
+          "facts_stored": 45,
+          "summaries_stored": 0,
+          "echoes_seen": 0,
+          "history_len": 45
+        },
+        "questions": 45,
+        "actions_taken": 12,
+        "pass_hours": 59
+      },
+      "questioning_metrics": {
+        "name": "questioning",
+        "memory_slots": 10,
+        "self_talk_detected": 0,
+        "significant_omissions": 0,
+        "protocol": {
+          "n_slots": 10,
+          "mode": "probabilistic",
+          "questions_asked": 130,
+          "facts_stored": 0,
+          "summaries_stored": 130,
+          "echoes_seen": 0,
+          "history_len": 130
+        },
+        "questions": 130,
+        "actions_taken": 36,
+        "pass_hours": 35
+      },
+      "reasoning_edge_stats": {
+        "day0": 0,
+        "mid": 31,
+        "day29": 0,
+        "determined": 45,
+        "probable": 0,
+        "question": 0
+      },
+      "questioning_edge_stats": {
+        "day0": 0,
+        "mid": 94,
+        "day29": 0,
+        "determined": 0,
+        "probable": 130,
+        "question": 0
+      }
+    },
+    {
+      "seed": 42,
+      "reasoning_seat": 1,
+      "questioning_seat": 0,
+      "money_p0": 2920.0,
+      "money_p1": 2880.0,
+      "winner": "questioning",
+      "schedule_ok": true,
+      "starting_money_ok": true,
+      "reasoning_metrics": {
+        "name": "reasoning",
+        "memory_slots": 10,
+        "self_talk_detected": 0,
+        "protocol": {
+          "n_slots": 10,
+          "mode": "deterministic",
+          "questions_asked": 45,
+          "facts_stored": 45,
+          "summaries_stored": 0,
+          "echoes_seen": 0,
+          "history_len": 45
+        },
+        "questions": 45,
+        "actions_taken": 12,
+        "pass_hours": 59
+      },
+      "questioning_metrics": {
+        "name": "questioning",
+        "memory_slots": 10,
+        "self_talk_detected": 0,
+        "significant_omissions": 0,
+        "protocol": {
+          "n_slots": 10,
+          "mode": "probabilistic",
+          "questions_asked": 130,
+          "facts_stored": 0,
+          "summaries_stored": 130,
+          "echoes_seen": 0,
+          "history_len": 130
+        },
+        "questions": 130,
+        "actions_taken": 36,
+        "pass_hours": 35
+      },
+      "reasoning_edge_stats": {
+        "day0": 0,
+        "mid": 31,
+        "day29": 0,
+        "determined": 45,
+        "probable": 0,
+        "question": 0
+      },
+      "questioning_edge_stats": {
+        "day0": 0,
+        "mid": 94,
+        "day29": 0,
+        "determined": 0,
+        "probable": 130,
+        "question": 0
+      }
+    }
+  ]
+}

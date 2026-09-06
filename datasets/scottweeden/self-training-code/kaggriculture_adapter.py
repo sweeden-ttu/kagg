@@ -43,23 +43,37 @@ FARMER_ACTIONS: Dict[str, int] = {
     "PICKUP": 10,
     "BUILD_COOP": 11,
     "BUILD_PASTURE": 12,
-    "BUY_ANIMAL": 13,
-    "OTHER": 14,
+    "FERTILIZE": 13,
+    "FEED": 14,
 }
 
-# Legacy encode aliases from episode JSON
+# Legacy encode aliases from episode JSON / prior BUY_ANIMAL/OTHER indices
 _FARMER_ENCODE_ALIASES = {
     "MOVE_NORTH": 5,
     "MOVE_SOUTH": 6,
     "MOVE_WEST": 7,
     "MOVE_EAST": 8,
+    "BUY_ANIMAL": 14,  # animals are market ops; map old index to FEED
+    "OTHER": 0,
+    "PLACE": 10,  # PLACE shares PICKUP slot; decode resolves on structure
+    "CARE": 14,
+    "COLLECT_FERTILIZER": 14,
 }
 
 FARMER_INDEX_TO_VERB: List[str] = [
     "PASS", "DIG", "WATER", "PLANT", "HARVEST",
     "NORTH", "SOUTH", "WEST", "EAST",
-    "DROP", "PICKUP", "BUILD_COOP", "BUILD_PASTURE", "BUY_ANIMAL", "OTHER",
+    "DROP", "PICKUP", "BUILD_COOP", "BUILD_PASTURE", "FERTILIZE", "FEED",
 ]
+
+# Engine crop first_yield_day (must match kaggriculture.py CROPS table).
+CROP_FIRST_YIELD_DAY: Dict[str, int] = {
+    "WHEAT": 2,
+    "CARROT": 2,
+    "TOMATO": 8,
+    "STRAWBERRY": 10,
+    "MELON": 10,
+}
 
 MARKET_ACTIONS: Dict[str, int] = {
     "PASS": 0,
@@ -112,10 +126,14 @@ PATH_B_TILE_CHANNELS: int = 18
 
 
 def hire_cost_today(hires_today: int) -> int:
-    """Return Fibonacci hiring cost for the n-th hire of the day."""
-    fib = [1, 1, 2, 3, 5, 8, 13, 21]
-    idx = min(max(int(hires_today), 0), len(fib) - 1)
-    return fib[idx]
+    """Return Fibonacci hiring cost for the n-th hire of the day (unbounded)."""
+    n = max(int(hires_today), 0)
+    if n <= 1:
+        return 1
+    a, b = 1, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
 
 
 def daily_hire_orders_wanted(obs: Dict[str, Any]) -> int:
@@ -134,12 +152,14 @@ def daily_hire_orders_wanted(obs: Dict[str, Any]) -> int:
 
 
 def plant_is_harvestable(tile: Dict[str, Any], current_day: int) -> bool:
-    """True if plant is on or past its first harvestable day (age >= 2) with yield > 0."""
+    """True if plant is on or past its crop-specific first_yield_day with yield > 0."""
     if not isinstance(tile, dict) or tile.get("kind") != "PLANT":
         return False
     planted_day = int(tile.get("planted_day", 0) or 0)
     yield_units = int(tile.get("yield_units", 0) or 0)
-    return (current_day - planted_day) >= 2 and yield_units > 0
+    crop = str(tile.get("crop", "WHEAT") or "WHEAT")
+    first_yield = CROP_FIRST_YIELD_DAY.get(crop, 2)
+    return (current_day - planted_day) >= first_yield and yield_units > 0
 
 
 def plant_is_mature(tile: Dict[str, Any], current_day: int) -> bool:
@@ -201,7 +221,7 @@ def _branch_action(raw_branch: Any, default: str = "PASS") -> int:
         op = default
     if op in FARMER_ACTIONS:
         return FARMER_ACTIONS[op]
-    return _FARMER_ENCODE_ALIASES.get(op, FARMER_ACTIONS["OTHER"])
+    return _FARMER_ENCODE_ALIASES.get(op, FARMER_ACTIONS["PASS"])
 
 
 def encode_tiles(raw_tiles: Any) -> np.ndarray:
@@ -555,6 +575,47 @@ def _best_buy_seed_crop(observation: Dict[str, Any]) -> Optional[str]:
     return pref[0] if money >= SEED_COSTS.get(pref[0], 10) else "WHEAT"
 
 
+def _resolve_animal_or_place_verb(
+    verb: str,
+    observation: Dict[str, Any],
+    pos: Optional[Tuple[int, int]] = None,
+) -> List[Any]:
+    """Map FEED/PICKUP indices onto FEED / CARE / COLLECT_FERTILIZER / PLACE when legal."""
+    player = int(observation.get("player", 0) or 0)
+    farms = observation.get("farms", []) or []
+    farm = farms[player] if len(farms) > player else {}
+    tiles = farm.get("tiles", []) or []
+    if pos is None:
+        farmer_pos = farm.get("farmer", [0, 0]) or [0, 0]
+        pos = (int(farmer_pos[0]), int(farmer_pos[1])) if len(farmer_pos) >= 2 else (0, 0)
+    fx, fy = pos
+    tile = None
+    if 0 <= fy < len(tiles) and 0 <= fx < len(tiles[fy]):
+        tile = tiles[fy][fx]
+
+    if verb in ("FEED", "CARE", "COLLECT_FERTILIZER") and isinstance(tile, dict):
+        kind = tile.get("kind")
+        if kind in ("COOP", "PASTURE") and tile.get("animal"):
+            if not tile.get("fed_today", False):
+                return ["FEED"]
+            if int(tile.get("fertilizer_available", 0) or 0) > 0:
+                return ["COLLECT_FERTILIZER"]
+            if not tile.get("cared_today", False):
+                return ["CARE"]
+            return ["FEED"]
+
+    if verb in ("PICKUP", "PLACE") and isinstance(tile, dict):
+        kind = tile.get("kind")
+        if kind in ("COOP", "PASTURE") and not tile.get("animal"):
+            invs = observation.get("private", {}).get("inventories", []) or []
+            main_inv = invs[0] if invs else {}
+            if isinstance(main_inv, dict):
+                for animal in ("GOOSE", "COW", "SHEEP"):
+                    if int(main_inv.get(animal, 0) or 0) > 0:
+                        return ["PLACE", animal]
+    return [verb]
+
+
 def decode_farmer_verb(verb_idx: int, crop_idx: int, observation: Dict[str, Any]) -> List[Any]:
     """Decode farmer verb index (+ optional crop) to Kaggle command list."""
     verb = FARMER_INDEX_TO_VERB[min(max(verb_idx, 0), NUM_FARMER_ACTIONS - 1)]
@@ -563,6 +624,10 @@ def decode_farmer_verb(verb_idx: int, crop_idx: int, observation: Dict[str, Any]
         if crop not in CROPS or observation.get("private", {}).get("seeds", {}).get(crop, 0) <= 0:
             crop = _best_plant_crop(observation)
         return ["PLANT", crop]
+    if verb in ("FEED", "PICKUP", "FERTILIZE"):
+        if verb == "FERTILIZE":
+            return ["FERTILIZE"]
+        return _resolve_animal_or_place_verb(verb, observation)
     return [verb]
 
 
@@ -582,10 +647,12 @@ def decode_hand_verb(
     # Previously, verbs like BUILD_COOP/DROP/PICKUP silently became PASS (or were
     # rewritten to heuristic WATER/HARVEST/DIG), mislabeling every such transition.
     if faithful or verb in (
-        "PASS", "DIG", "WATER", "HARVEST",
+        "PASS", "DIG", "WATER", "HARVEST", "FERTILIZE",
         "NORTH", "SOUTH", "WEST", "EAST",
-        "DROP", "PICKUP", "BUILD_COOP", "BUILD_PASTURE",
+        "DROP", "PICKUP", "BUILD_COOP", "BUILD_PASTURE", "FEED",
     ):
+        if verb in ("FEED", "PICKUP") and observation is not None:
+            return _resolve_animal_or_place_verb(verb, observation, hand_pos)
         return [verb]
 
     # Smart hand fallback for watering and harvest assistance.
@@ -635,7 +702,7 @@ def decode_market_verb(market_idx: int, observation: Dict[str, Any]) -> List[Any
     """Decode single market index to one order or empty list."""
     idx = min(max(market_idx, 0), NUM_MARKET_ACTIONS - 1)
     verb = MARKET_INDEX_TO_VERB[idx]
-    if verb == "PASS":
+    if verb == "PASS" or verb == "OTHER":
         return []
     if verb == "BUY_SEED":
         crop = _best_buy_seed_crop(observation)
@@ -654,6 +721,34 @@ def decode_market_verb(market_idx: int, observation: Dict[str, Any]) -> List[Any
         return []
     if verb == "HIRE":
         return [["HIRE"]]
+    if verb == "BUY_LAND":
+        return [["BUY_LAND"]]
+    if verb == "BUY_PRODUCT":
+        money = 0.0
+        farms = observation.get("farms", []) or []
+        player = int(observation.get("player", 0) or 0)
+        if len(farms) > player:
+            money = float(farms[player].get("money", 0.0) or 0.0)
+        prices = observation.get("market", {}).get("prices", {}) or {}
+        # Only WHEAT and FERTILIZER are buyable via BUY_PRODUCT in the engine.
+        for item in ("FERTILIZER", "WHEAT"):
+            price = float(prices.get(item, 9999) or 9999)
+            if money >= price:
+                return [["BUY_PRODUCT", item, 1]]
+        return []
+    if verb == "BUY_ANIMAL":
+        money = 0.0
+        farms = observation.get("farms", []) or []
+        player = int(observation.get("player", 0) or 0)
+        if len(farms) > player:
+            money = float(farms[player].get("money", 0.0) or 0.0)
+        for animal, cost in (("GOOSE", 300), ("COW", 400), ("SHEEP", 500)):
+            if money >= cost:
+                return [["BUY_ANIMAL", animal, 1]]
+        return []
+    return []
+
+
 def decode_action(
     action_indices: Dict[str, Any],
     observation: Dict[str, Any],
@@ -768,6 +863,15 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
                     farmer_mask[2] = True  # WATER
                 if plant_is_harvestable(tile, day):
                     farmer_mask[4] = True  # HARVEST
+                fert = private.get("shed", {}).get("FERTILIZER", 0) or 0
+                invs = private.get("inventories", []) or []
+                main_inv = invs[0] if invs else {}
+                if isinstance(main_inv, dict):
+                    fert = max(int(fert), int(main_inv.get("FERTILIZER", 0) or 0))
+                if fert > 0:
+                    farmer_mask[FARMER_ACTIONS["FERTILIZE"]] = True
+            elif kind in ("COOP", "PASTURE") and tile.get("animal"):
+                farmer_mask[FARMER_ACTIONS["FEED"]] = True
             elif kind not in ("LOCKED",) and has_seeds and day <= 26:
                 farmer_mask[3] = True  # PLANT
         elif tile in ("EMPTY", "", None) and has_seeds and day <= 26:
@@ -837,6 +941,9 @@ def get_action_masks(observation: Dict[str, Any]) -> Dict[str, np.ndarray]:
                         hand_masks[h_idx, FARMER_ACTIONS["WATER"]] = True
                     if plant_is_harvestable(htile, day):
                         hand_masks[h_idx, FARMER_ACTIONS["HARVEST"]] = True
+                    hand_masks[h_idx, FARMER_ACTIONS["FERTILIZE"]] = True
+                elif hkind in ("COOP", "PASTURE") and htile.get("animal"):
+                    hand_masks[h_idx, FARMER_ACTIONS["FEED"]] = True
                 elif hkind not in ("LOCKED",) and has_seeds and day <= 26:
                     hand_masks[h_idx, FARMER_ACTIONS["PLANT"]] = True
             elif htile in ("EMPTY", "", None) and has_seeds and day <= 26:

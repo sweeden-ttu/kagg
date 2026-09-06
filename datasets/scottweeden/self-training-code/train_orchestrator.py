@@ -546,6 +546,12 @@ def train_self_play(
             except (json.JSONDecodeError, OSError) as exc:
                 logger.warning("Could not read prior BC metrics: %s", exc)
 
+    config["use_action_heuristics"] = bool(config.get("use_action_heuristics", True))
+    # Ensure resume episode is visible to the training loop.
+    config.setdefault("last_completed_episode", start_episode)
+    if "last_completed_episode" not in config or not resuming:
+        config["last_completed_episode"] = start_episode
+
     # ── Run self-play training loop ────────────────────────────────────
     ep_metrics = run_self_play_training(
         online_net=online_net,

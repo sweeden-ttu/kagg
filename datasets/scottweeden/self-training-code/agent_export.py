@@ -1,14 +1,25 @@
 """Agent export for Kaggle submission.
 
 Extracted from the monolithic kaggriculture_self_play_training.py.
-Provides _export_path_b_agent().
+Provides _export_path_b_agent() and submission size gating (90 MB / 100 MB).
 """
 
 from __future__ import annotations
 
+import json
+import logging
 import shutil
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
+
+from hard_limits import (
+    DEFAULT_LIMITS,
+    build_submission_archive,
+    check_model_size,
+    limits_manifest,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def _export_path_b_agent(
@@ -16,20 +27,33 @@ def _export_path_b_agent(
     experiment_root: Path,
     *,
     code_src: Optional[str] = None,
+    training_hours: Optional[float] = None,
 ) -> None:
-    """Write a minimal Kaggle submission agent using shared adapter decode."""
+    """Write a minimal Kaggle submission agent using shared adapter decode.
+
+    After writing, validates model ≤ 100 MB and packs a submission archive
+    that must be ≤ 90 MB (10 MB patch buffer under the 100 MB ceiling).
+    Training data size is not checked. If ``training_hours`` ≥ 24, the
+    post-training size gate requires the model alone to fit the 90 MB budget.
+    """
     from _resolve_code_src import _resolve_code_src
 
     src_root = _resolve_code_src(code_src)
-    for module_name in ("kaggriculture_adapter.py", "kaggriculture_path_b_rebuild.py"):
+    for module_name in (
+        "kaggriculture_adapter.py",
+        "kaggriculture_path_b_rebuild.py",
+        "hard_limits.py",
+    ):
         src = src_root / module_name
         dst = experiment_root / module_name
         if not src.exists():
+            if module_name == "hard_limits.py":
+                continue
             raise FileNotFoundError(f"Missing adapter module in code dataset: {src}")
         if src.resolve() != dst.resolve():
             shutil.copy2(src, dst)
 
-    agent_code = f'''"""Kaggle Kaggriculture Path B agent export."""
+    agent_code = '''"""Kaggle Kaggriculture Path B agent export."""
 import os
 import sys
 import torch
@@ -94,3 +118,47 @@ def agent(obs, cfg=None):
     return _AGENT.act(obs)
 '''
     agent_path.write_text(agent_code, encoding="utf-8")
+
+    model_path = experiment_root / "models" / "model.pth"
+    size_report = check_model_size(
+        model_path,
+        limits=DEFAULT_LIMITS,
+        after_training_hours=training_hours,
+    )
+    sources: List[Path] = [
+        agent_path,
+        experiment_root / "kaggriculture_adapter.py",
+        experiment_root / "kaggriculture_path_b_rebuild.py",
+    ]
+    hl = experiment_root / "hard_limits.py"
+    if hl.exists():
+        sources.append(hl)
+    if model_path.exists():
+        sources.append(model_path)
+
+    archive = experiment_root / "submission.tar.gz"
+    pack_report = build_submission_archive(sources, archive, limits=DEFAULT_LIMITS)
+
+    gate = {
+        "limits": limits_manifest(),
+        "model_size": size_report,
+        "submission_archive": pack_report,
+        "training_hours": training_hours,
+        "training_data_size_capped": False,
+    }
+    metrics_dir = experiment_root / "metrics"
+    metrics_dir.mkdir(parents=True, exist_ok=True)
+    with open(metrics_dir / "submission_limits.json", "w", encoding="utf-8") as fh:
+        json.dump(gate, fh, indent=2)
+    logger.info(
+        "Submission gate: model=%.2fMB within_100=%s archive=%.2fMB passed_90=%s",
+        size_report.get("mb", 0),
+        size_report.get("within_100mb"),
+        pack_report.get("mb", 0),
+        pack_report.get("passed_90mb"),
+    )
+    if not pack_report.get("passed_90mb", False):
+        raise RuntimeError(
+            f"Submission archive {pack_report.get('mb')} MB exceeds 90 MB hard limit "
+            f"(100 MB ceiling with 10 MB patch buffer)"
+        )

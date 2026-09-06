@@ -96,15 +96,23 @@ def run_self_play_training(
             use_kaggle_env,
         )
 
+    start_episode = int(config.get("last_completed_episode", 0) or 0)
+    use_action_heuristics = bool(config.get("use_action_heuristics", True))
+    remaining = max(0, total_episodes - start_episode)
     logger.info(
-        "--- BEGINNING KAGGRICULTURE SELF-PLAY PIPELINE (episodes %d → %d) ---",
-        1,
+        "--- BEGINNING KAGGRICULTURE SELF-PLAY PIPELINE (episodes %d → %d, resume_from=%d) ---",
+        start_episode + 1 if remaining else start_episode,
         total_episodes,
+        start_episode,
     )
 
     episode_metrics: List[Dict[str, float]] = []
 
-    for ep in range(1, total_episodes + 1):
+    if remaining <= 0:
+        logger.info("No remaining self-play episodes (start_episode=%d >= total=%d).", start_episode, total_episodes)
+        return episode_metrics
+
+    for ep in range(start_episode + 1, total_episodes + 1):
         # 1. Selection of Self-Play opponent agent
         opp_path = coordinator.select_opponent()
         opp_agent_fn = coordinator.get_agent_policy_fn(opp_path, online_net, device)
@@ -190,19 +198,20 @@ def run_self_play_training(
                 with torch.no_grad():
                     q_out = online_net(tiles_t, numeric_t)
                     masked_q = apply_hierarchical_masks(q_out, masks, device)
-                    masked_q["farmer_verb"] = break_pass_spawn_deadlock(
-                        masked_q["farmer_verb"], masks["farmer_verb"]
-                    )
-                    farm_verb, farm_market = prefer_farm_invest_actions(
-                        masked_q["farmer_verb"],
-                        masks["farmer_verb"],
-                        masked_q["market"],
-                        masks.get("market"),
-                        observation=obs_p0,
-                    )
-                    masked_q["farmer_verb"] = farm_verb
-                    if farm_market is not None:
-                        masked_q["market"] = farm_market
+                    if use_action_heuristics:
+                        masked_q["farmer_verb"] = break_pass_spawn_deadlock(
+                            masked_q["farmer_verb"], masks["farmer_verb"]
+                        )
+                        farm_verb, farm_market = prefer_farm_invest_actions(
+                            masked_q["farmer_verb"],
+                            masks["farmer_verb"],
+                            masked_q["market"],
+                            masks.get("market"),
+                            observation=obs_p0,
+                        )
+                        masked_q["farmer_verb"] = farm_verb
+                        if farm_market is not None:
+                            masked_q["market"] = farm_market
 
                     verb_idx = int(masked_q["farmer_verb"].argmax(dim=-1).item())
                     crop_idx = int(masked_q["crop_parameter"].argmax(dim=-1).item())
