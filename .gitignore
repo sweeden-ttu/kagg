@@ -30,7 +30,26 @@ results/**/models/
 results/kaggle_episodes/metadata.json
 results/kaggle_episodes/episodes/
 
+# Elon Musk GPG private material (public .asc + IDENTITY.md may be tracked)
+reasoning_vs_questioning/artifacts/elon_musk/elon_musk_private.asc
+reasoning_vs_questioning/artifacts/elon_musk/gnupg/
+
+# Eric Schmidt private key material (vault + scattered copies; inventory JSON OK)
+eric_schmidt_ed25519
+reasoning_vs_questioning/eric_schmidt_ed25519
+reasoning_vs_questioning/artifacts/eric_schmidt_ed25519
+reasoning_vs_questioning/artifacts/cursor/eric_schmidt_ed25519
+reasoning_vs_questioning/artifacts/cursor/keyring/eric_schmidt_ed25519
+reasoning_vs_questioning/artifacts/cursor/keyring/eric_schmidt_private.asc
+reasoning_vs_questioning/artifacts/cursor/keyring/private-keys-v1.d/
+reasoning_vs_questioning/artifacts/eric_schmidt/private_keys/eric_schmidt_ed25519
+reasoning_vs_questioning/artifacts/eric_schmidt/private_keys/eric_schmidt_private.asc
+
 __pycache__/
 *.pyc
 *.egg-info/
 .DS_Store
+
+# Scott Weeden GPG private material
+reasoning_vs_questioning/artifacts/scott_weeden/keyring/scott_weeden_private.asc
+reasoning_vs_questioning/artifacts/scott_weeden/keyring/gnupg/
