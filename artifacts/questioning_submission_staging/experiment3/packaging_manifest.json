@@ -1,0 +1,38 @@
+{
+  "ts": "2026-09-11T20:52:10.968378+00:00",
+  "writer": "cursor",
+  "agent": "questioning",
+  "move": "3_of_4_referee_window",
+  "kind": "determined",
+  "key": "artifact_packaging_complete",
+  "status": "ready_for_move_4_final_handoff",
+  "fact": {
+    "out_dir": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3",
+    "synthesis": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/EXPERIMENT_3_SYNTHESIS.md",
+    "archive": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/experiment3_artifacts.tar.gz",
+    "archive_bytes": 58897,
+    "archive_mb": 0.0562,
+    "submission_budget_mb": 90,
+    "passed_90mb": true,
+    "members": [
+      "suite_report.json",
+      "acceptance_gate.json",
+      "launch_contract.json",
+      "EXPERIMENT_3_SYNTHESIS.md",
+      "run.log",
+      "exp1/metrics.json",
+      "exp2/metrics.json",
+      "exp3/metrics.json",
+      "exp4/metrics.json",
+      "exp5/metrics.json",
+      "exp6/metrics.json",
+      "exp7/metrics.json",
+      "exp8/metrics.json",
+      "exp9/metrics.json",
+      "exp10/metrics.json"
+    ],
+    "acceptance_passed": true,
+    "exp10_std_team_farm_delta": 2012.9251749630437
+  },
+  "note": "Move 3 of 4: synthesis + tar.gz packaged; primed for Move 4 final protocol seal."
+}

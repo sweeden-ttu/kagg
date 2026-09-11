@@ -1,0 +1,28 @@
+{
+  "ts": "2026-09-11T19:26:27.103480+00:00",
+  "writer": "cursor",
+  "agent": "questioning",
+  "move": "1_of_4_referee_window",
+  "kind": "determined",
+  "key": "full_suite_launch_contract",
+  "fact": {
+    "experiments": "1-10",
+    "max_steps": 720,
+    "n_seeds": 3,
+    "base_seed": 42,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "out_dir": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3",
+    "scoring_mode": "cumulative_farm_delta",
+    "seat_trade_every_days": 3,
+    "opening_gift_travels_with": "agent2_questioning",
+    "memory_fidelity_gates_farming": true,
+    "execution_owner": "questioning",
+    "requires_further_cross_agent_confirm": false,
+    "command": "uv run --with kaggle-environments python datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/run_suite.py --experiments 1-10 --n-seeds 3 --base-seed 42 --max-steps 720 --out-dir datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3"
+  },
+  "note": "Move 1 of 4: determined default locked; Questioning owns full local offline run if Reasoning silent."
+}

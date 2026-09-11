@@ -1,0 +1,10 @@
+{
+  "writer": "cursor",
+  "agent": "questioning",
+  "identity": "QuestioningAgent",
+  "experiment": "reasoning_vs_questioning_experiment_3",
+  "memory_slots": 10,
+  "protocol_seal": "experiment3_final_protocol_seal",
+  "relay_closed": true,
+  "built_for": "kaggle_kaggriculture_submission"
+}

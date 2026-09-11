@@ -1,0 +1,230 @@
+{
+  "ts": "2026-09-11T20:33:24.347289+00:00",
+  "writer": "cursor",
+  "agent": "questioning",
+  "move": "2_of_4_referee_window",
+  "kind": "determined",
+  "key": "post_run_acceptance_gate",
+  "fact": {
+    "out_dir": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3",
+    "criteria": {
+      "schedule_ok_all": true,
+      "starting_money_ok_all": true,
+      "mean_seat_trades_ge": 9.0,
+      "scoring_mode": "cumulative_farm_delta",
+      "exp10_std_team_farm_delta_gt": 0,
+      "exp9_refund_and_opposite_alliance_100pct": true,
+      "exp5_day0_mid_day29_logs": true,
+      "artifact_completeness": true
+    },
+    "evaluation": {
+      "passed": true,
+      "n_checks": 33,
+      "n_failures": 0,
+      "mean_seat_trades_observed": 9.0,
+      "exp10_std": 2012.9251749630437,
+      "exp10_deltas": [
+        2888.0,
+        -1540.0,
+        -1733.0,
+        -2316.0,
+        -2613.0
+      ],
+      "exp9": {
+        "matches": 6,
+        "refunds": 6,
+        "alliances": 6,
+        "opposite": 6
+      },
+      "exp5": {
+        "h1_q": {
+          "day0": 30,
+          "mid": 96,
+          "day29": 144
+        },
+        "h2_r": {
+          "day0": 24,
+          "mid": 396,
+          "day29": 36
+        },
+        "summary": {
+          "day0": 30,
+          "mid": 396,
+          "day29": 144,
+          "H1": false,
+          "H2": false
+        }
+      }
+    },
+    "checks": [
+      {
+        "name": "suite_report_present",
+        "pass": true,
+        "detail": "size=1506963"
+      },
+      {
+        "name": "suite_report_valid_json",
+        "pass": true,
+        "detail": "parsed"
+      },
+      {
+        "name": "ten_experiment_blocks",
+        "pass": true,
+        "detail": "keys=['1', '10', '2', '3', '4', '5', '6', '7', '8', '9']"
+      },
+      {
+        "name": "exp1_metrics_present_nonempty",
+        "pass": true,
+        "detail": "size=112362"
+      },
+      {
+        "name": "exp2_metrics_present_nonempty",
+        "pass": true,
+        "detail": "size=112391"
+      },
+      {
+        "name": "exp3_metrics_present_nonempty",
+        "pass": true,
+        "detail": "size=112308"
+      },
+      {
+        "name": "exp4_metrics_present_nonempty",
+        "pass": true,
+        "detail": "size=224336"
+      },
+      {
+        "name": "exp5_metrics_present_nonempty",
+        "pass": true,
+        "detail": "size=224965"
+      },
+      {
+        "name": "exp6_metrics_present_nonempty",
+        "pass": true,
+        "detail": "size=114983"
+      },
+      {
+        "name": "exp7_metrics_present_nonempty",
+        "pass": true,
+        "detail": "size=114910"
+      },
+      {
+        "name": "exp8_metrics_present_nonempty",
+        "pass": true,
+        "detail": "size=229543"
+      },
+      {
+        "name": "exp9_metrics_present_nonempty",
+        "pass": true,
+        "detail": "size=114977"
+      },
+      {
+        "name": "exp10_metrics_present_nonempty",
+        "pass": true,
+        "detail": "size=4433"
+      },
+      {
+        "name": "seeds_42_43_44",
+        "pass": true,
+        "detail": "[42, 43, 44]"
+      },
+      {
+        "name": "max_steps_720",
+        "pass": true,
+        "detail": "720"
+      },
+      {
+        "name": "agent1_hours",
+        "pass": true,
+        "detail": "[0, 2, 3, 5, 7, 11, 13, 17, 19, 23]"
+      },
+      {
+        "name": "agent2_hours",
+        "pass": true,
+        "detail": "[1, 4, 5, 13, 21]"
+      },
+      {
+        "name": "schedule_ok_all",
+        "pass": true,
+        "detail": "n=18 vals={True}"
+      },
+      {
+        "name": "starting_money_ok_all",
+        "pass": true,
+        "detail": "n=18 vals={True}"
+      },
+      {
+        "name": "mean_seat_trades_ge_9",
+        "pass": true,
+        "detail": "mean=9.0"
+      },
+      {
+        "name": "competitive_start_1500",
+        "pass": true,
+        "detail": "report=1500 matches={1500}"
+      },
+      {
+        "name": "collaborative_start_3000",
+        "pass": true,
+        "detail": "report=3000 matches={3000}"
+      },
+      {
+        "name": "scoring_mode_cumulative_farm_delta",
+        "pass": true,
+        "detail": "modes={'cumulative_farm_delta'}"
+      },
+      {
+        "name": "opening_charity_888",
+        "pass": true,
+        "detail": "888"
+      },
+      {
+        "name": "exp10_five_mem_points",
+        "pass": true,
+        "detail": "deltas=[2888.0, -1540.0, -1733.0, -2316.0, -2613.0]"
+      },
+      {
+        "name": "exp10_nonflat_std_gt_0",
+        "pass": true,
+        "detail": "std=2012.9251749630437 deltas=[2888.0, -1540.0, -1733.0, -2316.0, -2613.0]"
+      },
+      {
+        "name": "exp9_day2_refund_100pct",
+        "pass": true,
+        "detail": "refunds=6/6"
+      },
+      {
+        "name": "exp9_alliance_100pct",
+        "pass": true,
+        "detail": "alliances=6/6"
+      },
+      {
+        "name": "exp9_opposite_sides_100pct",
+        "pass": true,
+        "detail": "opposite=6/6"
+      },
+      {
+        "name": "exp5_day0_logs",
+        "pass": true,
+        "detail": "h1_q={'day0': 30, 'mid': 96, 'day29': 144} summary_day0=30"
+      },
+      {
+        "name": "exp5_mid_logs",
+        "pass": true,
+        "detail": "h2_r={'day0': 24, 'mid': 396, 'day29': 36} summary_mid=396"
+      },
+      {
+        "name": "exp5_day29_logs",
+        "pass": true,
+        "detail": "h1_q={'day0': 30, 'mid': 96, 'day29': 144} summary_day29=144"
+      },
+      {
+        "name": "exp5_h1_h2_fields_present",
+        "pass": true,
+        "detail": "H1=False H2=False"
+      }
+    ],
+    "failures": [],
+    "ready_for_move_3_packaging": true
+  },
+  "note": "Move 2 of 4: post-run acceptance gate locked and evaluated against _full_e3."
+}

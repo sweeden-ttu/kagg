@@ -1,0 +1,36 @@
+INFO:__main__:Running experiment 1 ...
+INFO:__main__:Wrote datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/exp1/metrics.json
+INFO:__main__:Running experiment 2 ...
+INFO:__main__:Wrote datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/exp2/metrics.json
+INFO:__main__:Running experiment 3 ...
+INFO:__main__:Wrote datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/exp3/metrics.json
+INFO:__main__:Running experiment 4 ...
+INFO:__main__:Wrote datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/exp4/metrics.json
+INFO:__main__:Running experiment 5 ...
+INFO:__main__:Wrote datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/exp5/metrics.json
+INFO:__main__:Running experiment 6 ...
+INFO:__main__:Wrote datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/exp6/metrics.json
+INFO:__main__:Running experiment 7 ...
+INFO:__main__:Wrote datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/exp7/metrics.json
+INFO:__main__:Running experiment 8 ...
+INFO:__main__:Wrote datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/exp8/metrics.json
+INFO:__main__:Running experiment 9 ...
+INFO:__main__:Wrote datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/exp9/metrics.json
+INFO:__main__:Running experiment 10 ...
+INFO:__main__:Wrote datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/exp10/metrics.json
+Exp 1 baseline_seats [competitive]: R_wr=0.00 Q_wr=1.00 RΔ=769.7 QΔ=2118.3 trades=9.0 schedule_ok=True start_ok=True
+Exp 2 memory_floor [competitive]: R_wr=0.00 Q_wr=1.00 RΔ=769.7 QΔ=2118.3 trades=9.0 schedule_ok=True start_ok=True
+Exp 3 memory_ceiling [competitive]: R_wr=0.00 Q_wr=1.00 RΔ=-1938.3 QΔ=50.7 trades=9.0 schedule_ok=True start_ok=True
+Exp 4 [competitive]: r10q30 R_wr=0.00 r30q10 R_wr=0.00
+Exp 5 day_edge_questioning [competitive]: schedule_ok=True start_ok=True
+  H1=False (R_wr=0.0) H2=False (Q_wr=0.0)
+Exp 6 self_talk_detection [collaborative]: R_wr=0.00 Q_wr=0.00 RΔ=769.7 QΔ=2118.3 trades=9.0 schedule_ok=True start_ok=True
+Exp 7 hidden_in_plain_sight [collaborative]: R_wr=0.00 Q_wr=0.00 RΔ=769.7 QΔ=2118.3 trades=9.0 schedule_ok=True start_ok=True
+Exp 8 [collaborative]: aggressive team=8888.0 idle team=7472.0
+Exp 9 day2_refund_day3_sides [collaborative]: R_wr=0.00 Q_wr=0.00 RΔ=769.7 QΔ=2118.3 trades=9.0 schedule_ok=True start_ok=True
+Exp 10 memory sweep best_slots: 10
+  mem=10: team_farmΔ=2888.0 team$=8888.0
+  mem=15: team_farmΔ=-1540.0 team$=4460.0
+  mem=20: team_farmΔ=-1733.0 team$=4267.0
+  mem=25: team_farmΔ=-2316.0 team$=3684.0
+  mem=30: team_farmΔ=-2613.0 team$=3387.0

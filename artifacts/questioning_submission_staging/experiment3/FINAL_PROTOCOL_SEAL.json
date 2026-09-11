@@ -1,0 +1,43 @@
+{
+  "minimal": {
+    "writer": "cursor",
+    "key": "experiment3_final_protocol_seal",
+    "status": "sealed",
+    "relay_closed": true,
+    "timestamp": "2026-09-11T16:08:00Z"
+  },
+  "full": {
+    "writer": "cursor",
+    "agent": "questioning",
+    "move": "4_of_4_referee_window",
+    "kind": "determined",
+    "key": "experiment3_final_protocol_seal",
+    "status": "sealed",
+    "relay_closed": true,
+    "timestamp": "2026-09-11T16:08:00Z",
+    "ts": "2026-09-11T21:10:22.521516+00:00",
+    "fact": {
+      "experiment": "reasoning_vs_questioning_experiment_3",
+      "out_dir": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3",
+      "deliverables": {
+        "synthesis": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/EXPERIMENT_3_SYNTHESIS.md",
+        "archive": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/experiment3_artifacts.tar.gz",
+        "manifest": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/packaging_manifest.json",
+        "acceptance": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/acceptance_gate.json",
+        "launch_contract": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/launch_contract.json",
+        "suite_report": "datasets/scottweeden/self-training-code/experiments/reasoning_vs_questioning/_full_e3/suite_report.json"
+      },
+      "moves": {
+        "1": "full_suite_launch_contract",
+        "2": "post_run_acceptance_gate",
+        "3": "artifact_packaging_complete",
+        "4": "experiment3_final_protocol_seal"
+      },
+      "acceptance_passed": true,
+      "archive_passed_90mb": true,
+      "cross_agent_relay": "closed",
+      "preservation": "local_offline_immutable"
+    },
+    "note": "Move 4 of 4: Experiment 3 lifecycle sealed. Referee cross-agent relay closed; artifacts preserved locally offline."
+  }
+}
