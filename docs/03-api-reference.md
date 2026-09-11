@@ -1,6 +1,12 @@
 # Kaggriculture Path B — API Reference
 
-APIs the training notebook and scripts actually call. Stock SB3 `PPO.save` / VecEnv / `evaluate_policy` are **not** the Path B interface. The optional `kaggriculture_rl.dqn_sb3.DQN` class is a legacy SB3-shaped wrapper around flat-branch `kaggriculture_rl.dqn` and is unused by `train_self_play`.
+APIs the training notebook and scripts actually call.
+
+**Primary:** `kaggle-mcp-server/kagg_rl` — BC → PPO + HER (`train_primary`).
+**Ablation:** Path B hierarchical DQN via `train_self_play`. Stock SB3
+`PPO.save` / VecEnv / `evaluate_policy` are **not** the ladder interface.
+The optional `kaggriculture_rl.dqn_sb3.DQN` class is a legacy SB3-shaped wrapper
+around flat-branch `kaggriculture_rl.dqn` and is unused by primary training.
 
 ---
 

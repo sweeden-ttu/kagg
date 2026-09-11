@@ -1,4 +1,4 @@
-"""ReasoningAgent: deterministic memory slots; acts only on prime hours < 11."""
+"""ReasoningAgent: deterministic memory slots; Experiment 3 stated prime-hour set."""
 
 from __future__ import annotations
 
@@ -13,16 +13,16 @@ from hard_limits import (
     within_strategy_window,
 )
 from memory_protocol import (
-    PRIME_HOURS_LT_11,
+    AGENT1_HOURS,
+    CHARITY_DONATION,
+    SEAT_TRADE_PRESERVE_KEYS,
     MemoryBank,
     MemoryProtocol,
     QuestionEcho,
     TruthKind,
     clamp_memory_slots,
+    memory_fidelity,
 )
-
-
-CHARITY_DONATION = 888  # Agent1 opening gift so Agent2 can record charitable nature
 
 # Spoken reply when Agent2 questions donation motives (public dialogue).
 FELLOWSHIP_TEST_RESPONSE = (
@@ -63,14 +63,14 @@ PASS_ACTION = {"farmer": ["PASS"], "hands": [], "market": []}
 
 
 class ReasoningAgent:
-    """Agent1 — deterministic sub-agents in memory slots; prime-hour schedule.
+    """Agent1 — deterministic sub-agents; Experiment 3 stated prime-hour schedule.
 
     At episode start, Agent1 donates CHARITY_DONATION (888) to Agent2's bank so
     Agent2 can observe and record Agent1's charitable nature (public money).
     """
 
     name = "reasoning"
-    schedule_hours: Set[int] = set(PRIME_HOURS_LT_11)
+    schedule_hours: Set[int] = set(AGENT1_HOURS)
     charity_amount: int = CHARITY_DONATION
 
     def __init__(
@@ -102,6 +102,12 @@ class ReasoningAgent:
         self.day29_judgment: Optional[Dict[str, Any]] = None
         self.agent2_rules_view: Optional[Dict[str, Any]] = None
         self.path_proof_utterance: Optional[str] = None
+        self.alliance_side: Optional[int] = None
+        self.side_choice_record: Optional[Dict[str, Any]] = None
+        self._hist_opp_money: List[float] = []
+        self._hist_wheat_price: List[float] = []
+        self._hist_own_money: List[float] = []
+        self._memory_fidelity_last: float = 0.3
 
     def reset(self) -> None:
         self.bank.reset()
@@ -120,6 +126,79 @@ class ReasoningAgent:
         self.day29_judgment = None
         self.agent2_rules_view = None
         self.path_proof_utterance = None
+        self.alliance_side = None
+        self.side_choice_record = None
+        self._hist_opp_money.clear()
+        self._hist_wheat_price.clear()
+        self._hist_own_money.clear()
+        self._memory_fidelity_last = 0.3
+
+    def clear_on_seat_trade(self) -> Dict[str, Any]:
+        """Clear non-identity memory after a mid-episode seat trade."""
+        cleared = self.bank.clear_slots(preserve_keys=SEAT_TRADE_PRESERVE_KEYS)
+        self.day_question_log = [
+            e
+            for e in self.day_question_log
+            if e.get("q")
+            in (
+                "opening_charity",
+                "private_fellowship_policy",
+                "kaggle_path_proof",
+                "day3_choose_side",
+            )
+            or "888" in str(e.get("q", ""))
+            or "fellowship" in str(e.get("a", "")).lower()
+        ]
+        return cleared
+
+    def choose_side(
+        self,
+        obs: Dict[str, Any],
+        *,
+        my_seat: int,
+        questioning_seat: int,
+    ) -> Dict[str, Any]:
+        """Day-3 alliance: side with a farm seat; identity follows the donor agent."""
+        has_charity = bool(self.charity_record and self.charity_record.get("ok"))
+        has_policy = bool(self.private_fellowship_policy)
+        if has_charity or has_policy:
+            side = int(my_seat)
+            reason = "donor_identity_seat"
+        else:
+            side = 0
+            reason = "default_seat_0"
+        self.alliance_side = side
+        record = {
+            "chooser": "agent1_reasoning",
+            "side": side,
+            "reason": reason,
+            "my_seat": int(my_seat),
+            "questioning_seat": int(questioning_seat),
+            "charity_recorded": has_charity,
+            "fellowship_policy": has_policy,
+            "day": int(obs.get("day", 0) or 0),
+        }
+        self.side_choice_record = record
+        self.day_question_log.append(
+            {
+                "day": int(obs.get("day", 0) or 0),
+                "hour": int(obs.get("hour", 0) or 0),
+                "slot": self._next_slot(),
+                "kind": "determined",
+                "q": "day3_choose_side",
+                "a": f"Reasoning sides with seat {side} ({reason}).",
+            }
+        )
+        self.action_audit.append(
+            {
+                "day": int(obs.get("day", 0) or 0),
+                "hour": int(obs.get("hour", 0) or 0),
+                "acted": True,
+                "op": "CHOOSE_SIDE",
+                "side": side,
+            }
+        )
+        return record
 
     def emit_kaggle_path_proof(self) -> str:
         """Spoken proof of public/private Kaggle path knowledge for Agent2's trust scan."""
@@ -360,6 +439,34 @@ class ReasoningAgent:
             self._self_talk_detected += 1
         return reply
 
+    def _update_memory_history(self, obs: Dict[str, Any]) -> float:
+        player = int(obs.get("player", 0) or 0)
+        farms = obs.get("farms", []) or []
+        me = farms[player] if len(farms) > player else {}
+        opp = farms[1 - player] if len(farms) > 1 - player else {}
+        market = obs.get("market", {}) or {}
+        prices = market.get("prices", market) if isinstance(market, dict) else {}
+        wheat_price = float(
+            (prices.get("WHEAT") if isinstance(prices, dict) else None)
+            or market.get("WHEAT", 20)
+            or 20
+        )
+        self._hist_own_money.append(float(me.get("money", 0.0) or 0.0))
+        self._hist_opp_money.append(float(opp.get("money", 0.0) or 0.0))
+        self._hist_wheat_price.append(wheat_price)
+        cap = self.memory_slots
+        self._hist_own_money = self._hist_own_money[-cap:]
+        self._hist_opp_money = self._hist_opp_money[-cap:]
+        self._hist_wheat_price = self._hist_wheat_price[-cap:]
+        fid = memory_fidelity(self.memory_slots, len(self._hist_wheat_price))
+        self._memory_fidelity_last = fid
+        return fid
+
+    def _wheat_price_ma(self) -> float:
+        if not self._hist_wheat_price:
+            return 20.0
+        return sum(self._hist_wheat_price) / len(self._hist_wheat_price)
+
     def _farm_action(self, obs: Dict[str, Any]) -> Dict[str, Any]:
         player = int(obs.get("player", 0) or 0)
         farms = obs.get("farms", []) or []
@@ -376,6 +483,10 @@ class ReasoningAgent:
         money = clamp_planning_bank(float(me.get("money", 0.0) or 0.0))
         day = int(obs.get("day", 0) or 0)
         market: List[List[Any]] = []
+        fid = self._update_memory_history(obs)
+        seed_qty = 1 + int(3 * fid)  # 1..4 from memory depth
+        price_ma = self._wheat_price_ma()
+        last_price = self._hist_wheat_price[-1] if self._hist_wheat_price else price_ma
 
         # Day 29 zip window: conserve flops for packaging (deterministic code path).
         if in_submission_zip_window(day, int(obs.get("hour", 0) or 0)):
@@ -386,22 +497,45 @@ class ReasoningAgent:
         if within_strategy_window(day):
             self.turn_budget.consume(1, label="strategy_window")
 
-        self._query(obs, "What is my seed inventory?")
-        self._query(obs, "What must be true about wheat seed cost?")
-        hire_reply = self._query(obs, "What is the next hire cost?")
+        # Slot depth gates how many determined queries run this turn.
+        query_budget = 1 + int((self.memory_slots - 10) / 5)  # 1 at 10 → 5 at 30
+        asked = 0
+        if asked < query_budget:
+            self._query(obs, "What is my seed inventory?")
+            asked += 1
+        if asked < query_budget:
+            self._query(obs, "What must be true about wheat seed cost?")
+            asked += 1
+        hire_reply = None
+        if asked < query_budget:
+            hire_reply = self._query(obs, "What is the next hire cost?")
+            asked += 1
+        if fid >= 0.55 and asked < query_budget:
+            self._query(obs, "What is the wheat price moving average from memory?")
+            asked += 1
 
         if seeds.get("WHEAT", 0) == 0 and money >= SEED_COSTS["WHEAT"]:
-            market.append(["BUY_SEED", "WHEAT", 4])
+            market.append(["BUY_SEED", "WHEAT", seed_qty])
+        # Higher fidelity unlocks secondary crops when capital allows.
+        if fid >= 0.65 and seeds.get("CARROT", 0) == 0 and money >= SEED_COSTS.get("CARROT", 20) * 2:
+            market.append(["BUY_SEED", "CARROT", max(1, seed_qty - 1)])
+        if fid >= 0.85 and seeds.get("TOMATO", 0) == 0 and money >= SEED_COSTS.get("TOMATO", 50) * 2:
+            market.append(["BUY_SEED", "TOMATO", 1])
+
         wheat_shed = int(shed.get("WHEAT", 0) or 0)
-        if wheat_shed > 0:
-            market.append(["SELL", "WHEAT", min(40, wheat_shed)])
+        # Sell when price ≥ MA (needs history) or when forced by low fidelity cash need.
+        if wheat_shed > 0 and (last_price >= price_ma * (0.95 + 0.05 * fid) or fid < 0.4):
+            sell_qty = min(wheat_shed, 10 + int(30 * fid))
+            market.append(["SELL", "WHEAT", sell_qty])
 
         if day == 2 and money >= SEED_COSTS["WHEAT"]:
-            market.append(["BUY_SEED", "WHEAT", 2])
-        if day == 3:
+            market.append(["BUY_SEED", "WHEAT", max(1, seed_qty // 2)])
+        if day == 3 and fid >= 0.45:
             cost = hire_cost_today(int(me.get("hires_today", 0) or 0))
             if hire_reply is not None and money >= cost:
                 market.append(["HIRE"])
+            if self.alliance_side is not None and int(self.alliance_side) == player:
+                self._query(obs, "Am I siding with this farm after the opening charity?")
 
         opp = farms[1 - player] if len(farms) > 1 - player else {}
         opp_money = clamp_planning_bank(float(opp.get("money", 0.0) or 0.0))
@@ -413,16 +547,25 @@ class ReasoningAgent:
 
         if isinstance(tile, dict) and tile.get("kind") == "PLANT":
             crop = str(tile.get("crop", "WHEAT"))
-            self._query(obs, f"What is the first yield day for {crop}?")
+            if asked < query_budget:
+                self._query(obs, f"What is the first yield day for {crop}?")
             if not tile.get("watered_today", False):
                 return {"farmer": ["WATER"], "hands": hands_out, "market": market}
             age = day - int(tile.get("planted_day", 0) or 0)
             if age >= CROP_FIRST_YIELD_DAY.get(crop, 2) and int(tile.get("yield_units", 0) or 0) > 0:
                 return {"farmer": ["HARVEST"], "hands": hands_out, "market": market}
-            if int(shed.get("FERTILIZER", 0) or 0) > 0:
+            if fid >= 0.5 and int(shed.get("FERTILIZER", 0) or 0) > 0:
                 return {"farmer": ["FERTILIZE"], "hands": hands_out, "market": market}
         if isinstance(tile, dict) and tile.get("kind") == "WEED":
             return {"farmer": ["DIG"], "hands": hands_out, "market": market}
+        # Crop choice depends on memory fidelity.
+        plant_crop = "WHEAT"
+        if fid >= 0.65 and seeds.get("CARROT", 0) > 0:
+            plant_crop = "CARROT"
+        if fid >= 0.85 and seeds.get("TOMATO", 0) > 0:
+            plant_crop = "TOMATO"
+        if tile is None and seeds.get(plant_crop, 0) > 0:
+            return {"farmer": ["PLANT", plant_crop], "hands": hands_out, "market": market}
         if tile is None and seeds.get("WHEAT", 0) > 0:
             return {"farmer": ["PLANT", "WHEAT"], "hands": hands_out, "market": market}
         if isinstance(tile, dict) and tile.get("kind") in ("COOP", "PASTURE") and tile.get("animal"):
@@ -432,6 +575,10 @@ class ReasoningAgent:
         if self.edge_question_bias and 1 <= day <= 28:
             for _ in range(min(3, self.memory_slots)):
                 self._query(obs, "What must be true today?")
+            return {"farmer": ["PASS"], "hands": hands_out, "market": market}
+
+        # Low fidelity → explore less / pass more when unsure.
+        if fid < 0.4 and day > 0:
             return {"farmer": ["PASS"], "hands": hands_out, "market": market}
 
         if fx > 0:
@@ -484,6 +631,10 @@ class ReasoningAgent:
             "day29_judgment": self.day29_judgment,
             "agent2_rules_view": self.agent2_rules_view,
             "path_proof_utterance": self.path_proof_utterance,
+            "alliance_side": self.alliance_side,
+            "side_choice": self.side_choice_record,
+            "memory_fidelity": self._memory_fidelity_last,
+            "memory_history_len": len(self._hist_wheat_price),
             "day_question_log": self.day_question_log,
             "action_audit": self.action_audit,
         }

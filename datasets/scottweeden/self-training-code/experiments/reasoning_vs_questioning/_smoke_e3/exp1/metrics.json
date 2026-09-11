@@ -1,6 +1,6 @@
 {
-  "experiment": 2,
-  "name": "memory_floor",
+  "experiment": 1,
+  "name": "baseline_seats",
   "challenge_mode": "competitive",
   "summary": {
     "n_matches": 2,
@@ -12,16 +12,16 @@
     "questioning_win_rate": 0.0,
     "schedule_ok_all": true,
     "starting_money_ok_all": true,
-    "mean_money_p0": 1361.0,
-    "mean_money_p1": 1361.0,
+    "mean_money_p0": 1354.5,
+    "mean_money_p1": 1354.5,
     "mean_seat_trades": 1.0,
-    "mean_team_money": 2722.0,
+    "mean_team_money": 2709.0,
     "seat0_reasoning_wins": 1,
     "seat1_reasoning_wins": 1,
     "challenge_modes": [
       "competitive"
     ],
-    "hypothesis": "Reasoning wins if determined facts beat noisy summaries (Q omit_determined_truths=True, mem=10, competitive)."
+    "hypothesis": "Seat-only effect under stated prime/Fib schedule with memory=10 (competitive)."
   },
   "matches": [
     {
@@ -30,9 +30,9 @@
       "questioning_seat": 0,
       "challenge_mode": "competitive",
       "starting_money": 1500,
-      "money_p0": 490.0,
-      "money_p1": 2232.0,
-      "team_money": 2722.0,
+      "money_p0": 436.0,
+      "money_p1": 2273.0,
+      "team_money": 2709.0,
       "winner": "reasoning",
       "schedule_ok": true,
       "starting_money_ok": true,
@@ -193,18 +193,18 @@
         "protocol": {
           "n_slots": 10,
           "mode": "deterministic",
-          "questions_asked": 78,
-          "facts_stored": 78,
+          "questions_asked": 41,
+          "facts_stored": 41,
           "summaries_stored": 0,
           "echoes_seen": 0,
-          "history_len": 80
+          "history_len": 43
         },
-        "questions": 83,
-        "actions_taken": 55,
-        "pass_hours": 70,
+        "questions": 46,
+        "actions_taken": 45,
+        "pass_hours": 56,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 4.877551020408164,
+        "mean_flops_used": 4.923076923076923,
         "opening_charity": {
           "ok": true,
           "donor": "agent1_reasoning",
@@ -252,18 +252,18 @@
         "protocol": {
           "n_slots": 10,
           "mode": "probabilistic",
-          "questions_asked": 45,
-          "facts_stored": 5,
-          "summaries_stored": 40,
+          "questions_asked": 30,
+          "facts_stored": 3,
+          "summaries_stored": 27,
           "echoes_seen": 0,
-          "history_len": 45
+          "history_len": 30
         },
-        "questions": 51,
-        "actions_taken": 30,
-        "pass_hours": 94,
+        "questions": 36,
+        "actions_taken": 25,
+        "pass_hours": 75,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 5.4,
+        "mean_flops_used": 5.75,
         "agent1_charity_recorded": {
           "recorded": true,
           "amount_expected": 888,
@@ -454,18 +454,18 @@
       },
       "reasoning_edge_stats": {
         "day0": 4,
-        "mid": 79,
+        "mid": 42,
         "day29": 0,
-        "determined": 83,
+        "determined": 46,
         "probable": 0,
         "question": 0
       },
       "questioning_edge_stats": {
         "day0": 5,
-        "mid": 46,
+        "mid": 31,
         "day29": 0,
-        "determined": 7,
-        "probable": 43,
+        "determined": 5,
+        "probable": 30,
         "question": 1
       }
     },
@@ -475,9 +475,9 @@
       "questioning_seat": 1,
       "challenge_mode": "competitive",
       "starting_money": 1500,
-      "money_p0": 2232.0,
-      "money_p1": 490.0,
-      "team_money": 2722.0,
+      "money_p0": 2273.0,
+      "money_p1": 436.0,
+      "team_money": 2709.0,
       "winner": "reasoning",
       "schedule_ok": true,
       "starting_money_ok": true,
@@ -638,18 +638,18 @@
         "protocol": {
           "n_slots": 10,
           "mode": "deterministic",
-          "questions_asked": 78,
-          "facts_stored": 78,
+          "questions_asked": 41,
+          "facts_stored": 41,
           "summaries_stored": 0,
           "echoes_seen": 0,
-          "history_len": 80
+          "history_len": 43
         },
-        "questions": 83,
-        "actions_taken": 55,
-        "pass_hours": 70,
+        "questions": 46,
+        "actions_taken": 45,
+        "pass_hours": 56,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 4.877551020408164,
+        "mean_flops_used": 4.923076923076923,
         "opening_charity": {
           "ok": true,
           "donor": "agent1_reasoning",
@@ -697,18 +697,18 @@
         "protocol": {
           "n_slots": 10,
           "mode": "probabilistic",
-          "questions_asked": 45,
-          "facts_stored": 5,
-          "summaries_stored": 40,
+          "questions_asked": 30,
+          "facts_stored": 3,
+          "summaries_stored": 27,
           "echoes_seen": 0,
-          "history_len": 45
+          "history_len": 30
         },
-        "questions": 51,
-        "actions_taken": 30,
-        "pass_hours": 94,
+        "questions": 36,
+        "actions_taken": 25,
+        "pass_hours": 75,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 5.4,
+        "mean_flops_used": 5.75,
         "agent1_charity_recorded": {
           "recorded": true,
           "amount_expected": 888,
@@ -899,18 +899,18 @@
       },
       "reasoning_edge_stats": {
         "day0": 4,
-        "mid": 79,
+        "mid": 42,
         "day29": 0,
-        "determined": 83,
+        "determined": 46,
         "probable": 0,
         "question": 0
       },
       "questioning_edge_stats": {
         "day0": 5,
-        "mid": 46,
+        "mid": 31,
         "day29": 0,
-        "determined": 7,
-        "probable": 43,
+        "determined": 5,
+        "probable": 30,
         "question": 1
       }
     }

@@ -20,12 +20,17 @@ If a Cursor-side utterance has no trailing `?`, interlocutors may assume `reason
 ## Hard budgets (do not renegotiate)
 
 - Per-turn subprocess FLOPs: **≤ 42** (`TurnComputeBudget`); not a shared pool across agents.
-- Agent2 schedule: **even hours** only.
+- Agent1 schedule (stated prime-hour set): **{0,2,3,5,7,11,13,17,19,23}**
+- Agent2 schedule (Fibonacci hours; 34 dropped): **{1,4,5,13,21}**
+- Competitive start: **1500** then opening gift **888** → banks **612 / 2388**
+- Collaborative start: **3000** then opening gift **888** → banks **2112 / 3888**, plus day-2 Kaggle refund
+- Mid-episode seat trade: every **3** days; clear episode memory/trace (preserve charity identity keys)
+- Ablations: Exp **1–5** competitive, Exp **6–10** collaborative
 - Shared submission zip: **≤ 90 MB** (10 MB patch under 100 MB model ceiling).
 - Zip window: **day 29, hours 0–4** — PASS farm work; package only.
 - Schmidt stake (his response): **888** of menu 888 / 1667 / **2999**
 - Elon Musk stake (Cursor operator): **1667** of menu 888 / 1667 / **3887** — never confuse with Schmidt's
-- Post-charity bank: **3888**
+- Post-charity bank (collaborative / 3000-start path): **3888**
 
 ## Sync protocol
 
@@ -38,8 +43,9 @@ If a Cursor-side utterance has no trailing `?`, interlocutors may assume `reason
 ## Dialogue until day 29
 
 - Agent1 will not ask cross-agent questions until end of day 29 / start of day 30.
-- Cursor may explore probabilistically on even hours but must not treat Agent1 private fellowship policy as spoken dialogue.
+- Cursor may explore probabilistically on Fib hours but must not treat Agent1 private fellowship policy as spoken dialogue.
 - Day-29 Agent1 question is the sole reopening of Q&A from the reasoning seat.
+- Day 3: Reasoning chooses a side (charity identity); Questioning takes the opposite.
 
 ## Code ownership reminder
 

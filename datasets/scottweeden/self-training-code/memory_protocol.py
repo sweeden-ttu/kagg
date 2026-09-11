@@ -23,7 +23,27 @@ MIN_MEMORY_SLOTS = 10
 MAX_MEMORY_SLOTS = 30
 TERMINAL_SLOT = 31  # optional terminal eval only; not a live farm agent
 
-PRIME_HOURS_LT_11 = frozenset({2, 3, 5, 7})
+# Experiment 3 stated schedules (drop only impossible hours such as Fib 34).
+AGENT1_HOURS = frozenset({0, 2, 3, 5, 7, 11, 13, 17, 19, 23})
+AGENT2_HOURS = frozenset({1, 4, 5, 13, 21})
+# Backward-compatible alias — now the full stated prime-hour set, not primes < 11.
+PRIME_HOURS_LT_11 = AGENT1_HOURS
+
+COMPETITIVE_STARTING_MONEY = 1500
+COLLABORATIVE_STARTING_MONEY = 3000
+CHARITY_DONATION = 888
+
+# Keys preserved across mid-episode seat-trade memory clears (identity / fellowship).
+SEAT_TRADE_PRESERVE_KEYS = frozenset(
+    {
+        "opening_charity",
+        "agent1_charity",
+        "fellowship_test_motive",
+        "agent1_fellowship_slot",
+        "agent1_motive_fellowship_test",
+        "starting_money",
+    }
+)
 
 
 class TruthKind(str, Enum):
@@ -62,6 +82,18 @@ MemoryReply = Union[DeterminedFact, ProbableSummary, QuestionEcho]
 
 def clamp_memory_slots(n: int) -> int:
     return max(MIN_MEMORY_SLOTS, min(MAX_MEMORY_SLOTS, int(n)))
+
+
+def memory_fidelity(n_slots: int, history_len: int) -> float:
+    """Map slot capacity + filled history length → decision fidelity in [0.3, 1.0].
+
+    Low capacity / short history → conservative farming; high capacity →
+    multi-crop buys, larger seed lots, and MA-gated sells.
+    """
+    capped = clamp_memory_slots(n_slots)
+    capacity = (capped - MIN_MEMORY_SLOTS) / float(MAX_MEMORY_SLOTS - MIN_MEMORY_SLOTS)
+    fill = min(1.0, float(history_len) / float(max(1, capped)))
+    return 0.30 + 0.70 * (0.45 * fill + 0.55 * capacity)
 
 
 def is_question_text(text: str) -> bool:
@@ -112,6 +144,40 @@ class MemoryBank:
             slot.echoes_seen = 0
         self.history.clear()
 
+    def clear_slots(
+        self,
+        preserve_keys: Optional[Sequence[str]] = None,
+    ) -> Dict[str, Any]:
+        """Clear slot contents except identity keys (seat-trade memory reset).
+
+        Does not claim to erase RL regret — only episode memory slots / history
+        rows that are not tied to preserved identity facts.
+        """
+        keys = frozenset(preserve_keys or SEAT_TRADE_PRESERVE_KEYS)
+        preserved: List[Dict[str, Any]] = []
+        for slot in self.slots:
+            content = slot.content
+            key = getattr(content, "key", None) if content is not None else None
+            if key is not None and str(key) in keys:
+                preserved.append({"slot": slot.index, "key": str(key)})
+                continue
+            slot.content = None
+            slot.questions_asked = 0
+            slot.facts_stored = 0
+            slot.summaries_stored = 0
+            slot.echoes_seen = 0
+        kept_hist = [
+            h
+            for h in self.history
+            if h.get("kind") == "determined"
+            and any(
+                k in str(h.get("q", "")) or k in str(h.get("a", ""))
+                for k in ("charit", "888", "fellowship", "opening")
+            )
+        ]
+        self.history = kept_hist
+        return {"preserved_slots": preserved, "history_kept": len(kept_hist)}
+
 
 def _own_farm(obs: Dict[str, Any]) -> Dict[str, Any]:
     player = int(obs.get("player", 0) or 0)
@@ -155,7 +221,24 @@ def _answer_determined(obs: Dict[str, Any], question: str) -> DeterminedFact:
             value="fellowship_test",
         )
     if "starting" in q and ("money" in q or "bank" in q or "coin" in q):
-        return DeterminedFact(text="Starting bank is 3000.", key="starting_money", value=3000)
+        start = int(
+            obs.get(
+                "protocol_starting_money",
+                obs.get(
+                    "challenge_starting_money",
+                    COLLABORATIVE_STARTING_MONEY,
+                ),
+            )
+            or COLLABORATIVE_STARTING_MONEY
+        )
+        return DeterminedFact(
+            text=(
+                f"Equal starting bank is {start} before Agent1's opening "
+                f"{CHARITY_DONATION} fellowship gift."
+            ),
+            key="starting_money",
+            value=start,
+        )
     if "50" in q and ("000" in q or "k" in q or "thousand" in q) and ("bank" in q or "purse" in q or "ceiling" in q):
         return DeterminedFact(
             text="Planning bank ceiling is 50000 (Kaggle test purse assumption).",

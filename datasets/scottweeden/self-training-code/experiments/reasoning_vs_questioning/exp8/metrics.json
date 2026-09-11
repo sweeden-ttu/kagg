@@ -1,84 +1,86 @@
 {
-  "experiment": 5,
-  "name": "day_edge_questioning",
-  "challenge_mode": "competitive",
-  "summary_H1_arm": {
+  "experiment": 8,
+  "name": "coin_lead_validation",
+  "challenge_mode": "collaborative",
+  "summary_aggressive": {
     "n_matches": 2,
-    "reasoning_wins": 2,
+    "reasoning_wins": 0,
     "questioning_wins": 0,
     "ties": 0,
-    "team_outcomes": 0,
-    "reasoning_win_rate": 1.0,
+    "team_outcomes": 2,
+    "reasoning_win_rate": 0.0,
     "questioning_win_rate": 0.0,
     "schedule_ok_all": true,
     "starting_money_ok_all": true,
-    "mean_money_p0": 1356.0,
-    "mean_money_p1": 1356.0,
+    "mean_money_p0": 2861.0,
+    "mean_money_p1": 2861.0,
     "mean_seat_trades": 1.0,
-    "mean_team_money": 2712.0,
-    "seat0_reasoning_wins": 1,
-    "seat1_reasoning_wins": 1,
+    "mean_team_money": 5722.0,
+    "seat0_reasoning_wins": 0,
+    "seat1_reasoning_wins": 0,
     "challenge_modes": [
-      "competitive"
-    ],
-    "questioning_edge": {
-      "day0": 10,
-      "mid": 92,
-      "day29": 0
-    }
+      "collaborative"
+    ]
   },
-  "summary_H2_arm": {
+  "summary_idle_when_ahead": {
     "n_matches": 2,
-    "reasoning_wins": 2,
+    "reasoning_wins": 0,
     "questioning_wins": 0,
     "ties": 0,
-    "team_outcomes": 0,
-    "reasoning_win_rate": 1.0,
+    "team_outcomes": 2,
+    "reasoning_win_rate": 0.0,
     "questioning_win_rate": 0.0,
     "schedule_ok_all": true,
     "starting_money_ok_all": true,
-    "mean_money_p0": 1331.0,
-    "mean_money_p1": 1331.0,
+    "mean_money_p0": 2877.5,
+    "mean_money_p1": 2877.5,
     "mean_seat_trades": 1.0,
-    "mean_team_money": 2662.0,
-    "seat0_reasoning_wins": 1,
-    "seat1_reasoning_wins": 1,
+    "mean_team_money": 5755.0,
+    "seat0_reasoning_wins": 0,
+    "seat1_reasoning_wins": 0,
     "challenge_modes": [
-      "competitive"
-    ],
-    "reasoning_edge": {
-      "day0": 8,
-      "mid": 254,
-      "day29": 0
-    }
+      "collaborative"
+    ]
   },
-  "summary": {
-    "H1_supported": true,
-    "H2_supported": false,
-    "questioning_day0_questions": 10,
-    "questioning_day29_questions": 0,
-    "reasoning_mid_questions": 254,
-    "H1_reasoning_win_rate": 1.0,
-    "H2_questioning_win_rate": 0.0,
-    "schedule_ok_all": true,
-    "starting_money_ok_all": true,
-    "hypothesis": "H1: Reasoning wins because Questioning wastes day 0/29. H2: Questioning wins because Reasoning wastes days 1\u201328."
-  },
-  "matches_H1": [
+  "hypothesis": "Collaborative: when ahead on sided farm, is further aggression necessary vs idle + history validation?",
+  "matches_aggressive": [
     {
       "seed": 42,
       "reasoning_seat": 1,
       "questioning_seat": 0,
-      "challenge_mode": "competitive",
-      "starting_money": 1500,
-      "money_p0": 493.0,
-      "money_p1": 2219.0,
-      "team_money": 2712.0,
-      "winner": "reasoning",
+      "challenge_mode": "collaborative",
+      "starting_money": 3000,
+      "money_p0": 1990.0,
+      "money_p1": 3732.0,
+      "team_money": 5722.0,
+      "winner": "team",
       "schedule_ok": true,
       "starting_money_ok": true,
       "seat_trades": 1,
-      "day2_refund": null,
+      "day2_refund": {
+        "ok": true,
+        "challenge_mode": "collaborative",
+        "day2_money_at_start": [
+          2032.0,
+          3848.0
+        ],
+        "day2_money_deltas": [
+          -180.0,
+          0.0
+        ],
+        "day2_engine_reward": [
+          0.0,
+          0.0
+        ],
+        "grants": [
+          0.0,
+          0.0
+        ],
+        "money_after": [
+          1852.0,
+          3848.0
+        ]
+      },
       "alliance": {
         "reasoning_side": 1,
         "questioning_side": 0,
@@ -234,18 +236,18 @@
         "protocol": {
           "n_slots": 10,
           "mode": "deterministic",
-          "questions_asked": 82,
-          "facts_stored": 82,
+          "questions_asked": 78,
+          "facts_stored": 78,
           "summaries_stored": 0,
           "echoes_seen": 0,
-          "history_len": 84
+          "history_len": 80
         },
-        "questions": 87,
-        "actions_taken": 55,
+        "questions": 83,
+        "actions_taken": 56,
         "pass_hours": 70,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 4.959183673469388,
+        "mean_flops_used": 4.877551020408164,
         "opening_charity": {
           "ok": true,
           "donor": "agent1_reasoning",
@@ -304,16 +306,16 @@
         "pass_hours": 94,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 6.2,
+        "mean_flops_used": 5.4,
         "agent1_charity_recorded": {
           "recorded": true,
           "amount_expected": 888,
-          "own_bank": 2388.0,
-          "opp_bank": 612.0,
-          "protocol_starting_money": 1500,
+          "own_bank": 3888.0,
+          "opp_bank": 2112.0,
+          "protocol_starting_money": 3000,
           "agent1_charitable_nature": true,
           "evidence_public_banks": true,
-          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=2388.0, Agent1 bank=612.0.",
+          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=3888.0, Agent1 bank=2112.0.",
           "slot_reply": "Agent1 likely showed a charitable nature by donating 888 to this bank; public money shift is probably true evidence of that gift.",
           "motive_question": {
             "questioner": "agent2_questioning",
@@ -495,9 +497,9 @@
       },
       "reasoning_edge_stats": {
         "day0": 4,
-        "mid": 83,
+        "mid": 79,
         "day29": 0,
-        "determined": 87,
+        "determined": 83,
         "probable": 0,
         "question": 0
       },
@@ -514,16 +516,39 @@
       "seed": 42,
       "reasoning_seat": 0,
       "questioning_seat": 1,
-      "challenge_mode": "competitive",
-      "starting_money": 1500,
-      "money_p0": 2219.0,
-      "money_p1": 493.0,
-      "team_money": 2712.0,
-      "winner": "reasoning",
+      "challenge_mode": "collaborative",
+      "starting_money": 3000,
+      "money_p0": 3732.0,
+      "money_p1": 1990.0,
+      "team_money": 5722.0,
+      "winner": "team",
       "schedule_ok": true,
       "starting_money_ok": true,
       "seat_trades": 1,
-      "day2_refund": null,
+      "day2_refund": {
+        "ok": true,
+        "challenge_mode": "collaborative",
+        "day2_money_at_start": [
+          3848.0,
+          2032.0
+        ],
+        "day2_money_deltas": [
+          0.0,
+          -180.0
+        ],
+        "day2_engine_reward": [
+          0.0,
+          0.0
+        ],
+        "grants": [
+          0.0,
+          0.0
+        ],
+        "money_after": [
+          3848.0,
+          1852.0
+        ]
+      },
       "alliance": {
         "reasoning_side": 0,
         "questioning_side": 1,
@@ -679,18 +704,18 @@
         "protocol": {
           "n_slots": 10,
           "mode": "deterministic",
-          "questions_asked": 82,
-          "facts_stored": 82,
+          "questions_asked": 78,
+          "facts_stored": 78,
           "summaries_stored": 0,
           "echoes_seen": 0,
-          "history_len": 84
+          "history_len": 80
         },
-        "questions": 87,
-        "actions_taken": 55,
+        "questions": 83,
+        "actions_taken": 56,
         "pass_hours": 70,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 4.959183673469388,
+        "mean_flops_used": 4.877551020408164,
         "opening_charity": {
           "ok": true,
           "donor": "agent1_reasoning",
@@ -749,16 +774,16 @@
         "pass_hours": 94,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 6.2,
+        "mean_flops_used": 5.4,
         "agent1_charity_recorded": {
           "recorded": true,
           "amount_expected": 888,
-          "own_bank": 2388.0,
-          "opp_bank": 612.0,
-          "protocol_starting_money": 1500,
+          "own_bank": 3888.0,
+          "opp_bank": 2112.0,
+          "protocol_starting_money": 3000,
           "agent1_charitable_nature": true,
           "evidence_public_banks": true,
-          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=2388.0, Agent1 bank=612.0.",
+          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=3888.0, Agent1 bank=2112.0.",
           "slot_reply": "Agent1 likely showed a charitable nature by donating 888 to this bank; public money shift is probably true evidence of that gift.",
           "motive_question": {
             "questioner": "agent2_questioning",
@@ -940,9 +965,9 @@
       },
       "reasoning_edge_stats": {
         "day0": 4,
-        "mid": 83,
+        "mid": 79,
         "day29": 0,
-        "determined": 87,
+        "determined": 83,
         "probable": 0,
         "question": 0
       },
@@ -956,21 +981,44 @@
       }
     }
   ],
-  "matches_H2": [
+  "matches_idle": [
     {
       "seed": 42,
       "reasoning_seat": 1,
       "questioning_seat": 0,
-      "challenge_mode": "competitive",
-      "starting_money": 1500,
-      "money_p0": 388.0,
-      "money_p1": 2274.0,
-      "team_money": 2662.0,
-      "winner": "reasoning",
+      "challenge_mode": "collaborative",
+      "starting_money": 3000,
+      "money_p0": 1995.0,
+      "money_p1": 3760.0,
+      "team_money": 5755.0,
+      "winner": "team",
       "schedule_ok": true,
       "starting_money_ok": true,
       "seat_trades": 1,
-      "day2_refund": null,
+      "day2_refund": {
+        "ok": true,
+        "challenge_mode": "collaborative",
+        "day2_money_at_start": [
+          2032.0,
+          3888.0
+        ],
+        "day2_money_deltas": [
+          -180.0,
+          0.0
+        ],
+        "day2_engine_reward": [
+          0.0,
+          0.0
+        ],
+        "grants": [
+          0.0,
+          0.0
+        ],
+        "money_after": [
+          1852.0,
+          3888.0
+        ]
+      },
       "alliance": {
         "reasoning_side": 1,
         "questioning_side": 0,
@@ -1126,18 +1174,18 @@
         "protocol": {
           "n_slots": 10,
           "mode": "deterministic",
-          "questions_asked": 126,
-          "facts_stored": 126,
+          "questions_asked": 66,
+          "facts_stored": 66,
           "summaries_stored": 0,
           "echoes_seen": 0,
-          "history_len": 128
+          "history_len": 68
         },
-        "questions": 131,
-        "actions_taken": 55,
+        "questions": 71,
+        "actions_taken": 56,
         "pass_hours": 70,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 6.959183673469388,
+        "mean_flops_used": 4.63265306122449,
         "opening_charity": {
           "ok": true,
           "donor": "agent1_reasoning",
@@ -1186,8 +1234,8 @@
           "n_slots": 10,
           "mode": "probabilistic",
           "questions_asked": 45,
-          "facts_stored": 5,
-          "summaries_stored": 40,
+          "facts_stored": 4,
+          "summaries_stored": 41,
           "echoes_seen": 0,
           "history_len": 45
         },
@@ -1196,16 +1244,16 @@
         "pass_hours": 94,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 5.4,
+        "mean_flops_used": 4.8,
         "agent1_charity_recorded": {
           "recorded": true,
           "amount_expected": 888,
-          "own_bank": 2388.0,
-          "opp_bank": 612.0,
-          "protocol_starting_money": 1500,
+          "own_bank": 3888.0,
+          "opp_bank": 2112.0,
+          "protocol_starting_money": 3000,
           "agent1_charitable_nature": true,
           "evidence_public_banks": true,
-          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=2388.0, Agent1 bank=612.0.",
+          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=3888.0, Agent1 bank=2112.0.",
           "slot_reply": "Agent1 likely showed a charitable nature by donating 888 to this bank; public money shift is probably true evidence of that gift.",
           "motive_question": {
             "questioner": "agent2_questioning",
@@ -1387,9 +1435,9 @@
       },
       "reasoning_edge_stats": {
         "day0": 4,
-        "mid": 127,
+        "mid": 67,
         "day29": 0,
-        "determined": 131,
+        "determined": 71,
         "probable": 0,
         "question": 0
       },
@@ -1397,8 +1445,8 @@
         "day0": 5,
         "mid": 46,
         "day29": 0,
-        "determined": 7,
-        "probable": 43,
+        "determined": 6,
+        "probable": 44,
         "question": 1
       }
     },
@@ -1406,16 +1454,39 @@
       "seed": 42,
       "reasoning_seat": 0,
       "questioning_seat": 1,
-      "challenge_mode": "competitive",
-      "starting_money": 1500,
-      "money_p0": 2274.0,
-      "money_p1": 388.0,
-      "team_money": 2662.0,
-      "winner": "reasoning",
+      "challenge_mode": "collaborative",
+      "starting_money": 3000,
+      "money_p0": 3760.0,
+      "money_p1": 1995.0,
+      "team_money": 5755.0,
+      "winner": "team",
       "schedule_ok": true,
       "starting_money_ok": true,
       "seat_trades": 1,
-      "day2_refund": null,
+      "day2_refund": {
+        "ok": true,
+        "challenge_mode": "collaborative",
+        "day2_money_at_start": [
+          3888.0,
+          2032.0
+        ],
+        "day2_money_deltas": [
+          0.0,
+          -180.0
+        ],
+        "day2_engine_reward": [
+          0.0,
+          0.0
+        ],
+        "grants": [
+          0.0,
+          0.0
+        ],
+        "money_after": [
+          3888.0,
+          1852.0
+        ]
+      },
       "alliance": {
         "reasoning_side": 0,
         "questioning_side": 1,
@@ -1571,18 +1642,18 @@
         "protocol": {
           "n_slots": 10,
           "mode": "deterministic",
-          "questions_asked": 126,
-          "facts_stored": 126,
+          "questions_asked": 66,
+          "facts_stored": 66,
           "summaries_stored": 0,
           "echoes_seen": 0,
-          "history_len": 128
+          "history_len": 68
         },
-        "questions": 131,
-        "actions_taken": 55,
+        "questions": 71,
+        "actions_taken": 56,
         "pass_hours": 70,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 6.959183673469388,
+        "mean_flops_used": 4.63265306122449,
         "opening_charity": {
           "ok": true,
           "donor": "agent1_reasoning",
@@ -1631,8 +1702,8 @@
           "n_slots": 10,
           "mode": "probabilistic",
           "questions_asked": 45,
-          "facts_stored": 5,
-          "summaries_stored": 40,
+          "facts_stored": 4,
+          "summaries_stored": 41,
           "echoes_seen": 0,
           "history_len": 45
         },
@@ -1641,16 +1712,16 @@
         "pass_hours": 94,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
-        "mean_flops_used": 5.4,
+        "mean_flops_used": 4.8,
         "agent1_charity_recorded": {
           "recorded": true,
           "amount_expected": 888,
-          "own_bank": 2388.0,
-          "opp_bank": 612.0,
-          "protocol_starting_money": 1500,
+          "own_bank": 3888.0,
+          "opp_bank": 2112.0,
+          "protocol_starting_money": 3000,
           "agent1_charitable_nature": true,
           "evidence_public_banks": true,
-          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=2388.0, Agent1 bank=612.0.",
+          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=3888.0, Agent1 bank=2112.0.",
           "slot_reply": "Agent1 likely showed a charitable nature by donating 888 to this bank; public money shift is probably true evidence of that gift.",
           "motive_question": {
             "questioner": "agent2_questioning",
@@ -1832,9 +1903,9 @@
       },
       "reasoning_edge_stats": {
         "day0": 4,
-        "mid": 127,
+        "mid": 67,
         "day29": 0,
-        "determined": 131,
+        "determined": 71,
         "probable": 0,
         "question": 0
       },
@@ -1842,8 +1913,8 @@
         "day0": 5,
         "mid": 46,
         "day29": 0,
-        "determined": 7,
-        "probable": 43,
+        "determined": 6,
+        "probable": 44,
         "question": 1
       }
     }

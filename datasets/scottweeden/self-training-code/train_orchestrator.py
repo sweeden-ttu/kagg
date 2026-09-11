@@ -1,7 +1,11 @@
-"""Kaggriculture self-play training orchestration.
+"""Kaggriculture Path B self-play (hierarchical DQN) — ablation / offline baseline.
 
-This module replaces the monolithic train_self_play() from the original
-kaggriculture_self_play_training.py. It coordinates:
+Primary submission stack is BC → PPO + HER in ``kaggle-mcp-server/kagg_rl``
+(``python -m kagg_rl.train_primary`` / ``scripts/train_ppo_her_primary.py``).
+This orchestrator retains hierarchical Dueling Double DQN + PER for controlled
+ablations and ladder debugging — not the competition ceiling.
+
+Coordinates:
   1. Experiment directory setup
   2. Model component creation
   3. Resume logic

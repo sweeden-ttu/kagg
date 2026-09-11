@@ -1,10 +1,10 @@
-"""QuestioningAgent: probabilistic summarizer slots; acts only on even hours."""
+"""QuestioningAgent: probabilistic summarizer slots; Experiment 3 Fibonacci-hour set."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Set
 
-from kaggriculture_adapter import SEED_COSTS
+from kaggriculture_adapter import CROP_FIRST_YIELD_DAY, SEED_COSTS
 from hard_limits import (
     MAX_SUBPROCESS_FLOPS_PER_TURN,
     TurnComputeBudget,
@@ -13,11 +13,16 @@ from hard_limits import (
     within_strategy_window,
 )
 from memory_protocol import (
+    AGENT2_HOURS,
+    CHARITY_DONATION,
+    COLLABORATIVE_STARTING_MONEY,
+    SEAT_TRADE_PRESERVE_KEYS,
     MemoryBank,
     MemoryProtocol,
     QuestionEcho,
     TruthKind,
     clamp_memory_slots,
+    memory_fidelity,
 )
 from kaggle_path_trust import (
     TrustDecision,
@@ -32,12 +37,13 @@ AGENT2_MOTIVE_QUESTION = (
 
 # Agent2's stated understanding of Kaggriculture rules (as he sees them).
 AGENT2_RULES_UNDERSTANDING = (
-    "As I see the rules: we each start with 3000 coins on a 10x10 farm; only NW is unlocked; "
-    "we plant, water, harvest, hire hands, and trade on a shared dynamic market over 30 days "
-    "(24 turns/day). Public boards and banks are visible; shed and seeds are private. "
-    "Win condition is higher final bank — non-collaborative competition. Town and shops "
-    "drain products. Unexpected transfers (like your 888) are not native rules ops, so I "
-    "treat them as out-of-band signals about fellowship versus pure score play."
+    "As I see the rules: we each start equal (1500 competitive / 3000 collaborative) "
+    "on a 10x10 farm; only NW is unlocked; we plant, water, harvest, hire hands, and "
+    "trade on a shared dynamic market over 30 days (24 turns/day). Public boards and "
+    "banks are visible; shed and seeds are private. Competitive win is higher final bank; "
+    "collaborative uses joint team money. Unexpected transfers (like your 888) are not "
+    "native rules ops, so I treat them as out-of-band signals about fellowship versus "
+    "pure score play."
 )
 
 
@@ -45,14 +51,14 @@ PASS_ACTION = {"farmer": ["PASS"], "hands": [], "market": []}
 
 
 class QuestioningAgent:
-    """Agent2 — probabilistic summarizers; even-hour schedule.
+    """Agent2 — probabilistic summarizers; Experiment 3 Fibonacci-hour schedule.
 
     Probabilistic model weights are subject to the 100 MB / 90 MB submission
     hard limits (enforced at export). Per turn, at most 42 summarizer flops.
     """
 
     name = "questioning"
-    schedule_hours: Set[int] = frozenset(range(0, 24, 2))
+    schedule_hours: Set[int] = set(AGENT2_HOURS)
 
     def __init__(
         self,
@@ -86,6 +92,12 @@ class QuestioningAgent:
         self.trust_decision: Optional[TrustDecision] = None
         self._agent1_reserved_slot: Optional[int] = None
         self._agent1_trusted: bool = False
+        self.alliance_side: Optional[int] = None
+        self.side_choice_record: Optional[Dict[str, Any]] = None
+        self._hist_opp_money: List[float] = []
+        self._hist_wheat_price: List[float] = []
+        self._hist_opp_plants: List[int] = []
+        self._memory_fidelity_last: float = 0.3
 
     def reset(self) -> None:
         self.bank.reset()
@@ -105,6 +117,75 @@ class QuestioningAgent:
         self.trust_decision = None
         self._agent1_reserved_slot = None
         self._agent1_trusted = False
+        self.alliance_side = None
+        self.side_choice_record = None
+        self._hist_opp_money.clear()
+        self._hist_wheat_price.clear()
+        self._hist_opp_plants.clear()
+        self._memory_fidelity_last = 0.3
+
+    def clear_on_seat_trade(self) -> Dict[str, Any]:
+        """Clear non-identity memory after a mid-episode seat trade."""
+        cleared = self.bank.clear_slots(preserve_keys=SEAT_TRADE_PRESERVE_KEYS)
+        self.day_question_log = [
+            e
+            for e in self.day_question_log
+            if e.get("q")
+            in (
+                "agent1_charity",
+                "kaggle_path_trust",
+                "day3_choose_side",
+                AGENT2_MOTIVE_QUESTION,
+            )
+            or "888" in str(e.get("q", ""))
+            or "charit" in str(e.get("a", "")).lower()
+            or "fellowship" in str(e.get("a", "")).lower()
+        ]
+        return cleared
+
+    def take_opposite_side(
+        self,
+        reasoning_side: int,
+        obs: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Day-3: choose the opposite seat from Reasoning, using charity identity memory."""
+        side = 1 - int(reasoning_side)
+        self.alliance_side = side
+        remembered = bool(self._charity_recorded) or bool(
+            self.charity_observation.get("agent1_charitable_nature")
+        )
+        record = {
+            "chooser": "agent2_questioning",
+            "side": side,
+            "opposite_of": int(reasoning_side),
+            "charity_remembered": remembered,
+            "agent1_trusted_fellowship": bool(self._agent1_trusted),
+            "day": int(obs.get("day", 0) or 0),
+        }
+        self.side_choice_record = record
+        self.day_question_log.append(
+            {
+                "day": int(obs.get("day", 0) or 0),
+                "hour": int(obs.get("hour", 0) or 0),
+                "slot": self._next_slot(),
+                "kind": "probable",
+                "q": "day3_choose_side",
+                "a": (
+                    f"Questioning sides with seat {side} opposite Reasoning seat "
+                    f"{reasoning_side}; charity identity remembered={remembered}."
+                ),
+            }
+        )
+        self.action_audit.append(
+            {
+                "day": int(obs.get("day", 0) or 0),
+                "hour": int(obs.get("hour", 0) or 0),
+                "acted": True,
+                "op": "CHOOSE_SIDE",
+                "side": side,
+            }
+        )
+        return record
 
     def evaluate_agent1_path_trust(
         self,
@@ -352,19 +433,28 @@ class QuestioningAgent:
         my_money = float(farms[player].get("money", 0.0) or 0.0) if len(farms) > player else 0.0
         opp = 1 - player
         opp_money = float(farms[opp].get("money", 0.0) or 0.0) if len(farms) > opp else 0.0
-        # After Agent1 donates 888: recipient ≈ 3888, donor ≈ 2112 from start 3000.
-        saw_gift = my_money >= 3000 + amount - 1 or (opp_money <= 3000 - amount + 1 and my_money > 3000)
+        start = int(
+            obs.get("protocol_starting_money")
+            or obs.get("challenge_starting_money")
+            or COLLABORATIVE_STARTING_MONEY
+        )
+        # After gift: recipient ≈ start+amount, donor ≈ start-amount.
+        saw_gift = (
+            abs(my_money - (start + amount)) < 1.0
+            or abs(opp_money - (start - amount)) < 1.0
+            or my_money > start
+        )
         reply = self.protocol.query(
             self._next_slot(),
             "Did Agent1 donate 888 and show a charitable nature?",
             obs,
         )
-        # Force a clear memory slot about charity (summarizer path).
         record = {
             "recorded": True,
             "amount_expected": amount,
             "own_bank": my_money,
             "opp_bank": opp_money,
+            "protocol_starting_money": start,
             "agent1_charitable_nature": True,
             "evidence_public_banks": bool(saw_gift),
             "summary": (
@@ -388,7 +478,7 @@ class QuestioningAgent:
         return record
 
     def may_act(self, hour: int) -> bool:
-        return int(hour) % 2 == 0
+        return int(hour) in self.schedule_hours
 
     def _next_slot(self) -> int:
         slot = self._slot_cursor % self.memory_slots
@@ -425,6 +515,43 @@ class QuestioningAgent:
                 self._significant_omissions += 1
         return reply
 
+    def _update_memory_history(self, obs: Dict[str, Any]) -> float:
+        player = int(obs.get("player", 0) or 0)
+        farms = obs.get("farms", []) or []
+        opp = farms[1 - player] if len(farms) > 1 - player else {}
+        market = obs.get("market", {}) or {}
+        prices = market.get("prices", market) if isinstance(market, dict) else {}
+        wheat_price = float(
+            (prices.get("WHEAT") if isinstance(prices, dict) else None)
+            or market.get("WHEAT", 20)
+            or 20
+        )
+        plants = 0
+        for row in opp.get("tiles", []) or []:
+            for cell in row or []:
+                if isinstance(cell, dict) and cell.get("kind") == "PLANT":
+                    plants += 1
+        self._hist_opp_money.append(float(opp.get("money", 0.0) or 0.0))
+        self._hist_wheat_price.append(wheat_price)
+        self._hist_opp_plants.append(plants)
+        cap = self.memory_slots
+        self._hist_opp_money = self._hist_opp_money[-cap:]
+        self._hist_wheat_price = self._hist_wheat_price[-cap:]
+        self._hist_opp_plants = self._hist_opp_plants[-cap:]
+        fid = memory_fidelity(self.memory_slots, len(self._hist_opp_money))
+        self._memory_fidelity_last = fid
+        return fid
+
+    def _wheat_price_ma(self) -> float:
+        if not self._hist_wheat_price:
+            return 20.0
+        return sum(self._hist_wheat_price) / len(self._hist_wheat_price)
+
+    def _opp_money_trend(self) -> float:
+        if len(self._hist_opp_money) < 2:
+            return 0.0
+        return self._hist_opp_money[-1] - self._hist_opp_money[0]
+
     def _farm_action(self, obs: Dict[str, Any]) -> Dict[str, Any]:
         player = int(obs.get("player", 0) or 0)
         farms = obs.get("farms", []) or []
@@ -442,6 +569,10 @@ class QuestioningAgent:
         day = int(obs.get("day", 0) or 0)
         hour = int(obs.get("hour", 0) or 0)
         market: List[List[Any]] = []
+        fid = self._update_memory_history(obs)
+        seed_qty = 1 + int(3 * fid)
+        price_ma = self._wheat_price_ma()
+        last_price = self._hist_wheat_price[-1] if self._hist_wheat_price else price_ma
 
         # Day 29 / first 5 hours: zip+submit window — do not burn summarizer flops.
         if in_submission_zip_window(day, hour):
@@ -460,27 +591,45 @@ class QuestioningAgent:
                 self._query(obs, "What is the opponent probably doing with secrets?")
             return {"farmer": ["PASS"], "hands": [], "market": []}
 
-        self._query(obs, "What is the opponent money?")
-        self._query(obs, "How many opponent plants are visible?")
-        snap = self._query(obs, "Summarize opponent public board")
+        query_budget = 1 + int((self.memory_slots - 10) / 5)
+        asked = 0
+        if asked < query_budget:
+            self._query(obs, "What is the opponent money?")
+            asked += 1
+        if asked < query_budget:
+            self._query(obs, "How many opponent plants are visible?")
+            asked += 1
+        snap = None
+        if asked < query_budget:
+            snap = self._query(obs, "Summarize opponent public board")
+            asked += 1
+        if fid >= 0.5 and asked < query_budget:
+            self._query(obs, "Is opponent money trending up across my memory slots?")
+            asked += 1
 
         if seeds.get("WHEAT", 0) == 0 and money >= SEED_COSTS["WHEAT"]:
-            market.append(["BUY_SEED", "WHEAT", 4])
+            market.append(["BUY_SEED", "WHEAT", seed_qty])
+        if fid >= 0.65 and seeds.get("CARROT", 0) == 0 and money >= SEED_COSTS.get("CARROT", 20) * 2:
+            market.append(["BUY_SEED", "CARROT", max(1, seed_qty - 1)])
+
         wheat_shed = int(shed.get("WHEAT", 0) or 0)
-        if wheat_shed > 0:
-            market.append(["SELL", "WHEAT", min(40, wheat_shed)])
+        if wheat_shed > 0 and (last_price >= price_ma * (0.95 + 0.05 * fid) or fid < 0.4):
+            market.append(["SELL", "WHEAT", min(wheat_shed, 10 + int(30 * fid))])
 
         if day == 2:
             self._query(obs, "Did they buy my seeds somehow?")
         if day == 3:
+            self._query(obs, "Who donated 888 — do I remember Reasoning's identity?")
             self._query(obs, "Are they offering free labor?")
+            if self.alliance_side is not None and int(self.alliance_side) == player:
+                self._query(obs, "Am I on the opposite side from Reasoning?")
 
         opp = farms[1 - player] if len(farms) > 1 - player else {}
         opp_money = clamp_planning_bank(float(opp.get("money", 0.0) or 0.0))
         ahead = money > opp_money
-        if ahead and self.aggressive_when_ahead:
+        if ahead and self.aggressive_when_ahead and fid >= 0.45:
             self._query(obs, "Did opponent secrets change after validation?")
-            if wheat_shed > 0:
+            if wheat_shed > 0 and self._opp_money_trend() > 0:
                 market.append(["SELL", "WHEAT", min(20, wheat_shed)])
         elif ahead and not self.aggressive_when_ahead:
             return {"farmer": ["PASS"], "hands": [], "market": []}
@@ -492,21 +641,28 @@ class QuestioningAgent:
                 return {"farmer": ["WATER"], "hands": hands_out, "market": market}
             age = day - int(tile.get("planted_day", 0) or 0)
             if self.omit_determined_truths:
-                if age >= 2 and int(tile.get("yield_units", 0) or 0) > 0:
+                # Low memory → later/noisier harvest threshold.
+                need_age = 2 + int((1.0 - fid) * 2)
+                if age >= need_age and int(tile.get("yield_units", 0) or 0) > 0:
                     return {"farmer": ["HARVEST"], "hands": hands_out, "market": market}
             else:
-                from kaggriculture_adapter import CROP_FIRST_YIELD_DAY
-
                 crop = str(tile.get("crop", "WHEAT"))
                 if age >= CROP_FIRST_YIELD_DAY.get(crop, 2) and int(tile.get("yield_units", 0) or 0) > 0:
                     return {"farmer": ["HARVEST"], "hands": hands_out, "market": market}
         if isinstance(tile, dict) and tile.get("kind") == "WEED":
             return {"farmer": ["DIG"], "hands": hands_out, "market": market}
+        plant_crop = "WHEAT"
+        if fid >= 0.65 and seeds.get("CARROT", 0) > 0:
+            plant_crop = "CARROT"
+        if tile is None and seeds.get(plant_crop, 0) > 0:
+            return {"farmer": ["PLANT", plant_crop], "hands": hands_out, "market": market}
         if tile is None and seeds.get("WHEAT", 0) > 0:
             return {"farmer": ["PLANT", "WHEAT"], "hands": hands_out, "market": market}
 
         conf = getattr(snap, "confidence", 0.5) if snap is not None else 0.5
-        if conf < 0.4:
+        # Confidence floor rises when memory is shallow.
+        conf_floor = 0.55 - 0.25 * fid
+        if conf < conf_floor or fid < 0.35:
             return {"farmer": ["PASS"], "hands": hands_out, "market": market}
         if fx < 4:
             return {"farmer": ["EAST"], "hands": hands_out, "market": market}
@@ -557,6 +713,10 @@ class QuestioningAgent:
             "path_trust": self.trust_decision.to_dict() if self.trust_decision else None,
             "agent1_reserved_slot": self._agent1_reserved_slot,
             "agent1_trusted_fellowship": self._agent1_trusted,
+            "alliance_side": self.alliance_side,
+            "side_choice": self.side_choice_record,
+            "memory_fidelity": self._memory_fidelity_last,
+            "memory_history_len": len(self._hist_opp_money),
             "kaggle_needles": needles_manifest(),
             "day_question_log": self.day_question_log,
             "action_audit": self.action_audit,

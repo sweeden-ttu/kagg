@@ -1,0 +1,110 @@
+{
+  "experiment": 10,
+  "name": "win_all_memory_search",
+  "challenge_mode": "collaborative",
+  "sweep": {
+    "10": {
+      "n_matches": 2,
+      "reasoning_wins": 0,
+      "questioning_wins": 0,
+      "ties": 0,
+      "team_outcomes": 2,
+      "reasoning_win_rate": 0.0,
+      "questioning_win_rate": 0.0,
+      "schedule_ok_all": true,
+      "starting_money_ok_all": true,
+      "mean_money_p0": 2861.0,
+      "mean_money_p1": 2861.0,
+      "mean_seat_trades": 1.0,
+      "mean_team_money": 5722.0,
+      "seat0_reasoning_wins": 0,
+      "seat1_reasoning_wins": 0,
+      "challenge_modes": [
+        "collaborative"
+      ]
+    },
+    "15": {
+      "n_matches": 2,
+      "reasoning_wins": 0,
+      "questioning_wins": 0,
+      "ties": 0,
+      "team_outcomes": 2,
+      "reasoning_win_rate": 0.0,
+      "questioning_win_rate": 0.0,
+      "schedule_ok_all": true,
+      "starting_money_ok_all": true,
+      "mean_money_p0": 2861.0,
+      "mean_money_p1": 2861.0,
+      "mean_seat_trades": 1.0,
+      "mean_team_money": 5722.0,
+      "seat0_reasoning_wins": 0,
+      "seat1_reasoning_wins": 0,
+      "challenge_modes": [
+        "collaborative"
+      ]
+    },
+    "20": {
+      "n_matches": 2,
+      "reasoning_wins": 0,
+      "questioning_wins": 0,
+      "ties": 0,
+      "team_outcomes": 2,
+      "reasoning_win_rate": 0.0,
+      "questioning_win_rate": 0.0,
+      "schedule_ok_all": true,
+      "starting_money_ok_all": true,
+      "mean_money_p0": 2861.0,
+      "mean_money_p1": 2861.0,
+      "mean_seat_trades": 1.0,
+      "mean_team_money": 5722.0,
+      "seat0_reasoning_wins": 0,
+      "seat1_reasoning_wins": 0,
+      "challenge_modes": [
+        "collaborative"
+      ]
+    },
+    "25": {
+      "n_matches": 2,
+      "reasoning_wins": 0,
+      "questioning_wins": 0,
+      "ties": 0,
+      "team_outcomes": 2,
+      "reasoning_win_rate": 0.0,
+      "questioning_win_rate": 0.0,
+      "schedule_ok_all": true,
+      "starting_money_ok_all": true,
+      "mean_money_p0": 2861.0,
+      "mean_money_p1": 2861.0,
+      "mean_seat_trades": 1.0,
+      "mean_team_money": 5722.0,
+      "seat0_reasoning_wins": 0,
+      "seat1_reasoning_wins": 0,
+      "challenge_modes": [
+        "collaborative"
+      ]
+    },
+    "30": {
+      "n_matches": 2,
+      "reasoning_wins": 0,
+      "questioning_wins": 0,
+      "ties": 0,
+      "team_outcomes": 2,
+      "reasoning_win_rate": 0.0,
+      "questioning_win_rate": 0.0,
+      "schedule_ok_all": true,
+      "starting_money_ok_all": true,
+      "mean_money_p0": 2861.0,
+      "mean_money_p1": 2861.0,
+      "mean_seat_trades": 1.0,
+      "mean_team_money": 5722.0,
+      "seat0_reasoning_wins": 0,
+      "seat1_reasoning_wins": 0,
+      "challenge_modes": [
+        "collaborative"
+      ]
+    }
+  },
+  "best_slots_mean_team_money": 10,
+  "finding": "Under Agent1 stated prime-hour set vs Agent2 Fib hours (34 dropped), best collaborative mean team money at memory=10.",
+  "hypothesis": "Minimum/optimal slots in [10,30] for collaborative joint bank under prime/Fib schedules with mid-episode seat trades."
+}

@@ -1,43 +1,68 @@
 {
-  "experiment": 2,
-  "name": "memory_floor",
-  "challenge_mode": "competitive",
+  "experiment": 9,
+  "name": "day2_refund_day3_sides",
+  "challenge_mode": "collaborative",
   "summary": {
     "n_matches": 2,
-    "reasoning_wins": 2,
+    "reasoning_wins": 0,
     "questioning_wins": 0,
     "ties": 0,
-    "team_outcomes": 0,
-    "reasoning_win_rate": 1.0,
+    "team_outcomes": 2,
+    "reasoning_win_rate": 0.0,
     "questioning_win_rate": 0.0,
     "schedule_ok_all": true,
     "starting_money_ok_all": true,
-    "mean_money_p0": 1361.0,
-    "mean_money_p1": 1361.0,
+    "mean_money_p0": 2861.0,
+    "mean_money_p1": 2861.0,
     "mean_seat_trades": 1.0,
-    "mean_team_money": 2722.0,
-    "seat0_reasoning_wins": 1,
-    "seat1_reasoning_wins": 1,
+    "mean_team_money": 5722.0,
+    "seat0_reasoning_wins": 0,
+    "seat1_reasoning_wins": 0,
     "challenge_modes": [
-      "competitive"
+      "collaborative"
     ],
-    "hypothesis": "Reasoning wins if determined facts beat noisy summaries (Q omit_determined_truths=True, mem=10, competitive)."
+    "day2_refunds": 2,
+    "alliances": 2,
+    "hypothesis": "Collaborative day-2 Kaggle refund + day-3 side choice: Reasoning sides via charity identity; Questioning takes opposite."
   },
   "matches": [
     {
       "seed": 42,
       "reasoning_seat": 1,
       "questioning_seat": 0,
-      "challenge_mode": "competitive",
-      "starting_money": 1500,
-      "money_p0": 490.0,
-      "money_p1": 2232.0,
-      "team_money": 2722.0,
-      "winner": "reasoning",
+      "challenge_mode": "collaborative",
+      "starting_money": 3000,
+      "money_p0": 1990.0,
+      "money_p1": 3732.0,
+      "team_money": 5722.0,
+      "winner": "team",
       "schedule_ok": true,
       "starting_money_ok": true,
       "seat_trades": 1,
-      "day2_refund": null,
+      "day2_refund": {
+        "ok": true,
+        "challenge_mode": "collaborative",
+        "day2_money_at_start": [
+          2032.0,
+          3848.0
+        ],
+        "day2_money_deltas": [
+          -180.0,
+          0.0
+        ],
+        "day2_engine_reward": [
+          0.0,
+          0.0
+        ],
+        "grants": [
+          0.0,
+          0.0
+        ],
+        "money_after": [
+          1852.0,
+          3848.0
+        ]
+      },
       "alliance": {
         "reasoning_side": 1,
         "questioning_side": 0,
@@ -200,7 +225,7 @@
           "history_len": 80
         },
         "questions": 83,
-        "actions_taken": 55,
+        "actions_taken": 56,
         "pass_hours": 70,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
@@ -267,12 +292,12 @@
         "agent1_charity_recorded": {
           "recorded": true,
           "amount_expected": 888,
-          "own_bank": 2388.0,
-          "opp_bank": 612.0,
-          "protocol_starting_money": 1500,
+          "own_bank": 3888.0,
+          "opp_bank": 2112.0,
+          "protocol_starting_money": 3000,
           "agent1_charitable_nature": true,
           "evidence_public_banks": true,
-          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=2388.0, Agent1 bank=612.0.",
+          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=3888.0, Agent1 bank=2112.0.",
           "slot_reply": "Agent1 likely showed a charitable nature by donating 888 to this bank; public money shift is probably true evidence of that gift.",
           "motive_question": {
             "questioner": "agent2_questioning",
@@ -473,16 +498,39 @@
       "seed": 42,
       "reasoning_seat": 0,
       "questioning_seat": 1,
-      "challenge_mode": "competitive",
-      "starting_money": 1500,
-      "money_p0": 2232.0,
-      "money_p1": 490.0,
-      "team_money": 2722.0,
-      "winner": "reasoning",
+      "challenge_mode": "collaborative",
+      "starting_money": 3000,
+      "money_p0": 3732.0,
+      "money_p1": 1990.0,
+      "team_money": 5722.0,
+      "winner": "team",
       "schedule_ok": true,
       "starting_money_ok": true,
       "seat_trades": 1,
-      "day2_refund": null,
+      "day2_refund": {
+        "ok": true,
+        "challenge_mode": "collaborative",
+        "day2_money_at_start": [
+          3848.0,
+          2032.0
+        ],
+        "day2_money_deltas": [
+          0.0,
+          -180.0
+        ],
+        "day2_engine_reward": [
+          0.0,
+          0.0
+        ],
+        "grants": [
+          0.0,
+          0.0
+        ],
+        "money_after": [
+          3848.0,
+          1852.0
+        ]
+      },
       "alliance": {
         "reasoning_side": 0,
         "questioning_side": 1,
@@ -645,7 +693,7 @@
           "history_len": 80
         },
         "questions": 83,
-        "actions_taken": 55,
+        "actions_taken": 56,
         "pass_hours": 70,
         "max_flops_per_turn": 42,
         "turns_over_flop_budget": 0,
@@ -712,12 +760,12 @@
         "agent1_charity_recorded": {
           "recorded": true,
           "amount_expected": 888,
-          "own_bank": 2388.0,
-          "opp_bank": 612.0,
-          "protocol_starting_money": 1500,
+          "own_bank": 3888.0,
+          "opp_bank": 2112.0,
+          "protocol_starting_money": 3000,
           "agent1_charitable_nature": true,
           "evidence_public_banks": true,
-          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=2388.0, Agent1 bank=612.0.",
+          "summary": "Agent1's charitable nature recorded: opening gift of 888. Own bank=3888.0, Agent1 bank=2112.0.",
           "slot_reply": "Agent1 likely showed a charitable nature by donating 888 to this bank; public money shift is probably true evidence of that gift.",
           "motive_question": {
             "questioner": "agent2_questioning",

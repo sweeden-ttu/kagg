@@ -2,7 +2,15 @@
 
 This document covers training best practices for stable-baselines3, including hyperparameter tuning strategies, monitoring with TensorBoard, distributed training, checkpointing, deployment patterns, and the bootstrap-from-dataset technique used in the Kaggriculture training pipeline.
 
-**Kaggriculture Path B is the required training path.** Use `kaggriculture_self_play_training.train_self_play` with daily-incremental episode-JSON bootstrap, then league eval via `eval_policy.evaluate_ladder`. The PPO / SAC / Optuna / FastAPI snippets below are generic SB3 reference — they are not how this repo trains or scores win rate. See [Bootstrap-from-Dataset Pattern](#bootstrap-from-dataset-pattern).
+**Kaggriculture primary training path: BC → PPO + HER** via
+`kaggle-mcp-server/kagg_rl` (`python -m kagg_rl.train_primary` or
+`scripts/train_ppo_her_primary.py`). League eval remains
+`eval_policy.evaluate_ladder`.
+
+**Path B** (`train_self_play` hierarchical DQN) is an **ablation baseline**.
+The PPO / SAC / Optuna / FastAPI snippets below include generic SB3 reference;
+for this repo’s PPO use `kagg_rl.ppo`, not stock `PPO.learn` + gym
+`evaluate_policy`. See [Bootstrap-from-Dataset Pattern](#bootstrap-from-dataset-pattern).
 
 ---
 

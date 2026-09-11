@@ -1,8 +1,13 @@
 # Algorithm Reference
 
-**Kaggriculture Path B trains hierarchical Dueling Double DQN** (`HierarchicalDQNBranching` + `HierarchicalDoubleDQNLearner` in `kaggriculture_path_b_rebuild.py`). It is not PPO, SAC, or stock SB3 `DQN`. The SB3 sections below are algorithm theory and optional `kaggriculture_rl.dqn_sb3` context.
+**Primary Kaggriculture stack: BC → PPO (multi-discrete) + HER** in
+`kaggle-mcp-server/kagg_rl` (`train_primary`). Continuous-control methods
+(DDPG / SAC / TD3) and A2C are out of scope for the main farm policy.
 
-Path B eval is `eval_policy.evaluate_ladder` vs `opponents/`, not SB3 `evaluate_policy`.
+**Path B hierarchical Dueling Double DQN** (`HierarchicalDQNBranching` +
+`HierarchicalDoubleDQNLearner`) is an **ablation / offline baseline**, not the
+submission ceiling. Ladder eval remains `eval_policy.evaluate_ladder` vs
+`opponents/` (not SB3 `evaluate_policy`).
 
 ---
 
@@ -251,10 +256,12 @@ model = PPO(
 | `normalize_advantage` | True | Normalize advantages during training |
 
 ### When to Use PPO
-- ✅ Generic SB3 experiments — **not** Kaggriculture Path B
-- ✅ Both discrete and continuous action spaces
-- ⚠️ Requires more samples than off-policy methods
-- ❌ Do not swap Path B self-play for `PPO.learn` + gym `evaluate_policy`
+- ✅ **Kaggriculture primary online learner** after BC (`kagg_rl.ppo` / `train_primary`)
+- ✅ Multi-discrete farm / market heads (this competition)
+- ✅ Both discrete and continuous action spaces in general
+- ⚠️ Requires more samples than off-policy methods — warm-start from top-agent BC
+- ❌ Do not substitute stock SB3 `PPO.learn` + gym `evaluate_policy` for the ladder
+- Pair with **HER milestones** (`kagg_rl.her`) for sparse end-of-season money
 
 ---
 
@@ -485,7 +492,11 @@ model = DDPG(
 
 ---
 
-## Path B: Hierarchical Dueling Double DQN (Kaggriculture)
+## Path B: Hierarchical Dueling Double DQN (ablation only)
+
+**Ablation / offline baseline.** Prefer `kagg_rl.train_primary` (BC → PPO + HER)
+for the submission brain. Path B remains for controlled comparisons and the
+tier-champion HER+PER scripts.
 
 This is what `train_self_play` trains. Observations go through `KaggricultureFeatureExtractor` (CNN on a 10×10 tile grid + MLP on 55 numeric features → 512-d latent). The policy is `HierarchicalDQNBranching`:
 

@@ -3,7 +3,7 @@ import math
 import random
 from os import path
 
-from kaggle_environments.utils import resolve_episode_seed
+import kaggle_environments.utils # pyright: ignore[reportMissingImports]
 
 dirpath = path.dirname(__file__)
 
@@ -246,7 +246,7 @@ def _initialize(state, env):
     num_agents = len(state)
     obs0 = state[0].observation
 
-    seed = resolve_episode_seed(env)
+    seed = kaggle_environments.utils.resolve_episode_seed(env)
 
     board_size = int(get(configuration, "boardSize", 10))
     starting_money = int(get(configuration, "startingMoney", 3000))

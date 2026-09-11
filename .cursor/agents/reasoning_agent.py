@@ -13,6 +13,8 @@ from hard_limits import (
     within_strategy_window,
 )
 from memory_protocol import (
+    AGENT1_HOURS,
+    AGENT2_HOURS,
     PRIME_HOURS_LT_11,
     MemoryBank,
     MemoryProtocol,
@@ -73,9 +75,10 @@ DUAL_ARCH_SYNC_PLAN: Dict[str, Any] = {
     "flops": {
         "max_per_turn": MAX_SUBPROCESS_FLOPS_PER_TURN,
         "shared_pool": False,
-        "prime_hours": sorted(PRIME_HOURS_LT_11),
+        "prime_hours": sorted(AGENT1_HOURS),
+        "fib_hours": sorted(AGENT2_HOURS),
         "even_hours": list(range(0, 24, 2)),
-        "rule": "Schedules do not overlap; each agent spends ≤42 flop-units on its own turn.",
+        "rule": "Agent1 stated prime set vs Agent2 Fib hours; each agent spends ≤42 flop-units on its own turn.",
     },
     "submission": {
         "zip_max_mb": 90,
@@ -115,7 +118,7 @@ class ReasoningAgent:
     """
 
     name = "reasoning"
-    schedule_hours: Set[int] = set(PRIME_HOURS_LT_11)
+    schedule_hours: Set[int] = set(AGENT1_HOURS)
     charity_amount: int = CHARITY_DONATION
 
     def __init__(
