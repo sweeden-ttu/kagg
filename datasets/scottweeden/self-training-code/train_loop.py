@@ -291,44 +291,46 @@ def run_self_play_training(
 
             # 5. Optimize Model on batches from PER Buffer (switched to TRAIN mode)
             if ep > learning_start_episodes and len(buffer) >= batch_size:
-                online_net.train() # Enable training mode for BatchNorm updates
-                batch, indices, weights = buffer.sample(batch_size)
-                # Move batch to device
-                for k in batch:
-                    batch[k] = batch[k].to(device)
+                updates_per_step = max(1, int(config.get("updates_per_step", 1)))
+                for _ in range(updates_per_step):
+                    online_net.train() # Enable training mode for BatchNorm updates
+                    batch, indices, weights = buffer.sample(batch_size)
+                    # Move batch to device
+                    for k in batch:
+                        batch[k] = batch[k].to(device)
 
-                loss, per_sample_loss = learner.compute_loss(batch)
+                    loss, per_sample_loss = learner.compute_loss(batch)
 
-                optimizer.zero_grad()
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(online_net.parameters(), max_norm=0.5)
-                optimizer.step()
-                learner.update_target_network()
-                loss_history.append(loss.item())
-                ep_loss_sum += float(loss.item())
-                ep_gradient_updates += 1
+                    optimizer.zero_grad()
+                    loss.backward()
+                    torch.nn.utils.clip_grad_norm_(online_net.parameters(), max_norm=0.5)
+                    optimizer.step()
+                    learner.update_target_network()
+                    loss_history.append(loss.item())
+                    ep_loss_sum += float(loss.item())
+                    ep_gradient_updates += 1
 
-                if verbose and (step_num <= 3 or step_num % 100 == 0):
-                    logger.debug(
-                        "Ep %d step %d DQN update: loss=%.5f batch=%d priorities_updated=%d",
-                        ep,
-                        step_num,
-                        loss.item(),
-                        batch_size,
-                        len(indices),
-                    )
-
-                with torch.no_grad():
-                    td_errors = per_sample_loss.cpu().numpy() + 1e-6
-                    buffer.update_priorities(indices, td_errors)
-                    if ep_gradient_updates == 1:
-                        logger.info(
-                            "PER: TD-error priority reweighting applied "
-                            "(n=%d td_mean=%.5f td_max=%.5f)",
+                    if verbose and (step_num <= 3 or step_num % 100 == 0):
+                        logger.debug(
+                            "Ep %d step %d DQN update: loss=%.5f batch=%d priorities_updated=%d",
+                            ep,
+                            step_num,
+                            loss.item(),
+                            batch_size,
                             len(indices),
-                            float(np.mean(td_errors)),
-                            float(np.max(td_errors)),
                         )
+
+                    with torch.no_grad():
+                        td_errors = per_sample_loss.cpu().numpy() + 1e-6
+                        buffer.update_priorities(indices, td_errors)
+                        if ep_gradient_updates == 1:
+                            logger.info(
+                                "PER: TD-error priority reweighting applied "
+                                "(n=%d td_mean=%.5f td_max=%.5f)",
+                                len(indices),
+                                float(np.mean(td_errors)),
+                                float(np.max(td_errors)),
+                            )
 
         # Performance Monitoring
         avg_loss = np.mean(loss_history) if loss_history else 0.0

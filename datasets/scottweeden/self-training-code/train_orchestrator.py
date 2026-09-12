@@ -121,6 +121,7 @@ def train_self_play(
     ladder_eval_episodes: int = 0,
     ladder_win_rate_target: float = 0.75,
     min_self_play_episodes: int = 0,
+    updates_per_step: int = 1,
 ):
     """Coordinate the full Kaggriculture self-play training pipeline.
 
@@ -128,6 +129,9 @@ def train_self_play(
     up to ``total_episodes`` (cumulative target, not additional episodes).
     If resume already meets ``total_episodes``, ``min_self_play_episodes`` extends
     the target so at least that many new self-play episodes still run.
+
+    ``updates_per_step`` controls how many DQN gradient steps run per env step
+    after learning starts (GPU duty-cycle knob for Kaggle T4 sessions).
     """
     resuming = resume is not None
     if resuming:
@@ -149,6 +153,7 @@ def train_self_play(
         "total_episodes": total_episodes,
         "learning_start_episodes": learning_start_episodes,
         "batch_size": batch_size,
+        "updates_per_step": max(1, int(updates_per_step)),
         "checkpoint_interval": checkpoint_interval,
         "use_kaggle_env": use_kaggle_env,
         "kinematic_phase_a": 3,

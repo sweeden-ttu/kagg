@@ -1,0 +1,46 @@
+{
+  "model_path": "/Users/sweeden/kagg/models/qkd_multihead_attention_120day_100mb.pkl",
+  "final_model_size_mb": 99.26898574829102,
+  "target_mb": 99.0,
+  "within_100mb": true,
+  "n_heads": 5,
+  "capacity_bank_items": 272,
+  "fit_metrics": {
+    "n_samples": 4000,
+    "n_heads": 5,
+    "d_model": 64,
+    "fit_seconds": 3.6959891319274902,
+    "state_dim": 1035
+  },
+  "scaling_history": [
+    {
+      "stage_mb": 5.0,
+      "actual_mb": 5.434966087341309,
+      "bank_items": 12.0
+    },
+    {
+      "stage_mb": 20.0,
+      "actual_mb": 20.58204936981201,
+      "bank_items": 54.0
+    },
+    {
+      "stage_mb": 50.0,
+      "actual_mb": 50.20595836639404,
+      "bank_items": 136.0
+    },
+    {
+      "stage_mb": 75.0,
+      "actual_mb": 75.4517240524292,
+      "bank_items": 206.0
+    },
+    {
+      "stage_mb": 99.0,
+      "actual_mb": 99.26898574829102,
+      "bank_items": 272.0
+    }
+  ],
+  "status": "SAFE",
+  "heatmap_path": "/Users/sweeden/kagg/multihead_attention_heatmap.png",
+  "n_train_samples": 7920,
+  "feature_dim": 1035
+}

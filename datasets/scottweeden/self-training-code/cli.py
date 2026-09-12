@@ -28,6 +28,12 @@ def main() -> None:
     parser.add_argument("--total-episodes", type=int, default=15)
     parser.add_argument("--learning-start-episodes", type=int, default=2)
     parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument(
+        "--updates-per-step",
+        type=int,
+        default=1,
+        help="Number of DQN gradient updates per environment step (default: 1)",
+    )
     parser.add_argument("--checkpoint-interval", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
@@ -244,6 +250,7 @@ def main() -> None:
         ladder_eval_episodes=args.ladder_eval_episodes,
         ladder_win_rate_target=args.ladder_win_rate_target,
         min_self_play_episodes=args.min_self_play_episodes,
+        updates_per_step=args.updates_per_step,
     )
 
 

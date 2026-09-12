@@ -3,14 +3,24 @@
   "python.condaPath": "/Users/sweeden/miniforge3/bin/conda",
   "python.terminal.activateEnvironment": true,
   "terminal.integrated.env.osx": {
-    "CURSOR_CONDA_ENV": "kagg"
+    "CURSOR_CONDA_ENV": "kagg",
+    "PATH": "/Users/sweeden/miniforge3/envs/kagg/bin:/Users/sweeden/miniforge3/condabin:${env:PATH}",
+    "CONDA_DEFAULT_ENV": "kagg",
+    "CONDA_PREFIX": "/Users/sweeden/miniforge3/envs/kagg"
   },
   "terminal.integrated.profiles.osx": {
     "kagg": {
       "path": "/bin/zsh",
-      "args": ["-l"],
+      "args": [
+        "-l",
+        "-c",
+        "source /Users/sweeden/miniforge3/etc/profile.d/conda.sh && conda activate kagg && exec zsh"
+      ],
       "env": {
-        "CURSOR_CONDA_ENV": "kagg"
+        "CURSOR_CONDA_ENV": "kagg",
+        "CONDA_DEFAULT_ENV": "kagg",
+        "CONDA_PREFIX": "/Users/sweeden/miniforge3/envs/kagg",
+        "PATH": "/Users/sweeden/miniforge3/envs/kagg/bin:/Users/sweeden/miniforge3/condabin:${env:PATH}"
       },
       "overrideName": true
     }
@@ -18,9 +28,16 @@
   "terminal.integrated.defaultProfile.osx": "kagg",
   "terminal.integrated.automationProfile.osx": {
     "path": "/bin/zsh",
-    "args": ["-l"],
+    "args": [
+      "-l",
+      "-c",
+      "source /Users/sweeden/miniforge3/etc/profile.d/conda.sh && conda activate kagg && exec zsh"
+    ],
     "env": {
-      "CURSOR_CONDA_ENV": "kagg"
+      "CURSOR_CONDA_ENV": "kagg",
+      "CONDA_DEFAULT_ENV": "kagg",
+      "CONDA_PREFIX": "/Users/sweeden/miniforge3/envs/kagg",
+      "PATH": "/Users/sweeden/miniforge3/envs/kagg/bin:/Users/sweeden/miniforge3/condabin:${env:PATH}"
     }
   },
   "python.languageServer": "None",
@@ -34,18 +51,29 @@
   "cursorpyright.analysis.typeCheckingMode": "basic",
   "cursorpyright.analysis.diagnosticMode": "workspace",
   "cursorpyright.analysis.extraPaths": [
-    "${workspaceFolder}/datasets/scottweeden/self-training-code"
+    "${workspaceFolder}/datasets/scottweeden/self-training-code",
+    "/Users/sweeden/miniforge3/lib/python3.13/site-packages"
   ],
   "cursorpyright.analysis.autoImportCompletions": true,
   
   "cursorpyright.analysis.useLibraryCodeForTypes": true,
+  "cursorpyright.analysis.exclude": [
+    "**/miniforge3/pkgs/**",
+    "**/miniforge3/envs/**"
+  ],
 
   "basedpyright.analysis.typeCheckingMode": "basic",
   "basedpyright.analysis.extraPaths": [
-    "${workspaceFolder}/datasets/scottweeden/self-training-code"
+    "${workspaceFolder}/datasets/scottweeden/self-training-code",
+    "/Users/sweeden/miniforge3/lib/python3.13/site-packages"
   ],
 
   "python.analysis.extraPaths": [
-    "${workspaceFolder}/datasets/scottweeden/self-training-code"
+    "${workspaceFolder}/datasets/scottweeden/self-training-code",
+    "/Users/sweeden/miniforge3/lib/python3.13/site-packages"
+  ],
+  "python.analysis.exclude": [
+    "**/miniforge3/pkgs/**",
+    "**/miniforge3/envs/**"
   ]
 }

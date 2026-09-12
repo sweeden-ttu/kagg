@@ -1,0 +1,15 @@
+# Conda env: kagg (miniforge)
+# Create/update:
+#   /Users/sweeden/miniforge3/bin/conda env update -n kagg -f environment.yml
+name: kagg
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - pandas
+  - joblib
+  - threadpoolctl

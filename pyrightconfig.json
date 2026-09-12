@@ -3,7 +3,8 @@
     "kaggriculture-self-training",
     "datasets/scottweeden/self-training-code",
     "scripts",
-    "opponents"
+    "opponents",
+    "reasoning_vs_questioning"
   ],
   "exclude": [
     "**/node_modules",
@@ -22,7 +23,9 @@
   "reportMissingImports": "error",
   "reportMissingModuleSource": "warning",
   "extraPaths": [
-    "datasets/scottweeden/self-training-code"
+    "datasets/scottweeden/self-training-code",
+    "reasoning_vs_questioning",
+    "."
   ],
   "executionEnvironments": [
     {
@@ -30,7 +33,9 @@
       "pythonVersion": "3.12",
       "pythonPlatform": "Darwin",
       "extraPaths": [
-        "datasets/scottweeden/self-training-code"
+        "datasets/scottweeden/self-training-code",
+        "reasoning_vs_questioning",
+        ".."
       ]
     },
     {
@@ -38,13 +43,17 @@
       "pythonVersion": "3.12",
       "pythonPlatform": "Darwin",
       "extraPaths": [
-        "datasets/scottweeden/self-training-code"
+        "datasets/scottweeden/self-training-code",
+        "reasoning_vs_questioning",
+        "../.."
       ]
     },
     {
       "root": ".",
       "extraPaths": [
-        "datasets/scottweeden/self-training-code"
+        "datasets/scottweeden/self-training-code",
+        "reasoning_vs_questioning",
+        "."
       ]
     }
   ]

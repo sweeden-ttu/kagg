@@ -1,0 +1,52 @@
+{
+  "kind": "significant_questions_kmap_720x720",
+  "role": "full_season_spatiotemporal_qkd_convergence",
+  "ts": "2026-09-12T19:35:47.957537+00:00",
+  "source_10x10": "/Users/sweeden/.cursor/worktrees/kmap-approach1-4ff64ce5/kagg-7c2ea97d9d34/artifacts/kmap_10x10/episode_107982855.json",
+  "trusted_episode_id": "107982855",
+  "shape": [
+    720,
+    720
+  ],
+  "total_cells": 518400,
+  "families": [
+    "time",
+    "capital",
+    "labor",
+    "crops",
+    "market",
+    "opponent",
+    "risk",
+    "poison_trust",
+    "schedule_flops",
+    "fellowship"
+  ],
+  "channels_per_family": 72,
+  "turns_per_day": 24,
+  "season_days": 30,
+  "matrix_path": "/Users/sweeden/kagg/artifacts/kmap_720x720/kmap_720x720_matrix.npz",
+  "metrics": {
+    "total_cells": 518400,
+    "shape": [
+      720,
+      720
+    ],
+    "polarization_ratio": 0.5647,
+    "shannon_entropy_bits": 0.5538,
+    "epistemic_variance": 0.124346,
+    "active_minterms_count": 346429,
+    "zeros_pct": 26.74,
+    "ones_pct": 26.46,
+    "purity_pct": 53.19,
+    "min_val": 0.038940105587244034,
+    "max_val": 0.9610598087310791,
+    "mean_val": 0.4996
+  },
+  "summary": {
+    "polarization_ratio": 0.5647,
+    "shannon_entropy_bits": 0.5538,
+    "epistemic_variance": 0.124346,
+    "active_minterms_count": 346429,
+    "family_coverage": 10
+  }
+}

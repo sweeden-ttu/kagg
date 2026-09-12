@@ -1,0 +1,104 @@
+{
+  "opponents": [
+    "fallow_finn",
+    "wheat_walter",
+    "rotation_rosa"
+  ],
+  "n_transitions": 480,
+  "n_matches": 6,
+  "opponent_confusion_matrix": [
+    [
+      48,
+      0,
+      0
+    ],
+    [
+      2,
+      46,
+      0
+    ],
+    [
+      0,
+      0,
+      48
+    ]
+  ],
+  "outcome_matrix": [
+    [
+      2,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      0
+    ]
+  ],
+  "test_accuracy": 0.9861111111111112,
+  "model_path": "/Users/sweeden/kagg/models/gbdt_3opp_finn_walter_rosa.pkl",
+  "confusion_png": "/Users/sweeden/kagg/tournament_3opp_confusion_matrix.png",
+  "outcome_png": "/Users/sweeden/kagg/experiments/tournament_3opp_finn_walter_rosa/tournament_3opp_outcome_matrix.png",
+  "model_mb": 1.4274024963378906,
+  "match_rows": [
+    {
+      "opponent": "fallow_finn",
+      "match": 0,
+      "our_seat": 0,
+      "our_money": 22625.0,
+      "opp_money": 3000.0,
+      "outcome": "WIN",
+      "steps": 480
+    },
+    {
+      "opponent": "fallow_finn",
+      "match": 1,
+      "our_seat": 1,
+      "our_money": 22750.0,
+      "opp_money": 3000.0,
+      "outcome": "WIN",
+      "steps": 480
+    },
+    {
+      "opponent": "wheat_walter",
+      "match": 0,
+      "our_seat": 0,
+      "our_money": 23918.0,
+      "opp_money": 5079.0,
+      "outcome": "WIN",
+      "steps": 480
+    },
+    {
+      "opponent": "wheat_walter",
+      "match": 1,
+      "our_seat": 1,
+      "our_money": 24013.0,
+      "opp_money": 5079.0,
+      "outcome": "WIN",
+      "steps": 480
+    },
+    {
+      "opponent": "rotation_rosa",
+      "match": 0,
+      "our_seat": 0,
+      "our_money": 22456.0,
+      "opp_money": 7032.0,
+      "outcome": "WIN",
+      "steps": 480
+    },
+    {
+      "opponent": "rotation_rosa",
+      "match": 1,
+      "our_seat": 1,
+      "our_money": 22456.0,
+      "opp_money": 7032.0,
+      "outcome": "WIN",
+      "steps": 480
+    }
+  ]
+}
