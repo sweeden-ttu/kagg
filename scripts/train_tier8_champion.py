@@ -193,7 +193,7 @@ def generate_tier8_her_demonstrations(
                 transitions_added += 1
 
                 # Cash-Scaled HER Relabeling
-                if won_game or final_p0 > 50000:
+                if won_game or final_p0 > 49902:
                     hindsight_bonus = (final_p0 / 1000.0) * (1.0 + (t_idx / len(trajectory)))
                     buffer.push(
                         tiles=trans["tiles"],

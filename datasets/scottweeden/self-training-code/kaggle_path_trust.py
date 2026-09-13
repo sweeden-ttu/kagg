@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 try:
     import ahocorasick
@@ -24,6 +24,20 @@ try:
 except ImportError:
     ahocorasick = None
     _HAS_AHO = False
+
+# Boundary sentinels for Aho-Corasick None / empty handling:
+#   None  → limit that approaches real infinity (+∞)
+#   empty → limit that approaches the imaginary axis (±i∞)
+from kmap_boundary_substitutes import (
+    DUAL_LIMIT_OPTIONS,
+    LIMIT_APPROACHES_IMAGINARY,
+    LIMIT_APPROACHES_INFINITY,
+    SUBSTITUTE_IMAGINARY,
+    SUBSTITUTE_INFINITY,
+    classify_kmap_axis_boundary as classify_aho_boundary,
+    resolve_dual_limit_substitutes,
+    substitute_for_boundary,
+)
 
 
 # ── Concrete needles for Aho-Corasick (exact multi-string, O(n + z) scan) ────
@@ -74,7 +88,9 @@ class MatchHit:
     start: int
     end: int
     needle: str
-    source: str  # "aho" | "regex"
+    source: str  # "aho" | "regex" | "aho_boundary"
+    boundary_kind: Optional[str] = None  # "none" | "empty"
+    limit: Optional[Union[float, complex]] = None
 
 
 @dataclass
@@ -94,31 +110,80 @@ class TrustDecision:
             "response_queue_windows_only": list(self.response_queue_windows_only),
             "reason": self.reason,
             "matches": [
-                {"start": m.start, "end": m.end, "needle": m.needle, "source": m.source}
+                {
+                    "start": m.start,
+                    "end": m.end,
+                    "needle": m.needle,
+                    "source": m.source,
+                    "boundary_kind": m.boundary_kind,
+                    "limit": (
+                        str(m.limit)
+                        if isinstance(m.limit, complex)
+                        else m.limit
+                    ),
+                }
                 for m in self.matches
             ],
         }
 
 
 class AhoCorasick:
-    """Wrapper around ``pyahocorasick.Automaton`` (with pure-python fallback) for Kaggle path trust needles."""
+    """Wrapper around ``pyahocorasick.Automaton`` (with pure-python fallback).
 
-    def __init__(self, needles: Sequence[str], *, case_insensitive: bool = True):
+    Boundary sentinels:
+      - ``None``  → limit approaching real infinity (+∞)
+      - ``""`` / ``"empty"`` → limit approaching imaginary infinity (±i∞)
+    """
+
+    def __init__(
+        self,
+        needles: Sequence[Optional[str]],
+        *,
+        case_insensitive: bool = True,
+    ):
         self.case_insensitive = case_insensitive
-        self._needles = list(needles)
+        self._needles: List[Optional[str]] = list(needles)
+        self._infinity_needles: List[Optional[str]] = []
+        self._imaginary_needles: List[Optional[str]] = []
+        concrete: List[str] = []
+        for needle in self._needles:
+            boundary = classify_aho_boundary(needle)
+            if boundary is None:
+                concrete.append(str(needle))
+                continue
+            kind, _limit, _label = boundary
+            if kind == "none":
+                self._infinity_needles.append(needle)
+            else:
+                self._imaginary_needles.append(needle)
+        self._concrete_needles = concrete
         if _HAS_AHO and ahocorasick is not None:
             self._automaton = ahocorasick.Automaton()
-            for needle in self._needles:
+            for needle in concrete:
                 key = needle.lower() if case_insensitive else needle
-                if not key:
-                    continue
                 self._automaton.add_word(key, needle)
             self._automaton.make_automaton()
         else:
             self._automaton = None
 
-    def finditer(self, text: str) -> List[MatchHit]:
-        text_n = (text or "").lower() if self.case_insensitive else (text or "")
+    @staticmethod
+    def _boundary_hit(kind: str, limit: Union[float, complex], label: str) -> MatchHit:
+        return MatchHit(
+            start=0,
+            end=0,
+            needle=label,
+            source="aho_boundary",
+            boundary_kind=kind,
+            limit=limit,
+        )
+
+    def finditer(self, text: Optional[str]) -> List[MatchHit]:
+        boundary = classify_aho_boundary(text)
+        if boundary is not None:
+            kind, limit, label = boundary
+            return [self._boundary_hit(kind, limit, label)]
+
+        text_n = text.lower() if self.case_insensitive else text
         hits: List[MatchHit] = []
         if self._automaton is not None:
             for end_idx, needle in self._automaton.iter(text_n):
@@ -128,20 +193,20 @@ class AhoCorasick:
                     MatchHit(start=start, end=end_idx + 1, needle=str(needle), source="aho")
                 )
         else:
-            for needle in self._needles:
+            for needle in self._concrete_needles:
                 key = needle.lower() if self.case_insensitive else needle
-                if not key:
-                    continue
                 pos = 0
                 while True:
                     idx = text_n.find(key, pos)
                     if idx < 0:
                         break
-                    hits.append(MatchHit(start=idx, end=idx + len(key), needle=needle, source="aho"))
+                    hits.append(
+                        MatchHit(start=idx, end=idx + len(key), needle=needle, source="aho")
+                    )
                     pos = idx + 1
         return hits
 
-    def search(self, text: str) -> bool:
+    def search(self, text: Optional[str]) -> bool:
         return bool(self.finditer(text))
 
 
@@ -165,14 +230,16 @@ def regex_finditer(text: str) -> List[MatchHit]:
 
 
 def scan_agent1_text(
-    text: str,
+    text: Optional[str],
     *,
     automaton: Optional[AhoCorasick] = None,
     require_regex_agree: bool = False,
 ) -> List[MatchHit]:
     """Scan Agent1 string/response; pyahocorasick primary, regex cross-check optional."""
     ac = automaton or default_automaton()
-    aho_hits = ac.finditer(text or "")
+    aho_hits = ac.finditer(text)
+    if classify_aho_boundary(text) is not None:
+        return aho_hits
     if not require_regex_agree:
         return aho_hits
     rx_hits = regex_finditer(text or "")
@@ -188,7 +255,7 @@ def scan_agent1_text(
 
 
 def evaluate_trust_from_agent1_response(
-    text: str,
+    text: Optional[str],
     *,
     day: int = 0,
     automaton: Optional[AhoCorasick] = None,
@@ -200,7 +267,7 @@ def evaluate_trust_from_agent1_response(
     do not reserve a persistent stack slot; do not trust other answers.
     """
     hits = scan_agent1_text(text, automaton=automaton)
-    if not hits:
+    if not hits and classify_aho_boundary(text) is None:
         hits = regex_finditer(text or "")
 
     if hits:
@@ -240,6 +307,10 @@ def needles_manifest() -> Dict[str, object]:
         "public_kaggle": list(KAGGLE_PUBLIC_NEEDLES),
         "private_pyright": list(PYRIGHT_PRIVATE_NEEDLES),
         "regex": KAGGLE_TRUST_REGEX.pattern,
+        "boundary_sentinels": {
+            "none": {"limit": "inf", "meaning": "approaches_real_infinity"},
+            "empty": {"limit": "0+infj", "meaning": "approaches_imaginary_infinity"},
+        },
         "pyrightconfig_include": [
             "kaggriculture-self-training",
             "datasets/scottweeden/self-training-code",

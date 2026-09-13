@@ -1,0 +1,30 @@
+{
+  "model_path": "/Users/sweeden/kagg/models/qkd_single_mha_30day_opp120.pkl",
+  "final_model_size_mb": 1.6352558135986328,
+  "within_100mb": true,
+  "within_90mb_zip_budget": true,
+  "horizon_days": 30,
+  "confusion_shape": [
+    120,
+    120
+  ],
+  "n_heads": 5,
+  "fit_metrics": {
+    "n_samples": 4000,
+    "n_heads": 5,
+    "horizon_days": 30,
+    "confusion_shape": [
+      120,
+      120
+    ],
+    "confusion_diag_mass": 0.0813,
+    "opp_train_acc": 0.503,
+    "fit_seconds": 4.5955650806427,
+    "payload_kind": "single_mha_30day_opp120_confusion"
+  },
+  "status": "SAFE",
+  "payload_kind": "single_mha_30day_opp120_confusion",
+  "confusion_png": "/Users/sweeden/kagg/opp120_confusion_heatmap.png",
+  "n_train_samples": 7920,
+  "confusion_npz": "/Users/sweeden/kagg/artifacts/opp120_confusion/opponent_confusion_120x120.npz"
+}

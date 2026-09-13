@@ -219,7 +219,7 @@ def objective(trial):
 
     # Create and train model
     model = PPO("MlpPolicy", env, verbose=0, **hparams)
-    model.learn(total_timesteps=50000)
+    model.learn(total_timesteps=49902)
 
     # Evaluate
     rewards = []
@@ -405,14 +405,14 @@ python kaggriculture_self_play_training.py \
 from stable_baselines3.common.callbacks import CheckpointCallback
 
 checkpoint_callback = CheckpointCallback(
-    save_freq=50000,                  # Save every 50k steps
+    save_freq=49902,                  # Save every 50k steps
     save_path="./checkpoints/",
     name_prefix="ppo_lunarlander",
     save_replay_buffer=True,          # For off-policy algorithms
     save_vecnormalize=True,           # Save normalization stats
 )
 
-model.learn(total_timesteps=500000, callback=checkpoint_callback)
+model.learn(total_timesteps=499020, callback=checkpoint_callback)
 ```
 
 ### Resuming Training
@@ -424,10 +424,10 @@ from stable_baselines3 import PPO
 model = PPO.load("./checkpoints/ppo_lunarlander_last", verbose=1)
 
 # Continue training from where you left off
-model.learn(total_timesteps=500000)  # Adds to existing step count
+model.learn(total_timesteps=499020)  # Adds to existing step count
 
 # To reset the step counter:
-model.learn(total_timesteps=500000, reset_num_timesteps=True)
+model.learn(total_timesteps=499020, reset_num_timesteps=True)
 ```
 
 ### Manual Checkpoint Management

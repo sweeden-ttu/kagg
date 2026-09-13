@@ -1,0 +1,33 @@
+{
+  "model_path": "/Users/sweeden/kagg/models/qkd_single_mha_720_30day.pkl",
+  "final_model_size_mb": 3.0834226608276367,
+  "within_100mb": true,
+  "within_90mb_zip_budget": true,
+  "horizon_days": 30,
+  "mask_shape": [
+    720,
+    720
+  ],
+  "n_heads": 5,
+  "fit_metrics": {
+    "n_samples": 4000,
+    "n_heads": 5,
+    "d_model": 64,
+    "horizon_days": 30,
+    "season_turns": 720,
+    "mask_shape": [
+      720,
+      720
+    ],
+    "mask_polarization": 0.5647057294845581,
+    "fit_seconds": 4.420120000839233,
+    "state_dim": 1035,
+    "payload_kind": "single_mha_720_30day"
+  },
+  "status": "SAFE",
+  "payload_kind": "single_mha_720_30day",
+  "heatmap_path": "/Users/sweeden/kagg/single_mha_720_30day_heatmap.png",
+  "n_train_samples": 7920,
+  "feature_dim": 1035,
+  "mask_path": "/Users/sweeden/kagg/artifacts/kmap_720x720/kmap_720x720_matrix.npz"
+}

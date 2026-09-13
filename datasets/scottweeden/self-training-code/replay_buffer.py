@@ -32,7 +32,7 @@ class PrioritizedReplayBuffer:
 
     def __init__(
         self,
-        capacity: int = 50000,
+        capacity: int = 49902,
         alpha: float = 0.6,
         bootstrap_fraction: float = 0.5,
         beta_init: float = 0.4,

@@ -1,0 +1,34 @@
+{
+  "operation": "reflect_horizontal_and_vertical",
+  "equiv": "M[::-1,::-1] / rot180",
+  "artifacts": [
+    {
+      "name": "kmap_2d_mask",
+      "path": "/Users/sweeden/kagg_defense/for_scott_questioning_clone/models/qkd_model.npz",
+      "shape": [
+        128,
+        128
+      ],
+      "orig_mean": 0.047607421875,
+      "reflected_mean": 0.047607421875,
+      "orig_active": 780,
+      "reflected_active": 780
+    },
+    {
+      "name": "kmap_720x720_matrix",
+      "path": "/Users/sweeden/kagg_defense/for_scott_questioning_clone/artifacts/kmap_720x720/kmap_720x720_matrix.npz",
+      "shape": [
+        720,
+        720
+      ]
+    },
+    {
+      "name": "opponent_confusion_120x120_reflected",
+      "shape": [
+        120,
+        120
+      ],
+      "row_sums_ok": true
+    }
+  ]
+}
